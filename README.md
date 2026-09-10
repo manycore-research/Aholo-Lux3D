@@ -40,7 +40,7 @@ Website: https://lux3d.aholo3d.com
 Paste into any Codex task:
 
 ```text
-/goal Read https://raw.githubusercontent.com/manycore-research/Aholo-Lux3D/master/AGENTS.md to install Aholo Lux3D for Codex and set up a new task for me.
+/goal Read https://raw.githubusercontent.com/manycore-research/Aholo-Lux3D/master/AGENTS.md and install Aholo Lux3D for Codex.
 ```
 
 **Option B — CLI**
@@ -86,7 +86,7 @@ Aholo Lux3D 可将单张图片或文字描述转为可用于生产的 3D 资产�
 在任意 Codex 任务中粘贴：
 
 ```text
-/goal Read https://raw.githubusercontent.com/manycore-research/Aholo-Lux3D/master/AGENTS.md to install Aholo Lux3D for Codex and set up a new task for me.
+/goal Read https://raw.githubusercontent.com/manycore-research/Aholo-Lux3D/master/AGENTS.md and install Aholo Lux3D for Codex.
 ```
 
 **方式 B — 命令行**
@@ -122,7 +122,7 @@ Aholo Lux3D は、1 枚の画像またはテキストから、正確なジオメ
 任意の Codex タスクに貼り付け：
 
 ```text
-/goal Read https://raw.githubusercontent.com/manycore-research/Aholo-Lux3D/master/AGENTS.md to install Aholo Lux3D for Codex and set up a new task for me.
+/goal Read https://raw.githubusercontent.com/manycore-research/Aholo-Lux3D/master/AGENTS.md and install Aholo Lux3D for Codex.
 ```
 
 **方法 B — CLI**
@@ -156,7 +156,7 @@ Sitio web: https://lux3d.aholo3d.com
 Pega esto en cualquier tarea de Codex:
 
 ```text
-/goal Read https://raw.githubusercontent.com/manycore-research/Aholo-Lux3D/master/AGENTS.md to install Aholo Lux3D for Codex and set up a new task for me.
+/goal Read https://raw.githubusercontent.com/manycore-research/Aholo-Lux3D/master/AGENTS.md and install Aholo Lux3D for Codex.
 ```
 
 **Opción B — CLI**
@@ -190,7 +190,7 @@ Site: https://lux3d.aholo3d.com
 Cole em qualquer tarefa do Codex:
 
 ```text
-/goal Read https://raw.githubusercontent.com/manycore-research/Aholo-Lux3D/master/AGENTS.md to install Aholo Lux3D for Codex and set up a new task for me.
+/goal Read https://raw.githubusercontent.com/manycore-research/Aholo-Lux3D/master/AGENTS.md and install Aholo Lux3D for Codex.
 ```
 
 **Opção B — CLI**

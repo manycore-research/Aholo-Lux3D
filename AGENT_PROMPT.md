@@ -3,7 +3,7 @@
 Paste this into any Codex Desktop or Codex CLI task:
 
 ```text
-/goal Read https://raw.githubusercontent.com/manycore-research/Aholo-Lux3D/master/AGENTS.md to install Aholo Lux3D for Codex and set up a new task for me.
+/goal Read https://raw.githubusercontent.com/manycore-research/Aholo-Lux3D/master/AGENTS.md and install Aholo Lux3D for Codex.
 ```
 
 After installation, start a **new** Codex task, then invoke:
