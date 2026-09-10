@@ -1,0 +1,8 @@
+{
+  "schema": "lux3d.ecosystem-adapter/v1",
+  "ecosystem": "codex",
+  "source": 1,
+  "module": "M04",
+  "version": "0.1.0",
+  "status": "development"
+}

@@ -1,0 +1,20 @@
+{
+  "name": "lux3d",
+  "interface": {
+    "displayName": "Aholo Lux3D"
+  },
+  "plugins": [
+    {
+      "name": "aholo-lux3d",
+      "source": {
+        "source": "local",
+        "path": "./plugins/codex/aholo-lux3d"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Creativity"
+    }
+  ]
+}

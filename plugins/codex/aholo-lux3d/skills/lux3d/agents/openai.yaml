@@ -1,0 +1,6 @@
+interface:
+  display_name: "Aholo Lux3D"
+  icon_small: "./core/viewer/lux3d-icon.png"
+  icon_large: "./core/viewer/lux3d-icon.png"
+  short_description: "Create verified 3D assets and offline previews"
+  default_prompt: "Use $lux3d to turn this request into verified Lux3D assets and deliver them into the current project."

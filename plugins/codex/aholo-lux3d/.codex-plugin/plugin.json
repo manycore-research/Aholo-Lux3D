@@ -1,0 +1,41 @@
+{
+  "author": {
+    "email": "lux3d@qunhemail.com",
+    "name": "Manycore Lux3D Team",
+    "url": "https://labs.aholo3d.com"
+  },
+  "description": "Turn a 3D task into verified Lux3D assets and deliver them into the user's development or creative workflow.",
+  "homepage": "https://labs.aholo3d.com",
+  "interface": {
+    "capabilities": [
+      "Generate 3D",
+      "Process 3D assets",
+      "Verify artifacts",
+      "Deliver to projects"
+    ],
+    "category": "Creativity",
+    "composerIcon": "./.codex-plugin/assets/composer-icon.png",
+    "defaultPrompt": [
+      "Use $lux3d to create verified 3D assets and one offline preview for this project."
+    ],
+    "developerName": "Manycore Lux3D Team",
+    "displayName": "Aholo Lux3D",
+    "logo": "./.codex-plugin/assets/logo.png",
+    "logoDark": "./.codex-plugin/assets/logo-dark.png",
+    "longDescription": "Plan resumable Lux3D tasks, preserve verified originals and task history, and deliver one offline preview with optional externally assembled scenes.",
+    "shortDescription": "Create and deliver 3D assets",
+    "websiteURL": "https://labs.aholo3d.com"
+  },
+  "keywords": [
+    "3d-generation",
+    "image-to-3d",
+    "text-to-3d",
+    "asset-pipeline",
+    "lux3d"
+  ],
+  "license": "UNLICENSED",
+  "name": "aholo-lux3d",
+  "repository": "https://gitlab.qunhequnhe.com/render/moria/lux3d-plugin",
+  "skills": "./skills/",
+  "version": "0.1.0"
+}

@@ -1,0 +1,19 @@
+{
+  "schema": "lux3d.delivery-spec/v2",
+  "title": "Furniture delivery",
+  "items": [
+    {
+      "id": "chair",
+      "label": "Chair",
+      "selectedAttemptId": "chair-generation",
+      "attempts": [{"id": "chair-generation", "statePath": "attempts/chair/state.json"}]
+    },
+    {
+      "id": "chair-copy",
+      "label": "Second use of the same chair",
+      "selectedAttemptId": "chair-generation",
+      "attempts": [{"id": "chair-generation", "statePath": "attempts/chair/state.json"}]
+    }
+  ],
+  "scene": {"status": "not-requested"}
+}

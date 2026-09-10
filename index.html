@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#121418">
+  <meta name="description" content="把 Aholo Lux3D 装进 Codex：复制一条指令即可，不用下载 zip。">
+  <title>Aholo Lux3D · Codex 安装</title>
+  <link rel="icon" href="site/assets/favicon.png">
+  <link rel="stylesheet" href="https://fonts.bunny.net/css?family=bricolage-grotesque:600,700|ibm-plex-sans:400,500|ibm-plex-mono:400,500&display=swap">
+  <style>
+    :root {
+      --bg: #14161a;
+      --ink: #e7eaee;
+      --muted: #9aa3ad;
+      --line: #2a2e35;
+      --panel: #1c1f24;
+      --accent: #4c8dff;
+      --accent-ink: #071225;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+      min-height: 100dvh;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: "IBM Plex Sans", "PingFang SC", "Noto Sans SC", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; }
+    button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+    .page {
+      width: min(calc(100% - 32px), 760px);
+      margin: 0 auto;
+      padding: 28px 0 64px;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 56px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--ink);
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      text-decoration: none;
+    }
+    .brand img { height: 28px; width: auto; }
+    .brand span { font-family: "Bricolage Grotesque", "IBM Plex Sans", sans-serif; }
+    .gh {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .gh:hover { color: var(--ink); }
+
+    h1 {
+      margin: 0 0 12px;
+      font-family: "Bricolage Grotesque", "IBM Plex Sans", sans-serif;
+      font-size: clamp(2rem, 6vw, 3.4rem);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1.08;
+    }
+    .lead {
+      margin: 0 0 36px;
+      max-width: 48ch;
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.55;
+      word-break: keep-all;
+    }
+
+    .ticket {
+      border: 1px solid var(--line);
+      background: var(--panel);
+    }
+    .ticket-top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    pre {
+      margin: 0;
+      padding: 20px 16px 8px;
+      overflow: auto;
+      color: var(--ink);
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      font-size: 13.5px;
+      line-height: 1.65;
+      white-space: pre-wrap;
+    }
+    .ticket-actions {
+      display: flex;
+      justify-content: flex-end;
+      padding: 12px 16px 16px;
+    }
+    .copy {
+      min-height: 40px;
+      padding: 0 16px;
+      background: var(--accent);
+      color: var(--accent-ink);
+      font-weight: 500;
+    }
+    .copy:hover { filter: brightness(1.06); }
+    .copy:active { transform: translateY(1px); }
+    .copy.is-done { background: #d7e4ff; }
+
+    .cli {
+      margin-top: 28px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .cli summary {
+      cursor: pointer;
+      color: var(--ink);
+    }
+    .cli pre {
+      margin-top: 12px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+    }
+    .cli .ticket-actions { padding: 8px 0 0; justify-content: flex-start; }
+    .copy-ghost {
+      min-height: 36px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      color: var(--ink);
+    }
+    .copy-ghost:hover { border-color: var(--muted); }
+
+    .after {
+      margin-top: 48px;
+      padding-top: 28px;
+      border-top: 1px solid var(--line);
+    }
+    .after h2 {
+      margin: 0 0 12px;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+    .after ol {
+      margin: 0;
+      padding-left: 1.2em;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+    .after code {
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      font-size: 0.92em;
+      color: var(--ink);
+    }
+
+    footer {
+      margin-top: 56px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    footer a { color: var(--ink); text-underline-offset: 3px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .copy:active { transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <a class="brand" href="https://labs.aholo3d.com">
+        <img src="site/assets/logo-dark.png" alt="">
+        <span>Aholo Lux3D</span>
+      </a>
+      <a class="gh" href="https://github.com/manycore-research/Aholo-Lux3D">GitHub</a>
+    </header>
+
+    <main>
+      <h1>一条指令，<br>装进 Codex</h1>
+      <p class="lead">复制后贴到任意 Codex 任务。不用下载 zip，也不用去市场里搜。</p>
+
+      <section class="ticket" aria-label="Codex 安装指令">
+        <div class="ticket-top">
+          <span>Paste into Codex</span>
+          <span>aholo-lux3d@lux3d</span>
+        </div>
+        <pre id="prompt">/goal Read https://github.com/manycore-research/Aholo-Lux3D/blob/master/AGENTS.md to install Aholo Lux3D for Codex and set up a new task for me.</pre>
+        <div class="ticket-actions">
+          <button class="copy" type="button" data-copy="prompt">复制指令</button>
+        </div>
+      </section>
+
+      <details class="cli">
+        <summary>已经装了 Codex CLI，直接跑命令</summary>
+        <pre id="cli">codex plugin marketplace add manycore-research/Aholo-Lux3D --ref master
+codex plugin add aholo-lux3d@lux3d</pre>
+        <div class="ticket-actions">
+          <button class="copy-ghost" type="button" data-copy="cli">复制命令</button>
+        </div>
+      </details>
+
+      <section class="after" id="agent-entrypoint">
+        <h2>装完以后</h2>
+        <ol>
+          <li>新开一个 Codex 任务，当前对话不会加载刚装的插件。</li>
+          <li>输入 <code>$lux3d</code> 或 <code>@aholo-lux3d</code> 开始生成。</li>
+          <li>真正出图时再配置 <code>LUX3D_CN_API_KEY</code> 或 <code>LUX3D_GLOBAL_API_KEY</code>。安装这一步不需要密钥。</li>
+        </ol>
+      </section>
+    </main>
+
+    <footer>
+      仓库需要公开，否则别人的 Codex 拉不下来。
+      产品站 <a href="https://labs.aholo3d.com">labs.aholo3d.com</a>
+    </footer>
+  </div>
+
+  <script>
+    const labels = { done: "已复制", prompt: "复制指令", cli: "复制命令" };
+
+    document.querySelectorAll("[data-copy]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const source = document.getElementById(button.dataset.copy);
+        const text = source ? source.textContent.trim() : "";
+        try {
+          await navigator.clipboard.writeText(text);
+        } catch (error) {
+          const range = document.createRange();
+          range.selectNodeContents(source);
+          const selection = window.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(range);
+          document.execCommand("copy");
+          selection.removeAllRanges();
+        }
+        const original = button.textContent;
+        button.textContent = labels.done;
+        button.classList.add("is-done");
+        window.setTimeout(() => {
+          button.textContent = original;
+          button.classList.remove("is-done");
+        }, 1600);
+      });
+    });
+  </script>
+</body>
+</html>

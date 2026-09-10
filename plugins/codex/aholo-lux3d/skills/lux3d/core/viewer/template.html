@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="/*LUX3D_LOCALE*/">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'unsafe-inline'; img-src data: blob:; connect-src data: blob:; worker-src blob:; base-uri 'none'; form-action 'none'; object-src 'none'">
+<title>{{title}} · Aholo Lux3D</title>
+<style>/*LUX3D_STYLE*/</style>
+</head>
+<body>
+<canvas id="viewer-canvas" aria-hidden="true"></canvas>
+<a class="skip-link" href="#assets">{{skipToAssets}}</a>
+<div class="topbar"><div class="topbar-inner">
+  <a class="brand" href="#top" aria-label="{{overviewLabel}}"><img src="/*LUX3D_LOGO*/" width="4695" height="639" alt="Aholo Lux3D"></a>
+  <span class="product-label">{{workflow}} <span>/</span> {{delivery}}</span>
+  <span class="offline-label"><span class="status-dot"></span>{{offline}}</span>
+</div></div>
+<main id="top">
+  <header class="hero">
+    <div class="hero-copy"><p class="eyebrow"><span></span> {{idea}}</p>
+      <h1 id="title">{{title}}</h1>
+      <p class="subtitle">{{subtitle}}</p>
+    </div>
+    <div id="summary" class="summary"></div>
+  </header>
+  <div id="delivery-status" class="delivery-status" role="status"></div>
+  <nav class="section-nav" aria-label="{{deliverySections}}">
+    <div class="section-links"><a href="#assets">{{assets}} <span id="asset-count"></span></a><a href="#scene-section">{{scene}}</a><a href="#task-history">{{taskHistory}}</a></div>
+    <a id="manifest-download" class="manifest-download" href="#" download="lux3d-delivery.json">{{deliveryManifest}}<span aria-hidden="true"> ↓</span></a>
+  </nav>
+  <section id="assets" aria-label="{{individualItems}}">
+    <div class="section-heading"><div><p class="eyebrow">{{collection}}</p><h2>{{madeToExplore}}</h2></div><p>{{interactiveOriginals}}</p></div>
+    <div id="items" class="item-grid"></div>
+  </section>
+  <section id="scene-section" aria-label="{{assembledScene}}"></section>
+  <section id="task-history" class="history" aria-label="{{taskHistory}}">
+    <details id="history-details"><summary><span><span class="eyebrow">{{traceable}}</span><span class="history-title">{{taskHistory}} <span id="attempt-count"></span></span></span><span class="details-toggle" aria-hidden="true">+</span></summary>
+      <p class="history-note">{{historyNote}}</p>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="{{attemptRecords}}"><table><thead><tr><th>{{attempt}}</th><th>{{taskRegion}}</th><th>{{workflowStatus}}</th><th>{{localStart}}</th><th>{{localComplete}}</th><th>{{localDuration}}</th><th>{{originalFiles}}</th></tr></thead><tbody id="history"></tbody></table></div>
+    </details>
+  </section>
+  <footer><div class="footer-heading"><img class="footer-brand" src="/*LUX3D_LOGO*/" width="4695" height="639" alt="Aholo Lux3D"><span>{{tagline}}</span></div><p>{{footerNote}}</p></footer>
+</main>
+<noscript>{{noScript}}</noscript>
+<script id="lux3d-data" type="application/json">/*LUX3D_DATA*/</script>
+<script type="module">/*LUX3D_VIEWER*/</script>
+</body>
+</html>
