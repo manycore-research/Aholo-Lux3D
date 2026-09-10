@@ -2,7 +2,9 @@
   "schemaVersion": "aholo-lux3d-codex-plugin/v1",
   "distributionRepository": "https://github.com/manycore-research/Aholo-Lux3D",
   "distributionStatus": "git-marketplace",
-  "agentEntrypoint": "AGENTS.md",
+  "agentEntrypoint": "docs/codex-plugin/index.html",
+  "agentEntrypointURL": "https://manycore-research.github.io/Aholo-Lux3D/codex-plugin/",
+  "humanLanding": "docs/index.html",
   "marketplace": {
     "name": "lux3d",
     "gitSource": "manycore-research/Aholo-Lux3D",

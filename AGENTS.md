@@ -2,6 +2,8 @@
 
 The user asked you to install Aholo Lux3D for Codex. Read this entire file, follow **Install into Codex**, then complete the handoff. Do not ask the user to download a zip.
 
+Public agent entrypoint: `https://manycore-research.github.io/Aholo-Lux3D/codex-plugin/`
+
 Canonical repository: `https://github.com/manycore-research/Aholo-Lux3D`
 
 - Marketplace: `lux3d`

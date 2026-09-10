@@ -12,7 +12,13 @@ Codex plugin marketplace for [Aholo Lux3D](https://labs.aholo3d.com). Users inst
 
 ## For users
 
-Open [the install page](./index.html), copy the prompt, paste it into a Codex task.
+Paste this into a Codex task:
+
+```text
+/goal Read https://manycore-research.github.io/Aholo-Lux3D/codex-plugin/
+```
+
+Human landing page: [docs/index.html](./docs/index.html)
 
 Direct CLI:
 
@@ -25,12 +31,15 @@ Then start a **new** Codex task and run `$lux3d`.
 
 This repository must stay **public**. `codex plugin marketplace add` clones GitHub. A private repo will 404 for other users.
 
+GitHub Pages: Settings → Pages → Deploy from branch `master` / folder `/docs`.
+
 ## Layout
 
 ```text
 .agents/plugins/marketplace.json   Codex marketplace catalog
 plugins/codex/aholo-lux3d/         Installable plugin payload
-AGENTS.md                          Instructions Codex follows when installing
-index.html                         Human install page
-lux3d-plugin/codex/*.tar.gz        OpenAI portal archive only, not the user path
+AGENTS.md                          Canonical agent install guide
+docs/index.html                    Human landing (copy the /goal command)
+docs/codex-plugin/                 Agent entrypoint Codex reads
+lux3d-plugin/codex/*.tar.gz        OpenAI portal archive only
 ```
