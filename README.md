@@ -18,8 +18,6 @@ Paste this into a Codex task:
 /goal Read https://lux3d.aholo3d.com/lux3d/codex-plugin/ to install Aholo Lux3D for Codex and set up a new task for me.
 ```
 
-Human landing page: [docs/index.html](./docs/index.html)
-
 Direct CLI:
 
 ```bash
@@ -31,15 +29,12 @@ Then start a **new** Codex task and run `$lux3d`.
 
 This repository must stay **public**. `codex plugin marketplace add` clones GitHub. A private repo will 404 for other users.
 
-GitHub Pages: Settings → Pages → Deploy from branch `master` / folder `/docs`.
-
 ## Layout
 
 ```text
 .agents/plugins/marketplace.json   Codex marketplace catalog
 plugins/codex/aholo-lux3d/         Installable plugin payload
 AGENTS.md                          Canonical agent install guide
-docs/index.html                    Human landing (copy the /goal command)
 docs/codex-plugin/                 Agent entrypoint Codex reads
 docs/lux3d/codex-plugin/           Production agent entrypoint
 lux3d-plugin/codex/*.tar.gz        OpenAI portal archive only

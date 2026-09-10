@@ -4,7 +4,6 @@
   "distributionStatus": "git-marketplace",
   "agentEntrypoint": "docs/lux3d/codex-plugin/index.html",
   "agentEntrypointURL": "https://lux3d.aholo3d.com/lux3d/codex-plugin/",
-  "humanLanding": "docs/index.html",
   "marketplace": {
     "name": "lux3d",
     "gitSource": "manycore-research/Aholo-Lux3D",
