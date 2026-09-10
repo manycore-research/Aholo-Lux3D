@@ -1,13 +1,23 @@
+<p align="center">
+  <img src="assets/aholo-lux3d-logo.png" alt="Aholo Lux3D" width="420" />
+</p>
+
 # Aholo Lux3D
 
-**Languages:** [English](#english) · [中文](#中文) · [日本語](#日本語) · [Español](#español) · [Português](#português)
+<p align="center">
+  <strong>Languages:</strong>
+  <a href="#english">English</a> ·
+  <a href="#中文">中文</a> ·
+  <a href="#日本語">日本語</a> ·
+  <a href="#español">Español</a> ·
+  <a href="#português">Português</a>
+</p>
 
 Codex plugin marketplace for [Aholo Lux3D](https://lux3d.aholo3d.com) — turn a single image or text prompt into production-ready 3D assets (geometry, PBR materials, online preview, GLB export, API / ComfyUI).
 
 | | |
 | --- | --- |
-| China site | https://lux3d.aholo3d.cn |
-| International site | https://lux3d.aholo3d.com |
+| Website | https://lux3d.aholo3d.com |
 | Marketplace | `lux3d` |
 | Plugin | `aholo-lux3d` |
 | Selector | `aholo-lux3d@lux3d` |
@@ -20,6 +30,8 @@ Codex plugin marketplace for [Aholo Lux3D](https://lux3d.aholo3d.com) — turn a
 ### What is Aholo Lux3D?
 
 Aholo Lux3D generates accurate 3D geometry and complete PBR textures from one image or a text description. Preview models in the browser, export GLB, or integrate through API and ComfyUI for production workflows.
+
+Website: https://lux3d.aholo3d.com
 
 ### Install for Codex
 
@@ -43,7 +55,7 @@ codex plugin add aholo-lux3d@lux3d
 1. Download `aholo-lux3d.tar.gz` from [Releases](https://github.com/manycore-research/Aholo-Lux3D/releases).
 2. Ask your AI agent to install that archive into Codex (for example: “Install this Codex plugin from `aholo-lux3d.tar.gz`”).
 
-After install, start a **new** Codex task and run `$lux3d` or `@aholo-lux3d`. Paid generation needs `LUX3D_GLOBAL_API_KEY` (international) or `LUX3D_CN_API_KEY` (China) in the environment.
+After install, start a **new** Codex task and run `$lux3d` or `@aholo-lux3d`. Paid generation needs `LUX3D_GLOBAL_API_KEY` in the environment.
 
 This repository must stay **public** so marketplace install works for everyone.
 
@@ -101,8 +113,7 @@ codex plugin add aholo-lux3d@lux3d
 
 Aholo Lux3D は、1 枚の画像またはテキストから、正確なジオメトリと完全な PBR テクスチャを持つ本番向け 3D アセットを生成します。ブラウザでプレビューし、GLB を書き出し、API / ComfyUI で連携できます。
 
-- 中国向けサイト：https://lux3d.aholo3d.cn
-- 国際サイト：https://lux3d.aholo3d.com
+ウェブサイト：https://lux3d.aholo3d.com
 
 ### Codex へのインストール
 
@@ -126,7 +137,7 @@ codex plugin add aholo-lux3d@lux3d
 1. [Releases](https://github.com/manycore-research/Aholo-Lux3D/releases) から `aholo-lux3d.tar.gz` を入手。
 2. AI にそのアーカイブを渡して Codex へインストールしてもらう。
 
-インストール後は**新しい** Codex タスクを開始し、`$lux3d` または `@aholo-lux3d` を実行してください。有料生成には `LUX3D_GLOBAL_API_KEY`（国際）または `LUX3D_CN_API_KEY`（中国）が必要です。
+インストール後は**新しい** Codex タスクを開始し、`$lux3d` または `@aholo-lux3d` を実行してください。有料生成には `LUX3D_GLOBAL_API_KEY` が必要です。
 
 ---
 
@@ -136,8 +147,7 @@ codex plugin add aholo-lux3d@lux3d
 
 Aholo Lux3D convierte una imagen o una descripción de texto en activos 3D listos para producción: geometría precisa, texturas PBR completas, vista previa en el navegador, exportación GLB e integración por API / ComfyUI.
 
-- Sitio de China：https://lux3d.aholo3d.cn
-- Sitio internacional：https://lux3d.aholo3d.com
+Sitio web: https://lux3d.aholo3d.com
 
 ### Instalar en Codex
 
@@ -161,7 +171,7 @@ codex plugin add aholo-lux3d@lux3d
 1. Descarga `aholo-lux3d.tar.gz` desde [Releases](https://github.com/manycore-research/Aholo-Lux3D/releases).
 2. Pide a tu agente de IA que instale ese archivo en Codex.
 
-Después de instalar, inicia una **nueva** tarea de Codex y ejecuta `$lux3d` o `@aholo-lux3d`. La generación de pago requiere `LUX3D_GLOBAL_API_KEY` (internacional) o `LUX3D_CN_API_KEY` (China).
+Después de instalar, inicia una **nueva** tarea de Codex y ejecuta `$lux3d` o `@aholo-lux3d`. La generación de pago requiere `LUX3D_GLOBAL_API_KEY`.
 
 ---
 
@@ -171,8 +181,7 @@ Después de instalar, inicia una **nueva** tarea de Codex y ejecuta `$lux3d` o `
 
 O Aholo Lux3D transforma uma imagem ou um texto em ativos 3D prontos para produção: geometria precisa, texturas PBR completas, pré-visualização no navegador, exportação GLB e integração via API / ComfyUI.
 
-- Site da China：https://lux3d.aholo3d.cn
-- Site internacional：https://lux3d.aholo3d.com
+Site: https://lux3d.aholo3d.com
 
 ### Instalar no Codex
 
@@ -196,4 +205,4 @@ codex plugin add aholo-lux3d@lux3d
 1. Baixe `aholo-lux3d.tar.gz` em [Releases](https://github.com/manycore-research/Aholo-Lux3D/releases).
 2. Peça ao agente de IA para instalar esse arquivo no Codex.
 
-Após a instalação, inicie uma **nova** tarefa do Codex e execute `$lux3d` ou `@aholo-lux3d`. A geração paga precisa de `LUX3D_GLOBAL_API_KEY` (internacional) ou `LUX3D_CN_API_KEY` (China).
+Após a instalação, inicie uma **nova** tarefa do Codex e execute `$lux3d` ou `@aholo-lux3d`. A geração paga precisa de `LUX3D_GLOBAL_API_KEY`.
