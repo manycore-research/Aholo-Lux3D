@@ -15,7 +15,7 @@ Codex plugin marketplace for [Aholo Lux3D](https://labs.aholo3d.com). Users inst
 Paste this into a Codex task:
 
 ```text
-/goal Read https://manycore-research.github.io/Aholo-Lux3D/codex-plugin/
+/goal Read https://lux3d.aholo3d.com/lux3d/codex-plugin/ to install Aholo Lux3D for Codex and set up a new task for me.
 ```
 
 Human landing page: [docs/index.html](./docs/index.html)
@@ -41,5 +41,6 @@ plugins/codex/aholo-lux3d/         Installable plugin payload
 AGENTS.md                          Canonical agent install guide
 docs/index.html                    Human landing (copy the /goal command)
 docs/codex-plugin/                 Agent entrypoint Codex reads
+docs/lux3d/codex-plugin/           Production agent entrypoint
 lux3d-plugin/codex/*.tar.gz        OpenAI portal archive only
 ```

@@ -3,253 +3,453 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#121418">
-  <meta name="description" content="把 Aholo Lux3D 装进 Codex：复制一条指令即可，不用下载 zip。">
-  <title>Aholo Lux3D · Codex 安装</title>
-  <link rel="stylesheet" href="https://fonts.bunny.net/css?family=bricolage-grotesque:600,700|ibm-plex-sans:400,500|ibm-plex-mono:400,500&display=swap">
+  <meta name="theme-color" content="#0a0a0b">
+  <meta name="description" content="将 Aholo Lux3D 插件安装到 Codex，无需下载文件。">
+  <title>Aholo Lux3D for Codex</title>
   <style>
     :root {
-      --bg: #14161a;
-      --ink: #e7eaee;
-      --muted: #9aa3ad;
-      --line: #2a2e35;
-      --panel: #1c1f24;
-      --accent: #4c8dff;
-      --accent-ink: #071225;
+      --header-height: 56px;
+      --shell: 1440px;
+      --dark: #0a0a0b;
+      --dark-raised: #121214;
+      --light: #f7f7f5;
+      --ink: #202124;
+      --muted: #686b70;
+      --dark-muted: rgba(255, 255, 255, 0.58);
+      --line: rgba(255, 255, 255, 0.09);
+      --light-line: #d8d9d7;
+      --radius-control: 10px;
     }
+
     * { box-sizing: border-box; }
-    html, body { margin: 0; }
+    html { scroll-behavior: smooth; }
     body {
-      min-height: 100dvh;
-      color: var(--ink);
-      background: var(--bg);
-      font-family: "IBM Plex Sans", "PingFang SC", "Noto Sans SC", sans-serif;
+      margin: 0;
+      min-width: 320px;
+      color: #f5f6f7;
+      background: var(--dark);
+      font-family: "Avenir Next", "Helvetica Neue", "PingFang SC", "Noto Sans SC", sans-serif;
       -webkit-font-smoothing: antialiased;
     }
-    a { color: inherit; }
-    button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
-    :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    body.menu-open { overflow: hidden; }
+    button, a { font: inherit; }
+    button { border: 0; cursor: pointer; }
+    a { color: inherit; text-decoration: none; }
+    :focus-visible { outline: 2px solid #8cbaff; outline-offset: 3px; }
 
-    .page {
-      width: min(calc(100% - 32px), 760px);
-      margin: 0 auto;
-      padding: 28px 0 64px;
+    .shell {
+      width: min(calc(100% - 32px), var(--shell));
+      margin-inline: auto;
     }
-    header {
+
+    /* Keep this navigation aligned with the Lux3D product pages. */
+    .site-header {
+      position: fixed;
+      inset: 0 0 auto;
+      z-index: 20;
+      height: var(--header-height);
+      border-bottom: 1px solid var(--line);
+      background: rgba(10, 10, 11, 0.9);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+    .nav {
+      display: flex;
+      height: var(--header-height);
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+    .nav-left,
+    .nav-actions,
+    .nav-links {
+      display: flex;
+      align-items: center;
+    }
+    .nav-left { min-width: 0; gap: 26px; }
+    .wordmark {
+      flex: 0 0 auto;
+      color: #f7f7f7;
+      font-size: 17px;
+      font-weight: 650;
+      letter-spacing: -0.03em;
+    }
+    .nav-links { gap: 4px; }
+    .nav-link {
+      padding: 8px 12px;
+      border-radius: var(--radius-control);
+      color: var(--dark-muted);
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 160ms ease, background 160ms ease;
+    }
+    .nav-link:hover {
+      color: rgba(255, 255, 255, 0.88);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .nav-actions { gap: 8px; }
+    .language {
+      padding: 7px 10px;
+      color: rgba(255, 255, 255, 0.72);
+      background: transparent;
+      font-size: 12px;
+    }
+    .header-ghost,
+    .header-launch {
+      display: inline-flex;
+      height: 32px;
+      align-items: center;
+      justify-content: center;
+      padding: 0 13px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 999px;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .header-ghost:hover { background: rgba(255, 255, 255, 0.05); }
+    .header-launch {
+      background: linear-gradient(180deg, #29292b, #171719);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+    .mobile-toggle {
+      display: none;
+      width: 36px;
+      height: 32px;
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: #fff;
+      background: transparent;
+      font-size: 18px;
+    }
+    .mobile-panel {
+      display: none;
+      padding: 12px 0 18px;
+      border-top: 1px solid var(--line);
+      background: var(--dark);
+    }
+    .mobile-panel.open { display: grid; }
+    .mobile-panel a {
+      padding: 11px 0;
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 14px;
+    }
+
+    .install-main {
+      min-height: 720px;
+      padding: calc(var(--header-height) + 84px) 0 104px;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.98), transparent 42%),
+        var(--light);
+    }
+    .install-content {
+      width: min(calc(100% - 40px), 900px);
+      margin: 0 auto;
+      text-align: center;
+    }
+    .install-content h1 {
+      max-width: 820px;
+      margin: 0 auto;
+      font-size: clamp(44px, 6.4vw, 78px);
+      font-weight: 650;
+      line-height: 0.98;
+      letter-spacing: -0.065em;
+      text-wrap: balance;
+    }
+    .install-content > p {
+      margin: 28px auto 0;
+      color: #44474c;
+      font-size: clamp(15px, 1.6vw, 18px);
+      font-weight: 550;
+    }
+    .prompt-box {
+      margin-top: 42px;
+      padding: 24px 26px;
+      border: 1px solid var(--light-line);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.46);
+      text-align: left;
+    }
+    .prompt-box code {
+      display: block;
+      overflow-wrap: anywhere;
+      color: #34373c;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    .copy-button {
+      min-width: 100px;
+      height: 44px;
+      margin-top: 18px;
+      padding: 0 22px;
+      border-radius: 999px;
+      color: #f8f8f7;
+      background: #242526;
+      font-size: 14px;
+      font-weight: 550;
+      transition: transform 160ms ease, background 160ms ease;
+    }
+    .copy-button:hover { background: #111213; }
+    .copy-button:active { transform: translateY(1px); }
+    .copy-button.copied { background: #174ea6; }
+    .guide-link {
+      display: block;
+      width: fit-content;
+      margin: 15px auto 0;
+      color: #3c526f;
+      font-size: 13px;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .install-note {
+      max-width: 640px;
+      margin: 50px auto 0;
+      padding-top: 24px;
+      border-top: 1px solid #e1e2e0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    .install-note code {
+      color: #35383c;
+      font-family: "SFMono-Regular", Consolas, monospace;
+    }
+
+    .site-footer {
+      padding: 76px 0 26px;
+      border-top: 1px solid var(--line);
+      background: #080809;
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1.7fr repeat(3, 1fr);
+      gap: 40px;
+      padding-bottom: 52px;
+    }
+    .footer-wordmark {
+      display: inline-block;
+      color: #fff;
+      font-size: 19px;
+      font-weight: 650;
+      letter-spacing: -0.035em;
+    }
+    .footer-brand p {
+      max-width: 38ch;
+      margin: 16px 0 0;
+      color: var(--dark-muted);
+      font-size: 14px;
+      line-height: 1.65;
+    }
+    .footer-column h2 {
+      margin: 0 0 18px;
+      color: rgba(255, 255, 255, 0.42);
+      font-size: 11px;
+      font-weight: 650;
+      letter-spacing: 0.14em;
+    }
+    .footer-column a {
+      display: block;
+      width: fit-content;
+      margin-top: 12px;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 14px;
+    }
+    .footer-column a:hover { color: #fff; }
+    .footer-bottom {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      margin-bottom: 56px;
-    }
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: var(--ink);
-      font-weight: 600;
-      letter-spacing: 0.01em;
-      text-decoration: none;
-    }
-    .brand span { font-family: "Bricolage Grotesque", "IBM Plex Sans", sans-serif; }
-    .gh {
-      color: var(--muted);
-      text-decoration: none;
-      font-size: 14px;
-    }
-    .gh:hover { color: var(--ink); }
-
-    h1 {
-      margin: 0 0 12px;
-      font-family: "Bricolage Grotesque", "IBM Plex Sans", sans-serif;
-      font-size: clamp(2rem, 6vw, 3.4rem);
-      font-weight: 700;
-      letter-spacing: -0.04em;
-      line-height: 1.08;
-    }
-    .lead {
-      margin: 0 0 36px;
-      max-width: 48ch;
-      color: var(--muted);
-      font-size: 1.05rem;
-      line-height: 1.55;
-      word-break: keep-all;
-    }
-
-    .ticket {
-      border: 1px solid var(--line);
-      background: var(--panel);
-    }
-    .ticket-top {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--line);
-      color: var(--muted);
-      font-size: 12px;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-    pre {
-      margin: 0;
-      padding: 20px 16px 8px;
-      overflow: auto;
-      color: var(--ink);
-      font-family: "IBM Plex Mono", ui-monospace, monospace;
-      font-size: 13.5px;
-      line-height: 1.65;
-      white-space: pre-wrap;
-    }
-    .ticket-actions {
-      display: flex;
-      justify-content: flex-end;
-      padding: 12px 16px 16px;
-    }
-    .copy {
-      min-height: 40px;
-      padding: 0 16px;
-      background: var(--accent);
-      color: var(--accent-ink);
-      font-weight: 500;
-    }
-    .copy:hover { filter: brightness(1.06); }
-    .copy:active { transform: translateY(1px); }
-    .copy.is-done { background: #d7e4ff; }
-
-    .cli {
-      margin-top: 28px;
-      color: var(--muted);
-      font-size: 14px;
-    }
-    .cli summary {
-      cursor: pointer;
-      color: var(--ink);
-    }
-    .cli pre {
-      margin-top: 12px;
-      padding: 16px;
-      border: 1px solid var(--line);
-      background: var(--panel);
-    }
-    .cli .ticket-actions { padding: 8px 0 0; justify-content: flex-start; }
-    .copy-ghost {
-      min-height: 36px;
-      padding: 0 12px;
-      border: 1px solid var(--line);
-      color: var(--ink);
-    }
-    .copy-ghost:hover { border-color: var(--muted); }
-
-    .after {
-      margin-top: 48px;
-      padding-top: 28px;
+      padding-top: 22px;
       border-top: 1px solid var(--line);
-    }
-    .after h2 {
-      margin: 0 0 12px;
-      font-size: 1rem;
-      font-weight: 600;
-    }
-    .after ol {
-      margin: 0;
-      padding-left: 1.2em;
-      color: var(--muted);
-      line-height: 1.7;
-    }
-    .after code {
-      font-family: "IBM Plex Mono", ui-monospace, monospace;
-      font-size: 0.92em;
-      color: var(--ink);
-    }
-
-    footer {
-      margin-top: 56px;
-      color: var(--muted);
+      color: rgba(255, 255, 255, 0.42);
       font-size: 13px;
     }
-    footer a { color: var(--ink); text-underline-offset: 3px; }
+    .footer-legal {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .help-fab {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 15;
+      display: inline-flex;
+      min-height: 40px;
+      align-items: center;
+      padding: 0 14px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 12px;
+      color: rgba(255, 255, 255, 0.85);
+      background: rgba(18, 18, 20, 0.92);
+      font-size: 13px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+    }
 
+    @media (max-width: 899px) {
+      .nav-links,
+      .language,
+      .header-ghost { display: none; }
+      .mobile-toggle { display: inline-flex; align-items: center; justify-content: center; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+      .footer-brand { grid-column: 1 / -1; }
+    }
+    @media (max-width: 640px) {
+      .shell { width: min(calc(100% - 28px), var(--shell)); }
+      .header-launch { display: none; }
+      .install-main {
+        min-height: 650px;
+        padding: calc(var(--header-height) + 70px) 0 80px;
+      }
+      .install-content { width: min(calc(100% - 28px), 900px); }
+      .install-content h1 { font-size: clamp(40px, 12vw, 56px); }
+      .prompt-box { margin-top: 34px; padding: 19px; }
+      .footer-grid { grid-template-columns: 1fr 1fr; gap: 34px 24px; }
+      .footer-column:first-of-type { grid-column: 1 / -1; }
+      .footer-bottom { align-items: flex-start; flex-direction: column; }
+      .help-fab { display: none; }
+    }
     @media (prefers-reduced-motion: reduce) {
-      .copy:active { transform: none; }
+      html { scroll-behavior: auto; }
+      .copy-button { transition: none; }
     }
   </style>
 </head>
 <body>
-  <div class="page">
-    <header>
-      <a class="brand" href="https://labs.aholo3d.com">Aholo Lux3D</a>
-      <a class="gh" href="https://github.com/manycore-research/Aholo-Lux3D">GitHub</a>
-    </header>
-
-    <main>
-      <h1>一条指令，<br>装进 Codex</h1>
-      <p class="lead">复制后贴到任意 Codex 任务。不用下载 zip，也不用去市场里搜。</p>
-
-      <section class="ticket" aria-label="Codex 安装指令">
-        <div class="ticket-top">
-          <span>Paste into Codex</span>
-          <span>aholo-lux3d@lux3d</span>
+  <header class="site-header">
+    <nav class="nav shell" aria-label="主导航">
+      <div class="nav-left">
+        <a class="wordmark" href="https://lux3d.aholo3d.com/lux3d/home">Aholo Lux3D</a>
+        <div class="nav-links">
+          <a class="nav-link" href="https://lux3d.aholo3d.com/lux3d/editor">工作台</a>
+          <a class="nav-link" href="https://lux3d.aholo3d.com/lux3d/editor?view=assets">我的资产</a>
+          <a class="nav-link" href="https://lux3d.aholo3d.com/lux3d/home?view=api">开发者</a>
+          <a class="nav-link" href="https://lux3d.aholo3d.com/lux3d/doc">使用指南</a>
+          <a class="nav-link" href="https://lux3d.aholo3d.com/lux3d/home?view=pricing">定价</a>
         </div>
-        <pre id="prompt">/goal Read https://manycore-research.github.io/Aholo-Lux3D/codex-plugin/</pre>
-        <div class="ticket-actions">
-          <button class="copy" type="button" data-copy="prompt">复制指令</button>
+      </div>
+      <div class="nav-actions">
+        <button class="language" type="button" aria-label="当前语言：简体中文">简中</button>
+        <a class="header-ghost" href="https://www.aholo3d.com/signin">登录</a>
+        <a class="header-launch" href="https://lux3d.aholo3d.com/lux3d/editor">打开编辑器</a>
+        <button class="mobile-toggle" type="button" aria-label="打开菜单" aria-expanded="false">≡</button>
+      </div>
+    </nav>
+    <div class="mobile-panel shell" aria-hidden="true">
+      <a href="https://lux3d.aholo3d.com/lux3d/editor">工作台</a>
+      <a href="https://lux3d.aholo3d.com/lux3d/editor?view=assets">我的资产</a>
+      <a href="https://lux3d.aholo3d.com/lux3d/home?view=api">开发者</a>
+      <a href="https://lux3d.aholo3d.com/lux3d/doc">使用指南</a>
+      <a href="https://lux3d.aholo3d.com/lux3d/home?view=pricing">定价</a>
+      <a href="https://lux3d.aholo3d.com/lux3d/editor">打开编辑器</a>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="install-main" aria-labelledby="install-title">
+      <div class="install-content">
+        <h1 id="install-title">面向 Codex/ChatGPT<br>的 Aholo Lux3D 插件</h1>
+        <p>将下方指令输入 ChatGPT 桌面应用中的任意 Codex 任务</p>
+
+        <div class="prompt-box">
+          <code id="install-command">/goal Read https://lux3d.aholo3d.com/lux3d/codex-plugin/ to install Aholo Lux3D for Codex and set up a new task for me.</code>
         </div>
-      </section>
+        <button class="copy-button" type="button" data-copy-command>复制</button>
+        <a class="guide-link" href="https://github.com/manycore-research/Aholo-Lux3D">在 GitHub 查看安装指南 ↗</a>
 
-      <details class="cli">
-        <summary>已经装了 Codex CLI，直接跑命令</summary>
-        <pre id="cli">codex plugin marketplace add manycore-research/Aholo-Lux3D --ref master
-codex plugin add aholo-lux3d@lux3d</pre>
-        <div class="ticket-actions">
-          <button class="copy-ghost" type="button" data-copy="cli">复制命令</button>
+        <p class="install-note">
+          安装完成后，请新建 Codex 任务并输入 <code>$lux3d</code> 或 <code>@aholo-lux3d</code>。
+          生成资产时再配置对应区域的 Lux3D API Key。
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="shell">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a class="footer-wordmark" href="https://lux3d.aholo3d.com/lux3d/home">Aholo Lux3D</a>
+          <p>将图片或文字描述转化为 3DGS、Mesh 与 PBR 资产，支持快速预览、编辑、渲染与生产集成。</p>
         </div>
-      </details>
+        <div class="footer-column">
+          <h2>PRODUCT</h2>
+          <a href="https://lux3d.aholo3d.com/lux3d/home">产品能力</a>
+          <a href="https://lux3d.aholo3d.com/lux3d/home">模型版本</a>
+          <a href="https://lux3d.aholo3d.com/lux3d/home">案例品类</a>
+        </div>
+        <div class="footer-column">
+          <h2>EXPLORE</h2>
+          <a href="https://lux3d.aholo3d.com/lux3d/editor">编辑器</a>
+          <a href="https://lux3d.aholo3d.com/lux3d/editor?view=assets">资产库</a>
+          <a href="https://lux3d.aholo3d.com/lux3d/home#voices">用户反馈</a>
+        </div>
+        <div class="footer-column">
+          <h2>DEVELOPERS</h2>
+          <a href="https://lux3d.aholo3d.com/lux3d/home?view=api">API</a>
+          <a href="https://labs.aholo3d.com/api-keys">API Key</a>
+          <a href="https://lux3d.aholo3d.com/lux3d/doc">开发文档</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div class="footer-legal">
+          <span>© 2026 Aholo Lux3D</span>
+          <a href="https://lux3d.aholo3d.com/lux3d/home?view=about">关于我们</a>
+        </div>
+        <a href="#top">返回顶部</a>
+      </div>
+    </div>
+  </footer>
 
-      <section class="after">
-        <h2>装完以后</h2>
-        <ol>
-          <li>新开一个 Codex 任务，当前对话不会加载刚装的插件。</li>
-          <li>输入 <code>$lux3d</code> 或 <code>@aholo-lux3d</code> 开始生成。</li>
-          <li>真正出图时再配置 <code>LUX3D_CN_API_KEY</code> 或 <code>LUX3D_GLOBAL_API_KEY</code>。安装这一步不需要密钥。</li>
-        </ol>
-      </section>
-    </main>
-
-    <footer>
-      仓库需要公开，否则别人的 Codex 拉不下来。
-      产品站 <a href="https://labs.aholo3d.com">labs.aholo3d.com</a>
-    </footer>
-  </div>
+  <a class="help-fab" href="https://lux3d.aholo3d.com/lux3d/home#voices">帮助与反馈</a>
 
   <script>
-    const labels = { done: "已复制", prompt: "复制指令", cli: "复制命令" };
+    const copyButton = document.querySelector("[data-copy-command]");
+    const command = document.getElementById("install-command").textContent.trim();
+    const mobileToggle = document.querySelector(".mobile-toggle");
+    const mobilePanel = document.querySelector(".mobile-panel");
 
-    document.querySelectorAll("[data-copy]").forEach((button) => {
-      button.addEventListener("click", async () => {
-        const source = document.getElementById(button.dataset.copy);
-        const text = source ? source.textContent.trim() : "";
-        try {
-          await navigator.clipboard.writeText(text);
-        } catch (error) {
-          const range = document.createRange();
-          range.selectNodeContents(source);
-          const selection = window.getSelection();
-          selection.removeAllRanges();
-          selection.addRange(range);
-          document.execCommand("copy");
-          selection.removeAllRanges();
-        }
-        const original = button.textContent;
-        button.textContent = labels.done;
-        button.classList.add("is-done");
-        window.setTimeout(() => {
-          button.textContent = original;
-          button.classList.remove("is-done");
-        }, 1600);
-      });
-    });
+    async function copyInstallCommand() {
+      try {
+        await navigator.clipboard.writeText(command);
+      } catch {
+        const textArea = document.createElement("textarea");
+        textArea.value = command;
+        textArea.setAttribute("readonly", "");
+        textArea.style.position = "fixed";
+        textArea.style.opacity = "0";
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        textArea.remove();
+      }
+
+      copyButton.textContent = "已复制";
+      copyButton.classList.add("copied");
+      window.setTimeout(() => {
+        copyButton.textContent = "复制";
+        copyButton.classList.remove("copied");
+      }, 1600);
+    }
+
+    function toggleMobileMenu() {
+      const isOpen = mobileToggle.getAttribute("aria-expanded") === "true";
+      mobileToggle.setAttribute("aria-expanded", String(!isOpen));
+      mobilePanel.setAttribute("aria-hidden", String(isOpen));
+      mobilePanel.classList.toggle("open", !isOpen);
+      document.body.classList.toggle("menu-open", !isOpen);
+    }
+
+    copyButton.addEventListener("click", copyInstallCommand);
+    mobileToggle.addEventListener("click", toggleMobileMenu);
   </script>
 </body>
 </html>
