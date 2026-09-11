@@ -73,8 +73,6 @@ codex plugin remove aholo-lux3d@lux3d
 
 Requires Codex CLI `0.121.0` or newer, which is when `codex plugin marketplace` was introduced. Older clients cannot install through the marketplace and should use Option C. Older clients are also a common reason a plugin appears to be “missing” from search.
 
-This repository must stay **public** so marketplace install works for everyone.
-
 ### Layout
 
 ```text
@@ -137,8 +135,6 @@ codex plugin remove aholo-lux3d@lux3d
 
 需要 Codex CLI `0.121.0` 及以上——`codex plugin marketplace` 从该版本开始提供。更低版本的客户端无法通过 marketplace 安装，请改用方式 C。客户端版本过旧，也是插件在搜索里“找不到”的常见原因。
 
-本仓库需保持 **Public**，否则他人无法通过 marketplace 安装。
-
 ---
 
 ## 日本語
@@ -188,8 +184,6 @@ codex plugin remove aholo-lux3d@lux3d
 ```
 
 Codex CLI `0.121.0` 以上が必要です（`codex plugin marketplace` はこのバージョンで導入されました）。それより古いクライアントは marketplace 経由でインストールできないため、方法 C をご利用ください。クライアントが古いことも、検索で「見つからない」よくある原因です。
-
-本リポジトリは **Public** のままにしてください。そうでないと他者が marketplace 経由でインストールできません。
 
 ---
 
@@ -241,8 +235,6 @@ codex plugin remove aholo-lux3d@lux3d
 
 Requiere Codex CLI `0.121.0` o superior, que es cuando se introdujo `codex plugin marketplace`. Los clientes más antiguos no pueden instalar desde el marketplace y deberían usar la Opción C. Un cliente antiguo también es una causa habitual de que un plugin parezca “no aparecer” en la búsqueda.
 
-Este repositorio debe seguir siendo **público** para que la instalación funcione para todos.
-
 ---
 
 ## Português
@@ -292,5 +284,3 @@ codex plugin remove aholo-lux3d@lux3d
 ```
 
 Requer Codex CLI `0.121.0` ou superior, quando `codex plugin marketplace` foi introduzido. Clientes mais antigos não conseguem instalar pelo marketplace e devem usar a Opção C. Um cliente antigo também é uma causa comum de o plugin parecer “não aparecer” na busca.
-
-Este repositório deve permanecer **público** para que a instalação funcione para todos.
