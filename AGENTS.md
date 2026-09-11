@@ -50,6 +50,21 @@ codex plugin list --json
 
 If `aholo-lux3d@lux3d` is already installed at version `0.1.0`, do not reinstall it. If marketplace `lux3d` exists but points at a different source, stop and report the name collision. Never remove or overwrite unrelated marketplaces, plugins, MCP servers, or auth state.
 
+**Check for an existing Aholo Lux3D install before adding another one.** This plugin is also listed in the official Codex plugin directory, and both copies ship the same `lux3d` Skill name. Codex does **not** merge same-named skills: both appear in the skill selector and the agent picks between them arbitrarily. Adding this marketplace on top of an existing install therefore degrades the user's setup rather than helping it.
+
+Scan the already-installed plugins for:
+
+- plugin name `aholo-lux3d` from any other marketplace
+- any other plugin that provides the `lux3d` Skill
+
+Then act:
+
+- **Nothing installed** — proceed to step 3 and install. This is the intended path.
+- **Aholo Lux3D already installed** — stop and report. Tell the user they already have it, name the marketplace it came from, and ask whether they want to keep it or switch to this source. Do not install a second copy and do not uninstall the existing one on your own.
+- **Only an unrelated plugin** — proceed normally.
+
+Duplicate `lux3d` entries in the skill selector are the symptom of a double install. If the user reports seeing two, that is the cause — one of the two installs must be removed.
+
 ### 3. Install the plugin
 
 ```bash
