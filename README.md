@@ -73,17 +73,6 @@ codex plugin remove aholo-lux3d@lux3d
 
 Requires Codex CLI `0.121.0` or newer, which is when `codex plugin marketplace` was introduced. Older clients cannot install through the marketplace and should use Option C. Older clients are also a common reason a plugin appears to be “missing” from search.
 
-### Layout
-
-```text
-.agents/plugins/marketplace.json   Codex marketplace catalog
-plugins/codex/aholo-lux3d/         Installable plugin payload
-AGENTS.md                          Canonical agent install guide
-lux3d-plugin/codex/*.tar.gz        Packaged archive (portal / Release)
-```
-
-Releasing a new build: replace `plugins/codex/aholo-lux3d/` and bump `version` in `.codex-plugin/plugin.json`. Codex keys its install cache on `marketplace / plugin / version`, so an unchanged version number never triggers a reinstall.
-
 ---
 
 ## 中文
