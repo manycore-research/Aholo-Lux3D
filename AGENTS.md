@@ -10,7 +10,7 @@ Canonical repository: `https://github.com/manycore-research/Aholo-Lux3D`
 - Plugin: `aholo-lux3d`
 - Display name: `Aholo Lux3D`
 - Stable selector: `aholo-lux3d@lux3d`
-- Plugin version: `0.1.0`
+- Plugin version: `0.1.1`
 - Git source: `manycore-research/Aholo-Lux3D`
 - Git ref: `master`
 - Host: Codex Desktop / Codex CLI
@@ -48,7 +48,7 @@ codex plugin marketplace list --json
 codex plugin list --json
 ```
 
-If `aholo-lux3d@lux3d` is already installed at version `0.1.0`, do not reinstall it. If marketplace `lux3d` exists but points at a different source, stop and report the name collision. Never remove or overwrite unrelated marketplaces, plugins, MCP servers, or auth state.
+If `aholo-lux3d@lux3d` is already installed at version `0.1.1`, do not reinstall it. If marketplace `lux3d` exists but points at a different source, stop and report the name collision. Never remove or overwrite unrelated marketplaces, plugins, MCP servers, or auth state.
 
 **Check for an existing Aholo Lux3D install before adding another one.** This plugin is also listed in the official Codex plugin directory, and both copies ship the same `lux3d` Skill name. Codex does **not** merge same-named skills: both appear in the skill selector and the agent picks between them arbitrarily. Adding this marketplace on top of an existing install therefore degrades the user's setup rather than helping it.
 
@@ -83,7 +83,7 @@ codex plugin list --json
 Required evidence:
 
 - plugin id `aholo-lux3d@lux3d`
-- installed version `0.1.0`
+- installed version `0.1.1`
 - marketplace name `lux3d`
 
 ### 5. Hand back
