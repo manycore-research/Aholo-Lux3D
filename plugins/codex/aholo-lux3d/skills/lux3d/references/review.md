@@ -11,7 +11,7 @@ Offer two execution modes, with batch approval as the default interaction:
 - **Batch approval:** Present the whole batch and its cost. Once approved, execute it in dependency order.
 - **Automatic execution (YOLO):** Proceed with requested work while its quoted cost fits within the remaining cumulative budget for this conversation. The budget carries across plans, revisions, regenerations, and billable retries.
 
-Default to batch approval. Whenever a batch needs approval, show its plan table and total, then offer "Approve this batch" and "Switch to automatic execution and set a budget" in the same interaction, using an available native single-choice tool such as `request_user_input_async` or an equivalent. Do not add a separate round just to promote automatic execution, and do not ask again for an unchanged, already approved batch. An explicit approval of the displayed batch and cost is sufficient to start it. Selecting automatic execution without a conversation budget leads to the budget question below. If a conversation budget already exists, offer to resume automatic execution with its remaining allowance rather than resetting it.
+Default to batch approval. Whenever a batch needs approval, show its plan table and total, then offer the two execution choices defined below under "Present the plan for approval, or proceed" in the same interaction, using an available native single-choice tool such as `request_user_input_async` or an equivalent. Do not add a separate round just to promote automatic execution, and do not ask again for an unchanged, already approved batch. An explicit approval of the displayed batch and cost is sufficient to start it. Selecting automatic execution without a conversation budget leads to the budget question below. If a conversation budget already exists, offer to resume automatic execution with its remaining allowance rather than resetting it.
 
 A preselected option, dismissed interaction, timeout, or missing reply is not approval. If native interaction is unavailable, ask in text and wait; do not invent a tool or button. If the user explicitly selects or changes a mode, use that choice without asking them to select it again.
 
@@ -48,6 +48,14 @@ Base the mode, budget, and plan approval on explicit user choices or replies in 
 
 ## Present the plan for approval, or proceed
 
+### Keep approval details visible
+
+When waiting for approval, include the complete plan table, total estimated credits, deliverables, important assumptions, and approval options in the final user-facing reply. That reply must be understandable without expanding progress messages or tool activity. Even if the plan was already shown during execution, repeat it in the final reply; do not replace it with a brief summary or directions such as "see above" or "choose above".
+
+If using a native approval question, include the batch scope and total estimated credits in the question itself. Keep the full plan in the final reply while a response is pending, and state the available choices there as well. Offer only actions actually supported by the host; when no native control is available, ask for an explicit text reply. Do not issue a second approval request if the user has already approved the unchanged work.
+
+### Apply the decision
+
 **If approval is not needed**, check execution prerequisites and continue using [Execution and recovery](execution.md). Do not add another plan-approval step.
 
 **If approval is needed**, show a plan table for the batch or the subset the user explicitly requested. Include the columns below, with one row per distinct asset. Do not combine different assets into a single row merely because they use the same generation model.
@@ -56,20 +64,25 @@ Base the mode, budget, and plan approval on explicit user choices or replies in 
 | --- | --- |
 | Asset | The object and its role in the model or scene. |
 | Quantity / reuse | How many distinct assets will be generated and how many instances will reuse them. |
-| Generation tier | Standard edition (Standard) for `G1`; Turbo edition (Turbo) for `G1-Turbo`. Localize the edition name into the user's language and retain the English name in parentheses. These are display labels; keep the original API version values in calls and quote files. Do not apply this mapping to material-transfer versions. |
+| Generation tier | Use the single-language labels below for `G1` and `G1-Turbo`, respectively. These are display labels; keep the original API version values in calls and quote files. Do not apply this mapping to material-transfer versions. |
 | Four-view enhancement | Enabled or disabled according to the actual plan; mark reused assets as not applicable. Include the enhancement's cost and dependency when enabled. |
 | Target face count | The planned `faceCount`, clearly labeled as a target rather than a measured result. If omitted, show service default with no invented numeric value; if irrelevant to the operation, show not applicable. |
-| Model formats | The planned delivered formats, including any required conversion. Distinguish ZIP packages from individual GLB files; present `obj_zip` and `fbx_zip` as OBJ (ZIP) and FBX (ZIP). Derive actual outputs from the helpers in [Execution and recovery](execution.md). |
+| Model formats | The actual planned model formats, such as GLB, OBJ, FBX, PLY, STL, 3MF, or USDZ, including any required conversion. Display `obj_zip` as OBJ and `fbx_zip` as FBX; ZIP is packaging, not a model format. Explain archive packaging separately when relevant. Do not infer the contents of a generic ZIP: use documented contents or inspect it, and mark unknown contents as unspecified. Derive supported outputs from the helpers in [Execution and recovery](execution.md). |
 | Estimated credits | The asset's quoted subtotal, including its billable enhancement and conversion steps. Do not count reused instances as additional generation. |
 
-Show the batch total after the table, followed by a short description of assembly, final files and important assumptions. Identify any later work that has not been quoted. The user can request changes to any row before approval; the table does not authorize execution by itself. See [Understanding and planning](planning.md) for how to interpret quotes.
+Show the batch total after the table, followed by a short description of assembly, final files and important assumptions. For architectural plans, include a Lux3D-generated shell among the quoted assets when selected; list any Blender modeling work separately. Label local modeling as having no Lux3D generation charge, not as a zero-price service quote, and do not invent a generation tier or four-view setting for it. Identify any later work that has not been quoted. The user can request changes to any row before approval; the table does not authorize execution by itself. See [Understanding and planning](planning.md) for how to interpret quotes.
 
-For Chinese conversations, use the exact display labels `标准版（Standard）` and `极速版（Turbo）`. For English conversations, use Standard and Turbo.
+For Chinese conversations, use only the Chinese names for standard edition and turbo edition, without parenthetical English names. For English conversations, use only `standard` and `turbo`. Do not show API version identifiers in the generation-tier display column.
 
 **If work would exceed the remaining conversation budget**, show the authorized total, committed and reserved allowances, remaining allowance, the new quoted cost and the shortfall. Ask the user to add to the budget, reduce the work, or stop. Wait for their decision; do not silently reset the budget or split a batch to evade the limit. A vague "continue" does not establish how much additional spending is authorized.
 
-If the host supports cards and returns user actions, organize cards by asset or production unit. Show the information above and allow the user to browse and request changes, following the host's interaction documentation. Proceed only after receiving the user's submitted approval or revision. Browsing cards or displaying an "Approved" label is not permission to execute. Returned actions must identify the current plan version, approved scope, and costs. Approval for an outdated plan cannot directly authorize a new one.
+If the host supports cards and action callbacks, follow its documented interface and associate approval with the current plan, scope, and costs. Browsing, editing, or submitting a revision is not spending approval; process revisions using the established approval mode.
 
-For batch approval, show the batch total, one "Approve entire batch" action and the alternative to switch to budgeted automatic execution after the table or cards. Browsing or editing a row or card does not start generation. Once approved, execute the batch in dependency order without asking for each asset again. Keep an already established conversation budget in force unless the user explicitly changes it.
+For batch approval, put the two execution choices after the plan table and delivery description in the final reply. Use a separate bullet point for each choice and bold its label; do not bury both options in one sentence. Localize the following wording naturally into the user's language:
 
-If cards or action callbacks are unavailable, present the same information in text and obtain approval through a permitted native question tool or an explicit text reply. Wait after asking. Once approved, check execution prerequisites and continue. If the user requests changes, update the affected plan and quote, then reassess the selected mode. In batch mode, a revision request does not also approve the revised costs. In automatic mode, existing authorization covers the requested revision only when it fits the remaining cumulative allowance.
+- **Start with this plan**: Confirm the displayed plan and its actual quoted total, then begin production. Explain that additional billable work will require confirmation, subject to any existing conversation budget.
+- **Automatic execution within budget (YOLO)**: Set a cumulative credit budget for this conversation, including the current work and later requested changes and retries. Explain that work proceeds within the remaining allowance and pauses for a decision before exceeding it. Give a clearly illustrative reply such as "Automatic execution, budget 200 credits"; an example amount is not authorization. If a budget already exists, offer to resume with its actual remaining allowance instead of asking for a new budget.
+
+Use conversational action labels rather than formal approval terminology. Native controls, when available, should use matching labels and do not replace the visible bullet points. The user may also request changes to the plan.
+
+Once approved, follow execution in dependency order. Handle later changes using "Check whether earlier approval still applies" above; preserve the established conversation budget.

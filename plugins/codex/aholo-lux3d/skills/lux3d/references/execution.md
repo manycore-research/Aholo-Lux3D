@@ -50,8 +50,8 @@ Use the bundled Python API in `core/runtime/lux3d_client.py`. With the configure
 
 These functions submit one task and return its ID. Use them separately from polling so the ID can be saved immediately. They do not check user approval or manage the plan's budget. The agent performs the following steps:
 
-1. Check that the current step's inputs and dependencies are ready. Match the actual operation, model, parameters, quantity, account, and region to a successful, unexpired quote from `scripts/commerce.py quote`. Requote changed or expired work and apply [Review and approval](review.md), including the remaining cumulative conversation allowance and any new retry costs. Check the account facts and required entitlements; refresh stale facts before submission.
-2. Check the local task record for this plan item and attempt. If it already has a task ID, query that ID. If submission was started but its outcome is unknown, reconcile it before making another create call. Keep one submitting process per attempt.
+1. Check that the current step still satisfies the agreed constraints in the plan, and that its inputs and dependencies are ready. Inspect generated four-view inputs using the check below before submitting them to 3D generation. Match the actual operation, model, parameters, quantity, account, and region to a successful, unexpired quote from `scripts/commerce.py quote`. Requote changed or expired work and apply [Review and approval](review.md), including the remaining cumulative conversation allowance and any new retry costs. Check the account facts and required entitlements; refresh stale facts before submission.
+2. Use the attempt record and recovery rules below to establish that this step has not already been submitted. Keep one submitting process per attempt.
 3. Before making the call, save a local attempt record with the region, a non-secret account reference, the operation and approved parameter snapshot, quote/approval references, retry count, and submission start time. If a conversation budget is active, reserve the quoted allowance through the task's single budget coordinator and associate it with this attempt. Reuse an existing batch reservation rather than count the same amount again. Immediately before dispatch, mark submission as started and move the reservation to committed allowance. Keep temporary input URLs in private working files; do not copy credentials or signed URLs into portable records.
 4. Call the selected `create_*_task` function once. Immediately save its returned ID to the attempt record and budget ledger before polling or doing other work. If the call times out, its result cannot be parsed, or saving the ID fails, preserve all available evidence and treat the outcome as uncertain. Keep its allowance committed; do not rerun the create call or assume a refund to recover it.
 5. Query the saved ID until it reaches a terminal state, updating the record with actual status and timestamps. Download and inspect successful outputs, then follow [Results and delivery](results.md). A tracking interruption resumes from the saved ID.
@@ -59,6 +59,23 @@ These functions submit one task and return its ID. Use them separately from poll
 This is agent orchestration using existing client functions, not a runtime-enforced approval, budget, or idempotency guarantee. Do not route this path through `workflow_runner.py run` or `resume`: its default CLI does not supply the required execution adapters. Their absence does not make the client functions unavailable. An actual authentication, entitlement, permission, or service rejection must still be handled; do not change accounts or endpoints to evade it.
 
 The full `lux3d-workflow/v2` execution contract describes the runner's verification, gate and registry ports. Direct client orchestration does not implement those ports. Do not fabricate their decisions or describe a local delivery snapshot as compliance with that execution contract.
+
+### Keep records and resume at the unfinished stage
+
+Keep one task-local record per generation attempt and update it as facts arrive, rather than reconstructing submission history from separate scripts. It holds the stable item/attempt IDs, account/region, operation and parameter snapshot, quote/approval references, retry count, submission state, returned task ID, provider status, timestamps, and downloaded file paths. Keep private request inputs separate from portable delivery data. Budget amounts and reservation rules belong to the ledger in [Review and approval](review.md); refer to its entries rather than maintain another total.
+
+On interruption or context compression, retain the record locations, current stage, unfinished items, and next action, plus the budget ledger location and totals if active. Resume according to the recorded facts:
+
+| Known state | Next action |
+| --- | --- |
+| No submission started | Check current inputs, quote, and approval before submitting. |
+| Submission started, outcome uncertain | Reconcile the original call; if unresolved, pause that step without another create call. |
+| Task ID saved | Query that ID with its recorded account and region. |
+| Generation succeeded, files missing | Download and inspect the original outputs. |
+| Models ready, Blender work unfinished | Resume from the saved scene/script and completed renders using [Scene assembly and rendering](assembly.md). |
+| Outputs ready, packaging or preview failed | Repair delivery using [Results and delivery](results.md). |
+
+Keep generation, download, Blender, and packaging progress distinct. A later-stage failure does not erase an earlier success. Derive the delivery snapshot from these records as described in results; it is not a second execution log or authorization record.
 
 ### Query tasks or find records
 
@@ -71,7 +88,7 @@ Use the existing output helpers in `lux3d_client.py`; do not guess formats from 
 - Text/image to 3D: determine `expectedFormats` with `generation_result_formats(version, outputFormat)` and parse a successful task with `parse_task_outputs`.
 - Material transfer: use `material_result_formats(outputFormat)` and `parse_fixed_output_slots(task_data, MATERIAL_OUTPUT_SLOTS)`.
 - Format conversion: use `export_result_formats(modelUrl, outputFormat)` and `parse_fixed_output_slots(task_data, EXPORT_OUTPUT_SLOTS)`.
-- Four-view generation: use `parse_task_outputs` and require the documented four URLs. These are intermediate image inputs; retain their order for the next generation step.
+- Four-view generation: use `parse_task_outputs` and require the documented four URLs. When used for 3D generation, retain their documented order and inspect consistency before proceeding. If the user requested the images themselves, download and deliver them directly as described in results.
 
 For model outputs, `download_requested_models(outputs, output_path, expected_formats)` downloads the requested formats. Its return value is a list of `(path, byte_count)` pairs, not workflow state. Build delivery records from those real files. A saved task may also be polled/downloaded with `complete_task`, supplying the matching `expected_formats` and, for material/export, `output_slots`. Never use a `generate_*` convenience function to resume; it creates a new task before polling.
 
@@ -81,10 +98,18 @@ Query the original task first, then use only the modification or cancellation in
 
 The bundled client currently exposes no cancellation or in-place task modification command. Do not invent one. Without another verified interface, stop unsubmitted work and explain that an already submitted task may continue.
 
+## Inspect visual inputs and correct mismatches
+
+Before using generated four-view images, inspect them together with the original reference. Check that they describe the same object with consistent structure and asymmetric landmarks such as openings, stairs, or a porch. Distinguish an expected change of viewpoint from genuinely mirrored or contradictory geometry. A successful image-generation task alone does not establish input consistency. Preserve the documented view order; arbitrary reordering is not a repair for conflicting views.
+
+If a view is inconsistent, use a supported operation to regenerate the affected view, or regenerate the set if individual correction is unavailable. Inspect the replacement before use. If consistency still cannot be established, consider single-image generation from the original asset reference, provided the user's requirements permit it; explain a material route change. Do not repeatedly generate 3D from known conflicting inputs or mirror the finished model merely to disguise a mismatch.
+
+Inspect successful 3D outputs against the agreed structure, orientation, silhouette, and material requirements before relying on them for assembly or declaring completion. For a concrete visual mismatch, identify whether the input, generation route, or local assembly needs correction. A justified new generation is production revision, not recovery from a download or preview failure. Quote its cost and apply the existing approval mode and remaining budget before submission. For either inconsistent four-view images or a mismatched 3D model, make at most one automatic corrective regeneration for the same mismatch by default. If it persists, revise the approach or report the limitation rather than loop; renaming the mismatch or changing attempt IDs does not reset this limit. A user explicitly requesting further candidates may authorize a larger bounded search. Preserve previous usable outputs and stop when the requirement is met or the authorized allowance is insufficient.
+
 ## Execution rules
 
 - Before every new billable submission, including a retry, apply [Review and approval](review.md). Automatic execution uses the cumulative conversation budget. Each new retry has its own allowance entry; query retries keep the original task and do not consume additional generation allowance. Do not reset usage when the plan, attempt ID or context changes.
 - Keep querying the original ID for an existing task. Successful submission does not mean generation is complete. If a query fails or the tracking window ends, preserve the last known state. Do not regenerate, report generation failure, or promise background tracking that is not available.
-- Verify an uncertain submission result before proceeding. If it cannot be verified, pause new submissions instead of blindly resubmitting.
+- Verify an uncertain submission result before proceeding. If it cannot be verified, pause that attempt and its dependent work instead of resubmitting. Independent work may continue only when its inputs, authorization, and budget remain established, with the uncertain amount still committed.
 - After a confirmed generation failure, automatically resubmit the original step at most once, only if the failure is suitable for retry and the cost has the required approval. A new task ID does not reset this limit. Stop after another failure.
-- If generation succeeds but download, inspection, or preview fails, recover only that stage using [Results and delivery](results.md). Do not regenerate. A user request to regenerate for a different appearance is new production work; use [Understanding and planning](planning.md).
+- If generation succeeds but downloading, opening files for inspection, or previewing fails, recover that local stage using [Results and delivery](results.md), without regenerating. A successfully inspected model that visibly misses agreed requirements follows the visual-correction rules above; a user-requested appearance change follows [Understanding and planning](planning.md).

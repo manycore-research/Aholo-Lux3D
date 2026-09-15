@@ -13,7 +13,7 @@
   "plugin": {
     "name": "aholo-lux3d",
     "selector": "aholo-lux3d@lux3d",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "path": "plugins/codex/aholo-lux3d"
   },
   "sites": {
@@ -22,7 +22,7 @@
   },
   "releasePackage": {
     "assetName": "aholo-lux3d.tar.gz",
-    "sourcePath": "lux3d-plugin/codex/aholo-lux3d-0.1.0.tar.gz",
+    "sourcePath": "lux3d-plugin/codex/aholo-lux3d-0.1.1.tar.gz",
     "note": "Also published on GitHub Releases for download-and-AI-install"
   }
 }

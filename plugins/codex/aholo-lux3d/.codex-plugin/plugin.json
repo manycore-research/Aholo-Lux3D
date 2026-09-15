@@ -37,5 +37,5 @@
   "name": "aholo-lux3d",
   "repository": "https://gitlab.qunhequnhe.com/render/moria/lux3d-plugin",
   "skills": "./skills/",
-  "version": "0.1.0"
+  "version": "0.1.1"
 }

@@ -21,7 +21,7 @@ Codex plugin marketplace for [Aholo Lux3D](https://lux3d.aholo3d.com) — turn a
 | Marketplace | `lux3d` |
 | Plugin | `aholo-lux3d` |
 | Selector | `aholo-lux3d@lux3d` |
-| Version | `0.1.0` |
+| Version | `0.1.1` |
 
 ---
 

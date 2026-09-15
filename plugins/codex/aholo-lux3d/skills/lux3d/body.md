@@ -6,7 +6,7 @@ Use the current request, conversation, and execution results to decide which sta
 
 ### Understand the request and make a plan
 
-Read [Understanding and planning](references/planning.md) when a creation or revision request needs an executable plan. Use the request, existing models, and available capabilities to fill in reasonable details or ask for essential information. Choose the production approach, prepare and validate parameters, and obtain cost estimates. Once the plan is executable and the relevant costs are known, follow the selected approval mode.
+Read [Understanding and planning](references/planning.md) when a creation or revision request needs an executable plan. Use the request, existing models, and available capabilities to fill in reasonable details or ask for essential information. Use planning to recognize architectural scenes, separate their meaningful parts, and choose a modeling route for each asset. Choose the production approach, prepare and validate parameters, and obtain cost estimates. Once the plan is executable and the relevant costs are known, follow the selected approval mode.
 
 If only an agreed input is missing or a parameter needs correction, keep the plan and address that gap. Answer ordinary conversation directly. When the available information already supports approval, a status query, or delivery, proceed with that action.
 
@@ -22,21 +22,21 @@ Once the current step has the required approval, follow [Execution and recovery]
 
 For an existing task, query that task and continue from its status; a new message does not require a new submission. Use the same reference for queries, recovery, changes to running tasks, and cancellation. When the required assets are ready, proceed to assembly if needed, or to inspection and delivery.
 
-### Assemble models
+### Assemble scenes and produce shots
 
-Read [Model assembly](references/assembly.md) when the request involves a composed scene, a multipart model, or layout changes. Use an installed Blender executable through local commands, or an available Blender MCP. MCP is optional; a closed Blender window does not prevent background execution. If Blender is not installed and no usable remote Blender tool is available, ask whether the user wants help installing it. Once the required assets are ready, assemble, inspect, and deliver the result.
+Read [Scene assembly and rendering](references/assembly.md) when the request involves architectural shell modeling, a composed scene, a multipart model, layout changes, lighting, cameras, or rendered images/video. Use an installed Blender executable through local commands, or an available Blender MCP. MCP is optional; a closed Blender window does not prevent background execution. If Blender is not installed and no usable remote Blender tool is available, ask whether the user wants help installing it. The host agent operates Blender for planned local modeling, assembly, lighting, cameras, animation, and rendering. Once the required assets are ready, produce, inspect, and deliver that result.
 
 ### Inspect and deliver
 
-When model files are available for inspection, read [Results and delivery](references/results.md). Inspect the files, prepare a unified delivery bundle, and provide links or paths to the model files and `preview.html`. Do not open the preview automatically. Integrate the models into a downstream project only when requested. For partial success, identify what is available and what is missing. If no usable model is available and recovery is not possible, explain the failure and stop this attempt.
+When model files are available for inspection, read [Results and delivery](references/results.md). Inspect the files and follow results to prepare the supported unified delivery bundle, or the documented direct-file route for purely local Blender outputs. Provide links or paths to the models and actual preview files. Do not display the preview to the user automatically; follow results for isolated delivery validation. Integrate the models into a downstream project only when requested. For partial success, identify what is available and what is missing. If no usable model is available and recovery is not possible, explain the failure and stop this attempt.
 
 For requested revisions, identify the affected objects and scope, then continue at the appropriate stage. Reuse plans, approvals, and models that still apply.
 
 ## Rules throughout the workflow
 
-- Use Lux3D capabilities for model, image, and material generation and processing. Use the tools specified in the relevant references for assembly, file inspection, and previews.
+- Use Lux3D capabilities for asset, image, and material generation and processing. For architectural scenes, follow planning to choose Lux3D or Blender for the shell and generate discrete contents with Lux3D. Use Blender for scene assembly, lighting, cameras, animation, and rendering, and the tools specified in the relevant references for file inspection and previews.
 - Before calling a Lux3D API, load the configuration and authenticate as described in [Execution and recovery](references/execution.md). Follow its setup instructions if credentials are missing or invalid.
-- Preserve original versions and unaffected models. Do not automatically score aesthetics or generate candidates to pick a winner. There is no fixed mid-execution image/model selection checkpoint.
+- Preserve original versions and unaffected models. Inspect results against the agreed requirements; use the bounded visual-correction rules in execution when a concrete mismatch needs repair. Do not generate extra candidates merely to rank subjective aesthetics. There is no fixed mid-execution image/model selection checkpoint.
 - Never echo keys, tokens, or complete signed URLs. Keep accounts and tasks associated with their correct regions.
 - Communicate in the user's language.
 - Keep routine replies focused on the user's task: ask for needed information, present plans and costs, and report results directly. Avoid unsolicited process explanations, internal rule quotations, and recurring "this confirmation comes from" closing paragraphs unless the host explicitly requires them. Explain relevant reasons when the user asks, work fails or is blocked, or an important limitation affects their decision. Preserve required spending confirmations and permission disclosures.

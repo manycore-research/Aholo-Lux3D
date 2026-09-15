@@ -9,9 +9,29 @@ Use the current request, existing plan, models, and tasks to identify the operat
 Assess two independent dimensions:
 
 - **Clarity:** If there is no concrete goal, offer a few directions. If the goal is clear but details are open, make reasonable choices about shape, style, and materials. If the information is sufficient, proceed to planning.
-- **Model structure:** Distinguish a single object, a batch of independent assets, an assembled model, and a model generated as a whole that contains multiple objects. Assembly includes both scene composition and multipart construction. Identify requirements for independent editing and assembly; file count alone does not determine the structure.
+- **Model structure:** Distinguish a single object, a batch of independent assets, an assembled model, and a model generated as a whole that contains multiple objects. Assembly includes both scene composition and multipart construction. Identify requirements for independent editing and assembly; neither a singular subject name such as "a house" nor a single reference image establishes that the subject should be generated as one asset. File count alone does not determine the structure.
 
-Preserve explicit requirements for use, subject, quantity, style, dimensions, format, privacy, and content. Treat details you add as design assumptions, not replacements for the user's requirements. Distinguish layout, material, and geometry changes from regeneration or additional candidates. For running tasks, first check their status using [Execution and recovery](execution.md).
+Preserve explicit requirements for use, subject, quantity, style, dimensions, format, privacy, and content. Keep the current agreed constraints with the task plan, including asset separation, reference fidelity, and any prohibition on simplification. A follow-up changes only the requirements it addresses; carry all others forward through replanning and context compression. For example, "make it look more like the reference" does not cancel "build the house and furniture separately." Independent editability and visual fidelity are separate requirements, not alternative production modes. Before executing a revised plan, check it against these retained constraints. Resolve an actual conflict with the user; do not add a routine reconfirmation step. Treat details you add as design assumptions, not replacements for the user's requirements. Distinguish layout, material, and geometry changes from regeneration or additional candidates. For running tasks, first check their status using [Execution and recovery](execution.md).
+
+## Recognize architectural scenes and divide the work
+
+For buildings, rooms, furnished interiors, and cutaway displays, inspect the request and reference for spatial structure and distinct contents before choosing generation calls. Recognize floors, room boundaries, openings, circulation, furniture, fixtures, vegetation, and other meaningful objects even when the user names only the building. A single image may describe an entire scene. Do not pass a furnished building or room to one generation call merely because it occupies one image or has one name.
+
+For an architectural scene with distinct contents, keep the architectural shell separate from furniture and other discrete assets unless the user explicitly requests one fused asset. A request for one output file alone does not remove this separation. Prefer G1-Turbo for the architectural shell, especially when reference fidelity, multiple levels, or rich architectural detail matters. Use the routing guidance below for exceptions; Lux3D generates the discrete contents and Blender assembles them. Blender primarily handles assembly, precise components, and necessary local corrections in this route. The shell includes geometry whose dimensions and alignment organize the scene, such as walls, floors, roof, openings, stairs, and railings. Assign structural versus decorative details by their role and the required control rather than an exhaustive object list. Reuse suitable existing assets. A distant exterior-only building or a single manufactured object shaped like a house may remain one Lux3D asset when that satisfies the request; do not invent furnished interiors or force scene decomposition in those cases.
+
+Choose a practical asset breakdown based on visibility, independent placement or editing, repeated instances, quality, and cost. Keep major furniture and distinctive props separate from the shell. Small decorative arrangements may be grouped when independent control is unnecessary; do not split every brick, leaf, or book into a paid generation. Reuse repeated assets without forcing visibly different designs to share one model. If cost or capability limits the plan, explain the tradeoff. Adjust only details left to your judgment; do not silently simplify required features or fuse contents that must remain separate.
+
+Retain the full reference for layout and style, and prepare each generation input for the intended asset. Use a suitable isolated reference when available, or an asset-specific text description when the visible evidence supports one; do not send the same full-room image for every furniture item and expect isolation. Treat occluded geometry and unknown dimensions as assumptions, asking only when they materially affect the result. A cutaway reference calls for an open display of the intended rooms, not a facade that hides them.
+
+Make the division visible in the production plan: identify what Blender will build, what Lux3D will generate, what will be reused, and how the parts relate by level, room, scale, and placement. Choose the detailed geometry and asset count autonomously. Check Blender availability before committing to the hybrid route, then follow [Scene assembly and rendering](assembly.md).
+
+## Plan the requested deliverables
+
+Distinguish asset files, an assembled scene, a still image, and an animated shot. A request describing camera movement, occlusion, or parallax should lead to a plan for the shot itself, including animation and rendered video, unless the user asks only for its assets. Preserve explicit deliverables and make reasonable choices for unspecified duration, framing, lighting, resolution, and frame rate; include material assumptions in the plan without adding a separate approval round.
+
+Lux3D supplies generated assets. The host agent operates Blender for any planned local modeling, assembly, lighting, cameras, animation, and rendering through [Scene assembly and rendering](assembly.md). Check for a usable local Blender or Blender MCP route before promising Blender outputs. Missing MCP alone is not a blocker. Plan ahead when setup is pending, identify the unresolved prerequisite, and do not silently reduce a shot request to a collection of models.
+
+Specify which files fulfill the goal: model files and `scene.glb` for an assembled scene, rendered images for a still, and video for a shot. Preserve a `.blend` working file for lighting, camera, and animation work so it can be resumed; deliver it when requested or included in the plan. The current offline page previews models; rendered media are delivered separately. Local Blender work consumes no Lux3D generation credits, but rendering time depends on scene complexity and available hardware. Any external paid rendering service requires separate authorization.
 
 ## Resolve gaps using the available capabilities
 
@@ -27,27 +47,39 @@ If a gap only affects later execution, plan ahead and mark the input as pending.
 
 Decide which assets or parts to generate separately, reuse, or process as a whole. Choose from the text-to-3D, image-to-3D, four-view, material-processing, and format-conversion capabilities that Lux3D actually exposes. Arrange inputs, dependencies, layout, and delivery. Prepare parameters directly for simple requests; break complex models into steps. Repeated instances do not require repeated generation, and material processing cannot replace a geometry change.
 
-For a text-only request, use Lux3D text-to-3D. Do not ask for an image merely because none was supplied. Ask for reference material only when the request depends on a specific reference the user must provide.
+For text-only inputs to a Lux3D-generated asset, use Lux3D text-to-3D. Choose the architectural shell route independently as described above. Do not ask for an image merely because none was supplied. Ask for reference material only when the request depends on a specific reference the user must provide.
 
 Distinguish ten different chairs from ten instances of the same chair. Multiple objects do not always need separate generation. Generating them as a whole does not guarantee independent editability, connected geometry, or printability.
 
-Honor explicit user choices. Otherwise, choose the generation model, parameters, and optional steps such as four-view enhancement using the requirements and actual capabilities. Use tool defaults where appropriate. Include these choices in the plan and quote instead of asking about each one in advance. When the selected approval mode calls for review, present them together for confirmation or revision.
+Honor explicit user choices. Otherwise, autonomously choose the generation model, target face count, and optional steps such as four-view enhancement by weighing the asset's intended use, visual importance, available reference material, overall quality goals, cost, and speed against actual capabilities. Use tool defaults where appropriate. Four-view enhancement is optional, with no default preference for enabling or disabling it: decide whether its expected contribution to the current asset justifies the additional work and cost; do not assume it always improves the result. When information is sufficient, make these decisions without asking about each parameter. Include the choices and their costs in the plan and quote, and present them together when the selected approval mode calls for review.
 
-Use the user-facing tier names Standard edition (Standard) for `G1` and Turbo edition (Turbo) for `G1-Turbo`, localizing the edition name into the user's language. Keep `G1` and `G1-Turbo` unchanged in API parameters and quote requests. Record the four-view choice, target face count or service default, and delivered formats for each asset so [Review and approval](review.md) can display the complete plan table.
+Use these routing tendencies as starting points, not guarantees or fixed complexity thresholds. Preserve explicit user choices and adjust based on inspected results:
 
-Balance quality, cost, and speed for each asset. Use fast generation to validate an overall concept or produce assets with modest detail requirements. Use detailed generation for prominent assets or those requiring rich detail. Different assets in the same plan may use different capabilities; choose only supported models and parameters.
+| Route | Prefer considering it for | Inspect especially |
+| --- | --- | --- |
+| G1-Turbo | Preferred starting route for architectural shells, especially reference-driven or detailed buildings; other complex structures with multiple levels, openings, or intricate spatial relationships | Structural completeness, orientation, and material fidelity |
+| G1 | Relatively simple geometry whose appearance depends strongly on materials and surface detail | Surface detail, silhouette, and local geometry |
+| Blender | Simple volumes, regular components, and geometry needing precise dimensions or alignment | Proportions, dimensions, connections, and layout |
+
+For a generated architectural shell, inspect its silhouette, floor count, openings, left/right relationships, and usable interior space before fitting contents. Correct the specific defect where feasible; a local defect alone is not a reason to rebuild the whole shell in Blender. Simple shells or precisely dimensioned structures may still favor Blender, while relatively simple geometry dominated by surface detail may favor G1. Both generation tiers require visual inspection. If the chosen route misses the required result, revise the affected asset's approach while preserving separation and other agreed constraints. Choosing G1-Turbo does not imply enabling four-view enhancement; decide that separately. Four-view inputs require the consistency check in [Execution and recovery](execution.md) before use.
+
+Use the localized generation-tier labels defined in [Review and approval](review.md), with only one language per label. Keep `G1` and `G1-Turbo` unchanged in API parameters and quote requests. Record the four-view choice, target face count or service default, and delivered formats for each asset so [Review and approval](review.md) can display the complete plan table.
+
+Different assets in the same plan may use different generation models and parameters. Apply the considerations above to each asset rather than impose a fixed tier, face-count threshold, or enhancement choice across the plan.
 
 Prepare and validate parameters against the actual capability. For outputs of future steps, record the source dependency and fill in the real reference when it becomes available. This does not prevent planning ahead.
+
+Choose model formats for the intended use and explicit user requirements, checking the selected operation's supported outputs and any needed conversion. Do not request ZIP for every asset by habit. A service-required archive may still be returned; keep it as an additional source package rather than label it as a model format. Include required conversion costs in the quote and retain a GLB for the model preview when the plan requires one.
 
 ## When a plan is ready
 
 An executable plan identifies the following. A short description is enough for a simple task; no fixed form is required.
 
 - **Scope:** Models, quantities, revision targets, and what will be preserved.
-- **Approach:** Capabilities and generation models, assets to generate or reuse, and required processing or assembly steps.
+- **Approach:** Capabilities and generation models, parts to model in Blender, assets to generate or reuse, and required processing or assembly steps.
 - **Inputs and parameters:** Material sources and required parameters, including the sources of pending or future inputs.
 - **Sequence and dependencies:** Execution order and dependencies, plus layout or part relationships when assembly is needed.
-- **Delivery:** Models, file formats, and any assembled files to provide.
+- **Delivery:** Models, assembled files, and requested images or video, with the relevant shot and output settings.
 
 Once the plan can be executed and the relevant billable steps have real quotes, follow [Review and approval](review.md). For staged plans, advance only the work whose scope and costs are known, and identify what remains undecided.
 
