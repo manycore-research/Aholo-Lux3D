@@ -1,0 +1,8 @@
+{
+  "schema": "lux3d.ecosystem-adapter/v1",
+  "ecosystem": "common",
+  "distribution": "skill",
+  "identityMode": "automatic-host",
+  "version": "1.1.0",
+  "status": "implementation-candidate"
+}

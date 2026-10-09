@@ -1,0 +1,4 @@
+# Preserve the exact bytes of verified upstream releases on all checkout hosts.
+plugins/common/aholo-lux3d/** -text
+lux3d-plugin/** -text
+release-manifest.json text eol=lf

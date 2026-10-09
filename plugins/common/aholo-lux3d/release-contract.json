@@ -1,0 +1,158 @@
+{
+  "schema": "lux3d.host-profile/v1",
+  "profileId": "universal",
+  "profileVersion": "1.0.0",
+  "status": "supported",
+  "modes": [
+    "skill",
+    "connector"
+  ],
+  "identity": {
+    "kind": "automatic-host",
+    "registry": "host-identity.json"
+  },
+  "adapters": {
+    "skill": "universal-skill-v1",
+    "connector": "universal-connector-v1"
+  },
+  "compatibility": {
+    "commonInterfaceMajor": 1,
+    "profileSchemaMajor": 1,
+    "commerceContract": "lux3d-commerce/v1",
+    "generationContract": "lux3d-generation/v1",
+    "coreVersionRange": ">=0.2.0 <0.3.0",
+    "validatedHosts": []
+  },
+  "discovery": {
+    "skill": {
+      "slot": "aholo-lux3d",
+      "skillName": "aholo-lux3d"
+    },
+    "connector": {
+      "slot": "aholo-lux3d-mcp",
+      "skillName": "aholo-lux3d-mcp",
+      "serverKey": "lux3d-mcp"
+    },
+    "coexistence": "separate-slots-or-explicit-replacement"
+  },
+  "packaging": {
+    "archive": "zip",
+    "topLevel": {
+      "skill": "aholo-lux3d",
+      "connector": "aholo-lux3d-mcp"
+    },
+    "pathPolicy": "portable-relative-no-symlinks",
+    "casePolicy": "reject-case-and-unicode-collisions",
+    "maxDepth": 12,
+    "maxFileBytes": 67108864,
+    "maxTotalBytes": 268435456,
+    "allowedExtensions": [
+      ".md",
+      ".json",
+      ".yaml",
+      ".py",
+      ".txt",
+      ".js",
+      ".html",
+      ".css",
+      ".png",
+      ".svg",
+      ".woff2"
+    ],
+    "pathMappings": []
+  },
+  "display": {
+    "names": {
+      "skill": "Aholo Lux3D",
+      "connector": "Aholo Lux3D MCP"
+    },
+    "frontmatterRequired": [
+      "name",
+      "description"
+    ],
+    "language": "en",
+    "hostManifest": null,
+    "icons": [
+      "icon.png"
+    ],
+    "optionalHostMetadata": [
+      "agents/openai.yaml"
+    ]
+  },
+  "regions": {
+    "skill": [
+      "cn",
+      "international"
+    ],
+    "connector": [
+      "cn"
+    ]
+  },
+  "capabilities": {
+    "skill": {
+      "required": [
+        "skill-discovery",
+        "local-process",
+        "python",
+        "filesystem",
+        "https",
+        "credential-injection"
+      ],
+      "optional": [
+        "blender"
+      ],
+      "unsupported": [],
+      "checkMethod": "runtime-preflight-or-host-acceptance"
+    },
+    "connector": {
+      "required": [
+        "mcp-remote",
+        "tool-discovery",
+        "credential-injection"
+      ],
+      "optional": [
+        "upload",
+        "download",
+        "blender",
+        "python"
+      ],
+      "unsupported": [
+        "bundled-offline-preview"
+      ],
+      "checkMethod": "runtime-preflight-or-host-acceptance"
+    }
+  },
+  "runtime": {
+    "pythonMinimum": "3.10",
+    "dependencies": "requirements-and-private-cache",
+    "capabilityEvidence": "required-at-use"
+  },
+  "enforcement": {
+    "skill": {
+      "identity": "runtime",
+      "quoteValidation": "runtime-in-memory-quote-only",
+      "authorization": "instruction",
+      "concurrentSubmission": "instruction"
+    },
+    "connector": {
+      "identity": "instruction",
+      "quoteValidation": "instruction",
+      "authorization": "instruction",
+      "concurrentSubmission": "instruction"
+    }
+  },
+  "qualification": {
+    "skill": "portable-contract-only",
+    "connector": "portable-contract-only",
+    "paidConnectorReady": false,
+    "hostAcceptanceRequired": true
+  },
+  "extensions": {
+    "com.aholo:installation": {
+      "format": "portal-download",
+      "nativeInstallerValidated": false,
+      "nativePluginManifest": false,
+      "hostAcceptance": "required-for-target-installation"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Aholo Lux3D"
+  icon_small: "./icon.png"
+  icon_large: "./icon.png"
+  short_description: "Create verified 3D assets and offline previews"
+  default_prompt: "Use $aholo-lux3d to complete this request with Aholo Lux3D."

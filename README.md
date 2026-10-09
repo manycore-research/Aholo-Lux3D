@@ -13,263 +13,213 @@
   <a href="#português">Português</a>
 </p>
 
-Codex plugin marketplace for [Aholo Lux3D](https://lux3d.aholo3d.com) — turn a single image or text prompt into production-ready 3D assets (geometry, PBR materials, online preview, GLB export, API / ComfyUI).
+One common [Aholo Lux3D](https://lux3d.aholo3d.com) Skill for local installation in Codex, WorkBuddy, and other compatible hosts. Generate 3D assets from images or text, process existing models, and deliver verified files with an offline preview.
 
 | | |
 | --- | --- |
-| Website | https://lux3d.aholo3d.com |
-| Marketplace | `lux3d` |
-| Plugin | `aholo-lux3d` |
-| Selector | `aholo-lux3d@lux3d` |
-| Version | `0.1.1` |
-
----
+| International website | https://lux3d.aholo3d.com |
+| China website | https://lux3d.aholo3d.cn |
+| Local Skill name | `aholo-lux3d` |
+| Version | `1.1.0` |
+| Expanded Skill | [`plugins/common/aholo-lux3d/`](plugins/common/aholo-lux3d/) |
+| Release archive | [`lux3d-plugin-1.1.0-common-skill.zip`](lux3d-plugin/common/lux3d-plugin-1.1.0-common-skill.zip) |
 
 ## English
 
-### What is Aholo Lux3D?
+### Install in a compatible host
 
-Aholo Lux3D generates accurate 3D geometry and complete PBR textures from one image or a text description. Preview models in the browser, export GLB, or integrate through API and ComfyUI for production workflows.
-
-Website: https://lux3d.aholo3d.com
-
-### Install for Codex
-
-**Option A — one command (recommended)**
-
-Paste into any Codex task:
+Ask your agent to install the common Skill:
 
 ```text
-/goal Read https://raw.githubusercontent.com/manycore-research/Aholo-Lux3D/master/AGENTS.md and install Aholo Lux3D for Codex.
+Read https://raw.githubusercontent.com/manycore-research/Aholo-Lux3D/master/AGENTS.md and install Aholo Lux3D as a local Skill in the current host.
 ```
 
-**Option B — CLI**
+The agent checks the host's supported local Skill directory and existing Aholo Lux3D installations, downloads the repository, verifies the release, and installs the complete `aholo-lux3d` directory. The host needs local Skill support, Python 3.10 or newer, file access, HTTPS access, and secure credential injection. Codex, WorkBuddy, and other compatible hosts use the same files; each host's installation directory and reload procedure may differ.
 
-```bash
-codex plugin marketplace add manycore-research/Aholo-Lux3D --ref master
-codex plugin add aholo-lux3d@lux3d
+For a manual installation from a downloaded checkout, first identify the host's actual **parent directory for local Skills**, then run from the repository root:
+
+```text
+python -B scripts/sync_release.py --check
+python -B scripts/install_skill.py --skills-dir "<host-local-skills-directory>"
 ```
 
-**Option C — download the package**
+The installer creates `<host-local-skills-directory>/aholo-lux3d/`. An identical existing installation is a no-op. A different existing directory is rejected; it is never overwritten. Before switching from an old Skill or plugin, remove the old installation through the host's supported mechanism. Keep only one Aholo Lux3D installation in each host.
 
-1. Download `aholo-lux3d.tar.gz` from [Releases](https://github.com/manycore-research/Aholo-Lux3D/releases).
-2. Ask your AI agent to install that archive into Codex (for example: “Install this Codex plugin from `aholo-lux3d.tar.gz`”).
+Reload Skills or start a new task as required by the host, then verify that `aholo-lux3d` is available. In a new Codex task, invoke `$aholo-lux3d`. In WorkBuddy and other hosts, use their native Skill entrypoint. Install the entire directory, including runtime, contracts, and viewer assets; copying `SKILL.md` alone is insufficient.
 
-After install, start a **new** Codex task and run `$lux3d` or `@aholo-lux3d`. Plugin capabilities load when a task starts, so an existing task will not see it. Paid generation needs `LUX3D_CN_API_KEY` (China) or `LUX3D_GLOBAL_API_KEY` (international) in the environment.
+No API key is needed to install. Paid generation later requires `LUX3D_CN_API_KEY` (China) or `LUX3D_GLOBAL_API_KEY` (international), configured according to the Skill's credential instructions. Never put keys in chat or committed files.
 
-### Check before you install
+### Host identity and migration
 
-Find out whether Aholo Lux3D is already installed, from the Codex plugin directory or from this repository:
+The common runtime detects the actual host automatically: Codex `1`, Claude Code `2`, DeepSeek `3`, WorkBuddy `4`, and other hosts `100`. These are runtime identity values, not installation profiles to select manually.
 
-```bash
-codex plugin list
+This repository now distributes only the common local Skill. It no longer provides the Codex Git marketplace or a separate Codex plugin package. Previous commands using `codex plugin marketplace add` and `codex plugin add aholo-lux3d@lux3d` no longer apply to this repository. An existing installation from another plugin marketplace is managed through that marketplace separately.
+
+The public `AGENTS.md` URL remains the installation entrypoint. A webpage can keep that URL, but its copy should describe local Skill installation and use `$aholo-lux3d` for Codex; the old `$lux3d` and plugin-selector instructions describe the previous distribution. Repository changes take effect for remote installs only after publication.
+
+### Repository layers and maintenance
+
+```text
+plugins/common/aholo-lux3d/              Complete common Skill, unchanged from the ZIP
+  SKILL.md                             Skill entrypoint: aholo-lux3d
+lux3d-plugin/common/
+  lux3d-plugin-1.1.0-common-skill.zip    Original common release
+  *.sha256                             Archive checksum
+  *.release.json                       Upstream release record
+release-manifest.json                  Common distribution metadata
+scripts/sync_release.py                Import, expand, and verify the release
+scripts/install_skill.py               Install into a host's local Skill directory
+AGENTS.md                              Agent installation and maintenance instructions
 ```
 
-Codex does **not** merge two skills that share a name. If this plugin ends up installed twice, `$lux3d` appears twice in the skill selector and the agent picks between them arbitrarily — a worse experience than a single install. If Aholo Lux3D is already present, keep that copy instead of adding a second one, or remove the old one first:
+The original ZIP is the release source of truth. Synchronization expands its complete `aholo-lux3d/` directory byte for byte. Make runtime changes upstream and import a new release; do not edit the expanded runtime independently.
 
-```bash
-codex plugin remove aholo-lux3d@lux3d
+Use Python 3.10 or newer from the repository root:
+
+Synchronization and installation use only the Python standard library. Runtime tests also require `requests`, declared in `plugins/common/aholo-lux3d/core/runtime/requirements.txt`; install those dependencies in your Python environment before running the tests.
+
+```text
+python -B scripts/sync_release.py --common-archive "<common-skill.zip>"
+python -B scripts/sync_release.py
+python -B scripts/sync_release.py --check
+python -B -m unittest discover -s tests -v
 ```
 
-Requires Codex CLI `0.121.0` or newer, which is when `codex plugin marketplace` was introduced. Older clients cannot install through the marketplace and should use Option C. Older clients are also a common reason a plugin appears to be “missing” from search.
+An imported archive requires adjacent `.sha256` and `.release.json` files. An explicit path imports that release; no arguments use the archive already in this repository. `--check` validates without changing files. Keep version metadata and installation documentation consistent when updating releases.
 
----
+Version `1.1.0` is a local release candidate. Packaging and offline checks do not establish public publication, successful discovery in every host, or live paid-generation acceptance. Record the checks actually completed before publishing.
+
+Validation on 2026-10-09: 31 offline tests passed. An isolated Codex installation discovered `aholo-lux3d` as an enabled repository Skill (`scope=repo`, `pluginId=null`); all 46 installed files matched the release. WorkBuddy's host identity mapping is covered, but actual WorkBuddy client loading and live paid generation remain unverified. The upstream release record, including `hostValidated`, is preserved unchanged.
 
 ## 中文
 
-### Aholo Lux3D 是什么？
+### 安装到支持本地 Skill 的宿主
 
-Aholo Lux3D 可将单张图片或文字描述转为可用于生产的 3D 资产：准确几何、完整 PBR 材质、在线预览、GLB 导出，并支持 API / ComfyUI 接入。
-
-- 中国站：https://lux3d.aholo3d.cn
-- 国际站：https://lux3d.aholo3d.com
-
-### 安装到 Codex
-
-**方式 A — 一条指令（推荐）**
-
-在任意 Codex 任务中粘贴：
+将下面的指令发送给当前宿主的 agent：
 
 ```text
-/goal Read https://raw.githubusercontent.com/manycore-research/Aholo-Lux3D/master/AGENTS.md and install Aholo Lux3D for Codex.
+读取 https://raw.githubusercontent.com/manycore-research/Aholo-Lux3D/master/AGENTS.md，并将 Aholo Lux3D 作为本地 Skill 安装到当前宿主。
 ```
 
-**方式 B — 命令行**
+Agent 会确认宿主支持的本地 Skill 目录、检查已有的 Aholo Lux3D 安装、下载仓库并验证发布包，再安装完整的 `aholo-lux3d` 目录。宿主需要支持本地 Skill、Python 3.10 及以上、文件访问、HTTPS 和安全凭据注入。Codex、WorkBuddy 及其他兼容宿主共用同一份内容，各自的安装目录和重新加载方式可以不同。
 
-```bash
-codex plugin marketplace add manycore-research/Aholo-Lux3D --ref master
-codex plugin add aholo-lux3d@lux3d
+手动安装时，先下载仓库并确认宿主实际支持的**本地 Skill 父目录**，然后在仓库根目录执行：
+
+```text
+python -B scripts/sync_release.py --check
+python -B scripts/install_skill.py --skills-dir "<宿主的本地Skill目录>"
 ```
 
-**方式 C — 下载安装包**
+安装结果位于 `<宿主的本地Skill目录>/aholo-lux3d/`。目标内容完全相同时不重复写入；目标已存在且内容不同时拒绝覆盖。迁移已有版本或 Codex 插件前，应通过宿主支持的方式移除旧安装，同一宿主只保留一份 Aholo Lux3D。
 
-1. 从 [Releases](https://github.com/manycore-research/Aholo-Lux3D/releases) 下载 `aholo-lux3d.tar.gz`。
-2. 把压缩包交给 AI，让它帮你安装到 Codex（例如：“请用这个 `aholo-lux3d.tar.gz` 安装 Codex 插件”）。
+按宿主要求重新加载 Skill 或新建任务，确认能发现 `aholo-lux3d`。Codex 在新任务中使用 `$aholo-lux3d`；WorkBuddy 及其他宿主使用各自的原生 Skill 入口。必须安装完整目录，包括运行时、契约和离线查看器，不能只复制 `SKILL.md`。
 
-安装完成后，请**新建** Codex 任务，输入 `$lux3d` 或 `@aholo-lux3d`。插件能力在任务启动时才加载，已经在跑的任务看不到它。付费生成时在环境中配置 `LUX3D_CN_API_KEY`（国内）或 `LUX3D_GLOBAL_API_KEY`（国际）。
+安装阶段不需要 API Key。后续付费生成时，按 Skill 的凭据说明配置 `LUX3D_CN_API_KEY`（国内）或 `LUX3D_GLOBAL_API_KEY`（国际），不要将密钥放入聊天或提交到仓库。
 
-### 安装前先确认
+### 宿主识别与旧版本迁移
 
-先在 Codex 插件目录或本仓库确认 Aholo Lux3D 是否已经装过：
+公共运行时自动识别实际宿主：Codex 为 `1`、Claude Code 为 `2`、DeepSeek 为 `3`、WorkBuddy 为 `4`，其他为 `100`。这些是运行时身份值，安装时无需手工选择 `source` 或宿主配置包。
 
-```bash
-codex plugin list
+本仓库现在只分发公共本地 Skill，不再提供 Codex Git marketplace 或单独的 Codex 插件包。旧的 `codex plugin marketplace add` 和 `codex plugin add aholo-lux3d@lux3d` 安装方式不再适用于本仓库。来自其他插件市场的已有安装仍由对应市场独立管理。
+
+公开的 `AGENTS.md` 地址继续作为 agent 安装入口。网站可以保留该地址，但说明应改为本地 Skill 安装，Codex 的调用名改为 `$aholo-lux3d`；原来的 `$lux3d` 和插件选择器说明属于旧分发方式。远程安装只有在仓库修改发布后才会使用新内容。
+
+### 仓库分层与维护
+
+- `plugins/common/aholo-lux3d/`：原始公共 ZIP 中完整 Skill 的逐字节展开内容，所有兼容宿主共用。
+- `lux3d-plugin/common/`：唯一的公共发布 ZIP、`.sha256` 校验文件和 `.release.json` 上游发布记录。
+- `release-manifest.json`：公共分发元数据。
+- `scripts/sync_release.py`：从公共包导入、同步和只读校验。
+- `scripts/install_skill.py`：将完整 Skill 安装到宿主支持的本地目录。
+
+运行时变更应在上游完成并生成新包，再同步到此仓库，不单独修改展开目录。仓库根目录使用 Python 3.10 及以上执行：
+
+同步和安装脚本只使用 Python 标准库。运行时测试还需要 `plugins/common/aholo-lux3d/core/runtime/requirements.txt` 声明的 `requests`，运行测试前请在所用 Python 环境中安装这些依赖。
+
+```text
+python -B scripts/sync_release.py --common-archive "<common-skill.zip>"
+python -B scripts/sync_release.py
+python -B scripts/sync_release.py --check
+python -B -m unittest discover -s tests -v
 ```
 
-Codex **不会合并**同名 Skill。如果这个插件被装了两份，`$lux3d` 会在技能选择器里出现两次，由 agent 随意挑一个，体验反而比只装一份更差。如果已经装了 Aholo Lux3D，请沿用已有那份，不要再装第二份；或者先卸载旧的：
+源 ZIP 旁需要 `.sha256` 和 `.release.json` 文件。指定路径时导入发布包，不传参数时使用仓库中的公共包，`--check` 只验证不写入。更新版本时同步维护元数据和安装说明。
 
-```bash
-codex plugin remove aholo-lux3d@lux3d
-```
+这里的 `1.1.0` 是本地发布候选。打包和离线检查不代表已公开发布、所有宿主已发现并加载 Skill，或付费生成已经通过真实验收；发布前记录实际完成的检查。
 
-需要 Codex CLI `0.121.0` 及以上——`codex plugin marketplace` 从该版本开始提供。更低版本的客户端无法通过 marketplace 安装，请改用方式 C。客户端版本过旧，也是插件在搜索里“找不到”的常见原因。
-
----
+2026-10-09 的验收：31 项离线测试通过；独立 Codex 环境成功发现已启用的仓库级 `aholo-lux3d` Skill（`scope=repo`、`pluginId=null`），安装后的 46 个文件与发布包一致。WorkBuddy 已覆盖宿主身份映射，真实 WorkBuddy 客户端加载及付费生成仍未验收。上游发布记录及其中的 `hostValidated` 保持原样。
 
 ## 日本語
 
-### Aholo Lux3D とは？
+### 共通のローカル Skill をインストール
 
-Aholo Lux3D は、1 枚の画像またはテキストから、正確なジオメトリと完全な PBR テクスチャを持つ本番向け 3D アセットを生成します。ブラウザでプレビューし、GLB を書き出し、API / ComfyUI で連携できます。
+Aholo Lux3D は画像やテキストから 3D アセットを生成し、モデル処理とオフラインプレビューに対応します。Codex、WorkBuddy、その他の対応ホストは同じ `aholo-lux3d` Skill を使用します。
 
-ウェブサイト：https://lux3d.aholo3d.com
-
-### Codex へのインストール
-
-**方法 A — 1 行コマンド（推奨）**
-
-任意の Codex タスクに貼り付け：
+現在のホストの agent に次の指示を送信してください：
 
 ```text
-/goal Read https://raw.githubusercontent.com/manycore-research/Aholo-Lux3D/master/AGENTS.md and install Aholo Lux3D for Codex.
+Read https://raw.githubusercontent.com/manycore-research/Aholo-Lux3D/master/AGENTS.md and install Aholo Lux3D as a local Skill in the current host.
 ```
 
-**方法 B — CLI**
+ホストにはローカル Skill、Python 3.10 以上、ファイル操作、HTTPS、安全な認証情報の受け渡しへの対応が必要です。手動の場合はリポジトリを取得し、ホストで実際に使われる Skill の親ディレクトリを確認して、ルートで実行します：
 
-```bash
-codex plugin marketplace add manycore-research/Aholo-Lux3D --ref master
-codex plugin add aholo-lux3d@lux3d
+```text
+python -B scripts/sync_release.py --check
+python -B scripts/install_skill.py --skills-dir "<host-local-skills-directory>"
 ```
 
-**方法 C — パッケージをダウンロード**
+完全な `aholo-lux3d/` ディレクトリがインストールされます。同一内容の再インストールは変更なしで完了し、異なる既存内容は上書きしません。旧 Skill やプラグインから移行する場合はホストの正式な方法で旧版を削除し、同じホストに二重に入れないでください。
 
-1. [Releases](https://github.com/manycore-research/Aholo-Lux3D/releases) から `aholo-lux3d.tar.gz` を入手。
-2. AI にそのアーカイブを渡して Codex へインストールしてもらう。
+ホストの手順で再読み込みし、Codex では新しいタスクで `$aholo-lux3d` を使います。他のホストでは各自の Skill 入口を使用します。実際のホストは自動識別されるため、インストール時に `source` を選ぶ必要はありません。インストール時に API キーは不要です。有料生成には Skill の手順に従って `LUX3D_CN_API_KEY`（中国）または `LUX3D_GLOBAL_API_KEY`（海外）を設定します。
 
-インストール後は**新しい** Codex タスクを開始し、`$lux3d` または `@aholo-lux3d` を実行してください。プラグインの機能はタスク開始時に読み込まれるため、実行中のタスクからは見えません。有料生成には `LUX3D_CN_API_KEY`（中国）または `LUX3D_GLOBAL_API_KEY`（海外）が必要です。
-
-### インストール前の確認
-
-Codex のプラグインディレクトリ、または本リポジトリで、Aholo Lux3D がすでに入っているか確認してください：
-
-```bash
-codex plugin list
-```
-
-Codex は同名のスキルを**統合しません**。このプラグインが二重に入ると、`$lux3d` がスキルセレクタに 2 つ現れ、agent がどちらかを任意に選びます。1 回だけ入れるより体験が悪くなります。すでに Aholo Lux3D がある場合は、それをそのまま使い、二つ目を追加しないでください。旧い方を先に削除する場合：
-
-```bash
-codex plugin remove aholo-lux3d@lux3d
-```
-
-Codex CLI `0.121.0` 以上が必要です（`codex plugin marketplace` はこのバージョンで導入されました）。それより古いクライアントは marketplace 経由でインストールできないため、方法 C をご利用ください。クライアントが古いことも、検索で「見つからない」よくある原因です。
-
----
+このリポジトリは共通 Skill のみを配布し、Codex Git marketplace と専用プラグイン配布は終了します。旧 marketplace コマンドと `$lux3d` の案内は新しい方式には適用されません。公開 `AGENTS.md` URL は維持されます。構成と同期コマンドは英語セクションを参照してください。`1.1.0` はローカルのリリース候補であり、オフライン検証だけでは公開済み、全ホストでの読み込み成功、有料生成の実動作確認を意味しません。
 
 ## Español
 
-### ¿Qué es Aholo Lux3D?
+### Instalar la Skill local común
 
-Aholo Lux3D convierte una imagen o una descripción de texto en activos 3D listos para producción: geometría precisa, texturas PBR completas, vista previa en el navegador, exportación GLB e integración por API / ComfyUI.
+Aholo Lux3D genera activos 3D a partir de imágenes o texto, procesa modelos y ofrece una vista previa sin conexión. Codex, WorkBuddy y otros entornos compatibles usan la misma Skill `aholo-lux3d`.
 
-Sitio web: https://lux3d.aholo3d.com
-
-### Instalar en Codex
-
-**Opción A — un comando (recomendada)**
-
-Pega esto en cualquier tarea de Codex:
+Envía esta instrucción al agente del entorno actual:
 
 ```text
-/goal Read https://raw.githubusercontent.com/manycore-research/Aholo-Lux3D/master/AGENTS.md and install Aholo Lux3D for Codex.
+Read https://raw.githubusercontent.com/manycore-research/Aholo-Lux3D/master/AGENTS.md and install Aholo Lux3D as a local Skill in the current host.
 ```
 
-**Opción B — CLI**
+El entorno debe admitir Skills locales, Python 3.10 o posterior, archivos, HTTPS e inyección segura de credenciales. Para instalar manualmente, descarga el repositorio, identifica el directorio padre de Skills que admite el entorno y ejecuta desde la raíz:
 
-```bash
-codex plugin marketplace add manycore-research/Aholo-Lux3D --ref master
-codex plugin add aholo-lux3d@lux3d
+```text
+python -B scripts/sync_release.py --check
+python -B scripts/install_skill.py --skills-dir "<host-local-skills-directory>"
 ```
 
-**Opción C — descargar el paquete**
+Se instala el directorio completo `aholo-lux3d/`. Una instalación idéntica no se modifica; una instalación diferente nunca se sobrescribe. Antes de migrar desde una Skill o plugin anterior, retíralo mediante el mecanismo admitido por el entorno. Mantén una sola instalación de Aholo Lux3D por entorno.
 
-1. Descarga `aholo-lux3d.tar.gz` desde [Releases](https://github.com/manycore-research/Aholo-Lux3D/releases).
-2. Pide a tu agente de IA que instale ese archivo en Codex.
+Recarga las Skills según el entorno; en Codex, inicia una nueva tarea y usa `$aholo-lux3d`. En otros entornos, usa su entrada nativa de Skills. La identidad del entorno se detecta automáticamente: no selecciones un `source` al instalar. La instalación no requiere clave API. Para generar con pago, configura `LUX3D_CN_API_KEY` (China) o `LUX3D_GLOBAL_API_KEY` (internacional) siguiendo las instrucciones de la Skill.
 
-Después de instalar, inicia una **nueva** tarea de Codex y ejecuta `$lux3d` o `@aholo-lux3d`. Las capacidades del plugin se cargan al iniciar la tarea, así que una tarea en curso no lo verá. La generación de pago requiere `LUX3D_CN_API_KEY` (China) o `LUX3D_GLOBAL_API_KEY` (internacional).
-
-### Comprueba antes de instalar
-
-Averigua si Aholo Lux3D ya está instalado, desde el directorio de plugins de Codex o desde este repositorio:
-
-```bash
-codex plugin list
-```
-
-Codex **no** fusiona dos skills con el mismo nombre. Si este plugin acaba instalado dos veces, `$lux3d` aparecerá dos veces en el selector y el agente elegirá entre ellas de forma arbitraria: peor experiencia que una sola instalación. Si Aholo Lux3D ya está presente, quédate con esa copia en lugar de añadir una segunda, o elimina antes la antigua:
-
-```bash
-codex plugin remove aholo-lux3d@lux3d
-```
-
-Requiere Codex CLI `0.121.0` o superior, que es cuando se introdujo `codex plugin marketplace`. Los clientes más antiguos no pueden instalar desde el marketplace y deberían usar la Opción C. Un cliente antiguo también es una causa habitual de que un plugin parezca “no aparecer” en la búsqueda.
-
----
+Este repositorio distribuye únicamente la Skill común; ya no ofrece un marketplace Git ni un paquete específico de Codex. Los comandos anteriores de marketplace y la invocación `$lux3d` no corresponden a esta distribución. La URL pública de `AGENTS.md` se conserva. Consulta la estructura y sincronización en inglés. `1.1.0` es un candidato local: las comprobaciones sin conexión no prueban publicación, carga en todos los entornos ni generación de pago real.
 
 ## Português
 
-### O que é o Aholo Lux3D?
+### Instalar a Skill local comum
 
-O Aholo Lux3D transforma uma imagem ou um texto em ativos 3D prontos para produção: geometria precisa, texturas PBR completas, pré-visualização no navegador, exportação GLB e integração via API / ComfyUI.
+O Aholo Lux3D gera ativos 3D a partir de imagens ou texto, processa modelos e oferece pré-visualização offline. Codex, WorkBuddy e outros ambientes compatíveis usam a mesma Skill `aholo-lux3d`.
 
-Site: https://lux3d.aholo3d.com
-
-### Instalar no Codex
-
-**Opção A — um comando (recomendada)**
-
-Cole em qualquer tarefa do Codex:
+Envie esta instrução ao agente do ambiente atual:
 
 ```text
-/goal Read https://raw.githubusercontent.com/manycore-research/Aholo-Lux3D/master/AGENTS.md and install Aholo Lux3D for Codex.
+Read https://raw.githubusercontent.com/manycore-research/Aholo-Lux3D/master/AGENTS.md and install Aholo Lux3D as a local Skill in the current host.
 ```
 
-**Opção B — CLI**
+O ambiente precisa oferecer Skills locais, Python 3.10 ou superior, arquivos, HTTPS e injeção segura de credenciais. Para instalar manualmente, baixe o repositório, identifique o diretório pai de Skills aceito pelo ambiente e execute na raiz:
 
-```bash
-codex plugin marketplace add manycore-research/Aholo-Lux3D --ref master
-codex plugin add aholo-lux3d@lux3d
+```text
+python -B scripts/sync_release.py --check
+python -B scripts/install_skill.py --skills-dir "<host-local-skills-directory>"
 ```
 
-**Opção C — baixar o pacote**
+O diretório completo `aholo-lux3d/` será instalado. Uma instalação idêntica não é alterada; uma instalação diferente nunca é sobrescrita. Antes de migrar de uma Skill ou plugin anterior, remova a instalação antiga pelo mecanismo suportado pelo ambiente. Mantenha apenas uma instalação do Aholo Lux3D por ambiente.
 
-1. Baixe `aholo-lux3d.tar.gz` em [Releases](https://github.com/manycore-research/Aholo-Lux3D/releases).
-2. Peça ao agente de IA para instalar esse arquivo no Codex.
+Recarregue as Skills conforme o ambiente; no Codex, inicie uma nova tarefa e use `$aholo-lux3d`. Em outros ambientes, use a entrada nativa de Skills. O ambiente real é detectado automaticamente: não escolha um `source` na instalação. Nenhuma chave API é necessária para instalar. A geração paga exige `LUX3D_CN_API_KEY` (China) ou `LUX3D_GLOBAL_API_KEY` (internacional), conforme as instruções da Skill.
 
-Após a instalação, inicie uma **nova** tarefa do Codex e execute `$lux3d` ou `@aholo-lux3d`. As capacidades do plugin são carregadas no início da tarefa, portanto uma tarefa em andamento não o verá. A geração paga precisa de `LUX3D_CN_API_KEY` (China) ou `LUX3D_GLOBAL_API_KEY` (internacional).
-
-### Verifique antes de instalar
-
-Descubra se o Aholo Lux3D já está instalado, no diretório de plugins do Codex ou neste repositório:
-
-```bash
-codex plugin list
-```
-
-O Codex **não** mescla duas skills com o mesmo nome. Se este plugin for instalado duas vezes, `$lux3d` aparecerá duas vezes no seletor e o agente escolherá entre elas de forma arbitrária — pior do que uma única instalação. Se o Aholo Lux3D já estiver presente, fique com essa cópia em vez de adicionar uma segunda, ou remova antes a antiga:
-
-```bash
-codex plugin remove aholo-lux3d@lux3d
-```
-
-Requer Codex CLI `0.121.0` ou superior, quando `codex plugin marketplace` foi introduzido. Clientes mais antigos não conseguem instalar pelo marketplace e devem usar a Opção C. Um cliente antigo também é uma causa comum de o plugin parecer “não aparecer” na busca.
+Este repositório distribui somente a Skill comum; deixou de oferecer um marketplace Git ou pacote exclusivo para Codex. Os comandos antigos de marketplace e a chamada `$lux3d` não se aplicam a esta distribuição. A URL pública de `AGENTS.md` permanece. Consulte a estrutura e sincronização na seção em inglês. `1.1.0` é um candidato local: verificações offline não comprovam publicação, carregamento em todos os ambientes nem geração paga real.

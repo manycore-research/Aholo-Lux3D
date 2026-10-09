@@ -1,0 +1,29 @@
+{
+  "buildInfo": {
+    "coreDigest": "688d90c4c702e3d5d8a9676666673632923d81c2c296a51ee12b50937d78b67c",
+    "coreVersion": "0.2.0",
+    "hostValidated": false,
+    "identityMode": "automatic-host",
+    "inputsDigest": "fe4575401a72a920bda60c31e7aad63e4e647cc46ca56bf2da032e633fb455a0",
+    "mode": "skill",
+    "profileDigest": "623c76dc3bdb67ec3f17785bab322cdc73907997134411b97b761b1bb43a742b",
+    "profileId": "universal",
+    "releaseUnit": "common",
+    "schema": "lux3d.common-build/v1",
+    "status": "implementation-candidate",
+    "toolchain": {
+      "arch": "x64",
+      "node": "24.14.0",
+      "platform": "win32"
+    },
+    "version": "1.1.0"
+  },
+  "filename": "lux3d-plugin-1.1.0-common-skill.zip",
+  "inputsDigest": "fe4575401a72a920bda60c31e7aad63e4e647cc46ca56bf2da032e633fb455a0",
+  "mode": "skill",
+  "profileId": "universal",
+  "releaseUnit": "common",
+  "schema": "lux3d.release-artifact/v1",
+  "sha256": "ad88f4791698660360b698b3b07aa11952cf0d4b73e86fe1b6946beb3c6719aa",
+  "version": "1.1.0"
+}

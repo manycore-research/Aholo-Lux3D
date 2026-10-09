@@ -1,28 +1,49 @@
 {
-  "schemaVersion": "aholo-lux3d-codex-plugin/v1",
+  "schemaVersion": "aholo-lux3d-common-skill/v1",
   "distributionRepository": "https://github.com/manycore-research/Aholo-Lux3D",
-  "distributionStatus": "git-marketplace",
+  "distributionStatus": "local-skill",
   "agentEntrypoint": "AGENTS.md",
   "agentEntrypointURL": "https://raw.githubusercontent.com/manycore-research/Aholo-Lux3D/master/AGENTS.md",
-  "marketplace": {
-    "name": "lux3d",
-    "gitSource": "manycore-research/Aholo-Lux3D",
-    "gitRef": "master",
-    "manifest": ".agents/plugins/marketplace.json"
-  },
-  "plugin": {
+  "gitRef": "master",
+  "skill": {
     "name": "aholo-lux3d",
-    "selector": "aholo-lux3d@lux3d",
-    "version": "0.1.1",
-    "path": "plugins/codex/aholo-lux3d"
+    "displayName": "Aholo Lux3D",
+    "version": "1.1.0",
+    "path": "plugins/common/aholo-lux3d",
+    "identityMode": "automatic-host"
+  },
+  "archive": {
+    "path": "lux3d-plugin/common/lux3d-plugin-1.1.0-common-skill.zip",
+    "sha256": "ad88f4791698660360b698b3b07aa11952cf0d4b73e86fe1b6946beb3c6719aa",
+    "checksumPath": "lux3d-plugin/common/lux3d-plugin-1.1.0-common-skill.zip.sha256",
+    "releaseRecordPath": "lux3d-plugin/common/lux3d-plugin-1.1.0-common-skill.release.json",
+    "fileCount": 46
+  },
+  "installation": {
+    "mode": "local-skill",
+    "directoryName": "aholo-lux3d",
+    "helper": "scripts/install_skill.py",
+    "hostIdentityRegistry": "host-identity.json",
+    "requires": [
+      "local-skills",
+      "python>=3.10",
+      "filesystem",
+      "https",
+      "credential-injection"
+    ]
   },
   "sites": {
     "china": "https://lux3d.aholo3d.cn",
     "international": "https://lux3d.aholo3d.com"
   },
-  "releasePackage": {
-    "assetName": "aholo-lux3d.tar.gz",
-    "sourcePath": "lux3d-plugin/codex/aholo-lux3d-0.1.1.tar.gz",
-    "note": "Also published on GitHub Releases for download-and-AI-install"
+  "sharedCore": {
+    "version": "0.2.0",
+    "digest": "688d90c4c702e3d5d8a9676666673632923d81c2c296a51ee12b50937d78b67c",
+    "digestSource": "upstream-build-info"
+  },
+  "validation": {
+    "upstreamHostValidated": false,
+    "liveServiceValidated": false,
+    "note": "Local copy and offline checks do not establish acceptance in every host or paid generation."
   }
 }
