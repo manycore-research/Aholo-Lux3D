@@ -10,6 +10,10 @@ Read https://raw.githubusercontent.com/manycore-research/Aholo-Lux3D/master/AGEN
 
 The agent checks the actual host's supported Skill directory and existing installations, obtains and verifies the repository, and installs the complete common Skill. You do not need to download a ZIP or supply an API key to install.
 
+If the website supplied an invite code, append `Invite Code: <your-actual-invite-code>` or `邀请码：<实际邀请码>` to the installation request, replacing the placeholder with that code. Leave this suffix out when you have no code; the agent must not ask for or invent one.
+
+The agent passes the supplied code through `--invite-code` and saves it outside the Skill at `<host-local-skills-directory>/.aholo-lux3d-installation.json`. An explicit new code can update an identical installation; a request without a code preserves existing configuration. Later quote/review/report/feedback collection includes `context.inviteCode`. This records installation attribution only; it does not bind an invitation relationship or grant rewards. Installation makes no Lux3D API call, and the agent must not repeat the code in its response.
+
 After installation, reload Skills or start a new task according to the host's requirements. In a new Codex task, invoke:
 
 ```text

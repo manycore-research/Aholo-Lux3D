@@ -6,7 +6,7 @@
   "status": "implementation-candidate",
   "coreVersion": "0.2.0",
   "profileDigest": "623c76dc3bdb67ec3f17785bab322cdc73907997134411b97b761b1bb43a742b",
-  "inputsDigest": "fe4575401a72a920bda60c31e7aad63e4e647cc46ca56bf2da032e633fb455a0",
+  "inputsDigest": "276e395056a5a2a69bf13212397bd824aac4a5c9b7fd155750e121e358abdaf8",
   "identityMode": "automatic-host",
   "toolchain": {
     "node": "24.14.0",
@@ -15,5 +15,5 @@
   },
   "hostValidated": false,
   "mode": "skill",
-  "coreDigest": "688d90c4c702e3d5d8a9676666673632923d81c2c296a51ee12b50937d78b67c"
+  "coreDigest": "147b326aa86d54ff926c619247754165cab50b2400938f1c649590ecd4843929"
 }

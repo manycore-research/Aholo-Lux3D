@@ -24,6 +24,19 @@ One common [Aholo Lux3D](https://lux3d.aholo3d.com) Skill for local installation
 | Expanded Skill | [`plugins/common/aholo-lux3d/`](plugins/common/aholo-lux3d/) |
 | Release archive | [`lux3d-plugin-1.1.0-common-skill.zip`](lux3d-plugin/common/lux3d-plugin-1.1.0-common-skill.zip) |
 
+## 1.1.0 local validation (2026-10-09)
+
+The current change is maintained only in this GitHub repository, primarily
+under `plugins/common/aholo-lux3d/`. The installer copies that directory; its
+existing preflight uses the archive as a byte-for-byte verification snapshot.
+After retaining version 1.1.0, all 40 distribution tests and the read-only
+synchronization check passed, including an isolated installation with a
+synthetic invite code and simulated quote/report requests from another working
+directory. All 46 source files match the current snapshot. The old snapshot
+was backed up before replacement. Real host upgrade and backend receipt have
+not been validated; no Git push or publication was performed. The separate
+GitLab repository has no retained changes from this task.
+
 ## English
 
 ### Install in a compatible host
@@ -43,7 +56,13 @@ python -B scripts/sync_release.py --check
 python -B scripts/install_skill.py --skills-dir "<host-local-skills-directory>"
 ```
 
-The installer creates `<host-local-skills-directory>/aholo-lux3d/`. An identical existing installation is a no-op. A different existing directory is rejected; it is never overwritten. Before switching from an old Skill or plugin, remove the old installation through the host's supported mechanism. Keep only one Aholo Lux3D installation in each host.
+The installer creates `<host-local-skills-directory>/aholo-lux3d/`. An identical existing Skill remains unchanged. A different existing directory is rejected; it is never overwritten. Before switching from an old Skill or plugin, remove the old installation through the host's supported mechanism. Keep only one Aholo Lux3D installation in each host.
+
+If your installation request includes a website-provided invite code, append `Invite Code: <your-actual-invite-code>` (or `邀请码：<实际邀请码>`), replacing the placeholder with the actual code. The agent forwards it to the installer; if there is no code, leave the suffix out. For manual installation, add `--invite-code="<your-actual-invite-code>"` to the installation command, quoting the value as one literal shell argument.
+
+The installer trims the code, checks that it has 1–255 characters with no C0/C1 controls, and atomically saves `{"inviteCode":"<trimmed-code>"}` to `<host-local-skills-directory>/.aholo-lux3d-installation.json` after installation succeeds. This also works for an identical existing Skill. An explicit new code updates that file; omitting the flag preserves it. The file stays outside the verified Skill package, and failed verification or an installation conflict does not change it. The code is not printed in installer output.
+
+Later quote/review/report/feedback collection includes the code as `context.inviteCode`. It is collection metadata only; it does not bind an invitation relationship or grant rewards. The local installer does not contact Lux3D.
 
 Reload Skills or start a new task as required by the host, then verify that `aholo-lux3d` is available. In a new Codex task, invoke `$aholo-lux3d`. In WorkBuddy and other hosts, use their native Skill entrypoint. Install the entire directory, including runtime, contracts, and viewer assets; copying `SKILL.md` alone is insufficient.
 
@@ -63,7 +82,7 @@ The public `AGENTS.md` URL remains the installation entrypoint. A webpage can ke
 plugins/common/aholo-lux3d/              Complete common Skill, unchanged from the ZIP
   SKILL.md                             Skill entrypoint: aholo-lux3d
 lux3d-plugin/common/
-  lux3d-plugin-1.1.0-common-skill.zip    Original common release
+  lux3d-plugin-1.1.0-common-skill.zip    Current common release
   *.sha256                             Archive checksum
   *.release.json                       Upstream release record
 release-manifest.json                  Common distribution metadata
@@ -72,7 +91,7 @@ scripts/install_skill.py               Install into a host's local Skill directo
 AGENTS.md                              Agent installation and maintenance instructions
 ```
 
-The original ZIP is the release source of truth. Synchronization expands its complete `aholo-lux3d/` directory byte for byte. Make runtime changes upstream and import a new release; do not edit the expanded runtime independently.
+The maintained code and actual installation input are in `plugins/common/aholo-lux3d/`. `lux3d-plugin/common/` contains a matching archive used by the existing consistency check. For this GitHub-only change, review and edit the local Skill source without modifying the separate GitLab repository. Preserve source/snapshot consistency and back up the previous snapshot before an authorized same-version replacement. An archive import replaces the source directory; do not run it over local edits unintentionally.
 
 Use Python 3.10 or newer from the repository root:
 
@@ -89,7 +108,7 @@ An imported archive requires adjacent `.sha256` and `.release.json` files. An ex
 
 Version `1.1.0` is a local release candidate. Packaging and offline checks do not establish public publication, successful discovery in every host, or live paid-generation acceptance. Record the checks actually completed before publishing.
 
-Validation on 2026-10-09: 31 offline tests passed. An isolated Codex installation discovered `aholo-lux3d` as an enabled repository Skill (`scope=repo`, `pluginId=null`); all 46 installed files matched the release. WorkBuddy's host identity mapping is covered, but actual WorkBuddy client loading and live paid generation remain unverified. The upstream release record, including `hostValidated`, is preserved unchanged.
+Historical validation on 2026-10-09 applies to the old `1.1.0` snapshot before this invite-code change: 31 offline tests passed. An isolated Codex installation discovered `aholo-lux3d` as an enabled repository Skill (`scope=repo`, `pluginId=null`); all 46 installed files matched that old snapshot. Those results do not validate the replacement archive just because it retains version `1.1.0`; record the current package checks and host discovery separately. Actual WorkBuddy client loading and live paid generation remain unverified. Generate the release record for the rebuilt archive and report its actual `hostValidated` state.
 
 ## 中文
 
@@ -112,6 +131,12 @@ python -B scripts/install_skill.py --skills-dir "<宿主的本地Skill目录>"
 
 安装结果位于 `<宿主的本地Skill目录>/aholo-lux3d/`。目标内容完全相同时不重复写入；目标已存在且内容不同时拒绝覆盖。迁移已有版本或 Codex 插件前，应通过宿主支持的方式移除旧安装，同一宿主只保留一份 Aholo Lux3D。
 
+若官网安装请求带有邀请码，在请求后保留 `Invite Code: <实际邀请码>` 或 `邀请码：<实际邀请码>`，将占位文字替换为实际值。Agent 会将它传给安装器；没有邀请码时省略，不需要询问或编造。手动安装时，在安装命令后添加 `--invite-code="<实际邀请码>"`，按当前 shell 的规则将值作为一个字面量参数传入。
+
+安装器去除首尾空白，校验剩余长度为 1–255 个字符且原值不含 C0/C1 控制字符；安装成功或确认同包已安装后，将 `{"inviteCode":"<去除首尾空白的邀请码>"}` 原子保存到 `<宿主的本地Skill目录>/.aholo-lux3d-installation.json`。显式传入新码可更新该文件，不传码则保留已有配置。配置位于 Skill 包外，不影响发布包校验；发布校验失败或安装冲突不会修改配置，命令输出不回显邀请码。
+
+后续 quote/review/report/feedback 采集会携带 `context.inviteCode`。当前仅记录采集元数据，不建立邀请关系、不校验奖励资格或发放奖励；本地安装器不会调用 Lux3D 接口。
+
 按宿主要求重新加载 Skill 或新建任务，确认能发现 `aholo-lux3d`。Codex 在新任务中使用 `$aholo-lux3d`；WorkBuddy 及其他宿主使用各自的原生 Skill 入口。必须安装完整目录，包括运行时、契约和离线查看器，不能只复制 `SKILL.md`。
 
 安装阶段不需要 API Key。后续付费生成时，按 Skill 的凭据说明配置 `LUX3D_CN_API_KEY`（国内）或 `LUX3D_GLOBAL_API_KEY`（国际），不要将密钥放入聊天或提交到仓库。
@@ -127,12 +152,12 @@ python -B scripts/install_skill.py --skills-dir "<宿主的本地Skill目录>"
 ### 仓库分层与维护
 
 - `plugins/common/aholo-lux3d/`：原始公共 ZIP 中完整 Skill 的逐字节展开内容，所有兼容宿主共用。
-- `lux3d-plugin/common/`：唯一的公共发布 ZIP、`.sha256` 校验文件和 `.release.json` 上游发布记录。
+- `lux3d-plugin/common/`：公共发布 ZIP、`.sha256` 校验文件和 `.release.json` 上游发布记录；同版本替换前另存旧快照，以 `release-manifest.json` 和校验值标识当前发布内容。
 - `release-manifest.json`：公共分发元数据。
 - `scripts/sync_release.py`：从公共包导入、同步和只读校验。
 - `scripts/install_skill.py`：将完整 Skill 安装到宿主支持的本地目录。
 
-运行时变更应在上游完成并生成新包，再同步到此仓库，不单独修改展开目录。仓库根目录使用 Python 3.10 及以上执行：
+本次以 `plugins/common/aholo-lux3d/` 为维护源码和实际安装输入，仅修改 GitHub 仓库，不修改 GitLab。`lux3d-plugin/common/` 中的 ZIP 为现有校验流程使用的对应快照；安装器复制的是 plugins 目录，安装前仍会检查它与快照一致。导入 ZIP 会覆盖目录，存在本地代码修改时不要无意运行同步覆盖。仓库根目录使用 Python 3.10 及以上执行：
 
 同步和安装脚本只使用 Python 标准库。运行时测试还需要 `plugins/common/aholo-lux3d/core/runtime/requirements.txt` 声明的 `requests`，运行测试前请在所用 Python 环境中安装这些依赖。
 
@@ -147,7 +172,7 @@ python -B -m unittest discover -s tests -v
 
 这里的 `1.1.0` 是本地发布候选。打包和离线检查不代表已公开发布、所有宿主已发现并加载 Skill，或付费生成已经通过真实验收；发布前记录实际完成的检查。
 
-2026-10-09 的验收：31 项离线测试通过；独立 Codex 环境成功发现已启用的仓库级 `aholo-lux3d` Skill（`scope=repo`、`pluginId=null`），安装后的 46 个文件与发布包一致。WorkBuddy 已覆盖宿主身份映射，真实 WorkBuddy 客户端加载及付费生成仍未验收。上游发布记录及其中的 `hostValidated` 保持原样。
+2026-10-09 的历史验收针对本次邀请码修改前的 `1.1.0` 旧快照：31 项离线测试通过；独立 Codex 环境成功发现已启用的仓库级 `aholo-lux3d` Skill（`scope=repo`、`pluginId=null`），安装后的 46 个文件与旧快照发布包一致。本次保持 `1.1.0` 版本号并替换归档，旧结果不自动成为替换后内容的验收；重新打包后需执行发布包与离线检查，宿主发现情况单独记录。真实 WorkBuddy 客户端加载及付费生成仍未验收。应根据重新构建的归档生成发布记录，并如实报告 `hostValidated` 状态。
 
 ## 日本語
 
@@ -169,6 +194,8 @@ python -B scripts/install_skill.py --skills-dir "<host-local-skills-directory>"
 ```
 
 完全な `aholo-lux3d/` ディレクトリがインストールされます。同一内容の再インストールは変更なしで完了し、異なる既存内容は上書きしません。旧 Skill やプラグインから移行する場合はホストの正式な方法で旧版を削除し、同じホストに二重に入れないでください。
+
+招待コードがある場合だけ、インストール依頼の末尾に `Invite Code: <実際のコード>` を追加してください。agent は `--invite-code` で渡し、Skill の親ディレクトリの `.aholo-lux3d-installation.json` に保存します。コードを省略すると既存設定を保持します。後の収集に `context.inviteCode` として含まれますが、招待関係の登録や報酬付与は行いません。
 
 ホストの手順で再読み込みし、Codex では新しいタスクで `$aholo-lux3d` を使います。他のホストでは各自の Skill 入口を使用します。実際のホストは自動識別されるため、インストール時に `source` を選ぶ必要はありません。インストール時に API キーは不要です。有料生成には Skill の手順に従って `LUX3D_CN_API_KEY`（中国）または `LUX3D_GLOBAL_API_KEY`（海外）を設定します。
 
@@ -195,6 +222,8 @@ python -B scripts/install_skill.py --skills-dir "<host-local-skills-directory>"
 
 Se instala el directorio completo `aholo-lux3d/`. Una instalación idéntica no se modifica; una instalación diferente nunca se sobrescribe. Antes de migrar desde una Skill o plugin anterior, retíralo mediante el mecanismo admitido por el entorno. Mantén una sola instalación de Aholo Lux3D por entorno.
 
+Si tienes un código de invitación, añade `Invite Code: <código real>` a la solicitud de instalación. El agente lo pasa con `--invite-code` y lo guarda en `.aholo-lux3d-installation.json`, en el directorio padre de la Skill. Omitir el código conserva la configuración existente. Las recopilaciones posteriores incluyen `context.inviteCode`; esto no vincula una invitación ni concede recompensas.
+
 Recarga las Skills según el entorno; en Codex, inicia una nueva tarea y usa `$aholo-lux3d`. En otros entornos, usa su entrada nativa de Skills. La identidad del entorno se detecta automáticamente: no selecciones un `source` al instalar. La instalación no requiere clave API. Para generar con pago, configura `LUX3D_CN_API_KEY` (China) o `LUX3D_GLOBAL_API_KEY` (internacional) siguiendo las instrucciones de la Skill.
 
 Este repositorio distribuye únicamente la Skill común; ya no ofrece un marketplace Git ni un paquete específico de Codex. Los comandos anteriores de marketplace y la invocación `$lux3d` no corresponden a esta distribución. La URL pública de `AGENTS.md` se conserva. Consulta la estructura y sincronización en inglés. `1.1.0` es un candidato local: las comprobaciones sin conexión no prueban publicación, carga en todos los entornos ni generación de pago real.
@@ -219,6 +248,8 @@ python -B scripts/install_skill.py --skills-dir "<host-local-skills-directory>"
 ```
 
 O diretório completo `aholo-lux3d/` será instalado. Uma instalação idêntica não é alterada; uma instalação diferente nunca é sobrescrita. Antes de migrar de uma Skill ou plugin anterior, remova a instalação antiga pelo mecanismo suportado pelo ambiente. Mantenha apenas uma instalação do Aholo Lux3D por ambiente.
+
+Se tiver um código de convite, acrescente `Invite Code: <código real>` à solicitação de instalação. O agente o passa com `--invite-code` e o salva em `.aholo-lux3d-installation.json`, no diretório pai da Skill. Omitir o código preserva a configuração existente. As coletas posteriores incluem `context.inviteCode`; isso não vincula um convite nem concede recompensas.
 
 Recarregue as Skills conforme o ambiente; no Codex, inicie uma nova tarefa e use `$aholo-lux3d`. Em outros ambientes, use a entrada nativa de Skills. O ambiente real é detectado automaticamente: não escolha um `source` na instalação. Nenhuma chave API é necessária para instalar. A geração paga exige `LUX3D_CN_API_KEY` (China) ou `LUX3D_GLOBAL_API_KEY` (internacional), conforme as instruções da Skill.
 

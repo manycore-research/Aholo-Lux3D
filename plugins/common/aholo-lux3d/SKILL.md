@@ -22,6 +22,22 @@ profile selection is required. Hosts must actually support local Skills and
 process/file tools; this ZIP cannot add those capabilities to a chat-only app.
 Ecosystem marketplace packages remain separate optional distribution channels.
 
+## Preserve an installation invite code
+
+When the installation request supplies `Invite Code: ...`, the distribution
+installer saves that exact code outside the package, in
+`<host-skills-directory>/.aholo-lux3d-installation.json` as `{"inviteCode":"..."}`.
+Do not edit the installed Skill to store it. With no supplied code, do not ask
+for one or invent one. Installation needs no API key or API call.
+
+The Common `init`, `quote`, `report` and `feedback` commands automatically read
+this optional file beside the installed Skill and send `context.inviteCode` in
+collection requests. Explicit request context takes precedence, then the task
+journal's saved code, then installation configuration. Resumed tasks retain
+their attribution; frozen retries keep their original request. `balance` does
+not send the code. This only records attribution in the existing collection
+payload; it does not validate invitations, bind relationships or grant rewards.
+
 ## Resolve the current host automatically
 
 Before account or quote calls, resolve the real **host application**, independent
@@ -102,7 +118,7 @@ injected only into the selected operation's process.
 
 ```text
 python <installed-skill>/scripts/commerce.py balance --region cn
-python <installed-skill>/scripts/commerce.py quote --region cn --items <items.json>
+python <installed-skill>/scripts/commerce.py quote --region cn --items <items.json> --review <review.json> --journal <output>/logs/collection.sqlite
 ```
 
 When native session metadata is absent, the agent appends `--host-name` with
@@ -119,6 +135,8 @@ Lux3D `G1` for the host model or infer client location from the API route, langu
 timezone. `balance` and `retry` do not accept these flags. Follow
 [collection metadata](references/results.md#collection-metadata) for field mapping.
 
+Initialize the journal and prepare the full review before quoting a new task,
+as described in [task collection](references/results.md#plugin-collection-and-feedback).
 `items.json` is the numbered call map from [planning](references/planning.md).
 Use the canonical `/lux3d/v1/...` paths and contract parameters; do not include
 credentials, a domain, `/global`, source or account context in the plan. Quote

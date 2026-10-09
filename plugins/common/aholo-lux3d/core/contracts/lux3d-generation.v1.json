@@ -51,14 +51,14 @@
         "host": "https://api.aholo3d.cn",
         "pathPrefix": "",
         "effectiveBaseUrl": "https://api.aholo3d.cn",
-        "apiKeyPage": "https://labs.aholo3d.cn/api-keys",
+        "apiKeyPage": "https://labs.aholo3d.cn/api-keys?from=lux3d",
         "assetUploadDocs": "https://labs.aholo3d.cn/api-docs/api-reference#tag/asset"
       },
       "international": {
         "host": "https://api.aholo3d.com",
         "pathPrefix": "/global",
         "effectiveBaseUrl": "https://api.aholo3d.com/global",
-        "apiKeyPage": "https://labs.aholo3d.com/api-keys",
+        "apiKeyPage": "https://labs.aholo3d.com/api-keys?from=lux3d",
         "assetUploadDocs": "https://labs.aholo3d.com/api-docs/en/api-reference#tag/asset"
       }
     },

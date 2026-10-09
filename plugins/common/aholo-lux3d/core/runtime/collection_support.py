@@ -22,6 +22,7 @@ FEEDBACK_FIELDS = COMMON_FIELDS | {"requestId", "consent", "agentFeedback", "use
 
 METADATA_FIELDS = (("modelName", "model", "LUX3D_MODEL_NAME"),
                    ("clientRegion", "clientRegion", "LUX3D_CLIENT_REGION"))
+TASK_METADATA_FIELDS = {"model", "clientRegion", "inviteCode"}
 
 
 def metadata_text(value):
@@ -38,6 +39,34 @@ def metadata_text(value):
     return value
 
 
+def invite_code_text(value):
+    """Normalize collection-only invitation attribution. Author: yinjie."""
+    if value is None:
+        return None
+    if not isinstance(value, str) or any(ord(char) < 32 or 127 <= ord(char) <= 159 for char in value):
+        raise ValueError("Invite code must be text without control characters")
+    value = value.strip()
+    if len(value) > 255:
+        raise ValueError("Invite code must fit 255 characters")
+    return value or None
+
+
+def installation_invite_code(skill_root):
+    """Read optional attribution beside the installed Skill, never cwd. Author: yinjie."""
+    path = Path(skill_root).resolve().parent / ".aholo-lux3d-installation.json"
+    try:
+        with path.open("rb") as stream:
+            raw = stream.read(4097)
+    except FileNotFoundError:
+        return None
+    if len(raw) > 4096:
+        raise ValueError("Installation attribution configuration is too large")
+    document = json.loads(raw.decode("utf-8-sig"))
+    if not isinstance(document, dict):
+        raise ValueError("Installation attribution configuration must be an object")
+    return invite_code_text(document.get("inviteCode"))
+
+
 def command_metadata(args):
     result = {}
     for argument, field, variable in METADATA_FIELDS:
@@ -47,6 +76,9 @@ def command_metadata(args):
             value = metadata_text(os.environ.get(variable))
         if value is not None:
             result[field] = value
+    invite_code = invite_code_text(getattr(args, "installation_invite_code", None))
+    if invite_code is not None:
+        result["inviteCode"] = invite_code
     return result
 
 
@@ -56,7 +88,14 @@ def context_object(value, loader):
     result = loader(value) if isinstance(value, str) else value
     if not isinstance(result, dict):
         raise ValueError("Collection context must be an object")
-    return copy.deepcopy(result)
+    result = copy.deepcopy(result)
+    if "inviteCode" in result:
+        invite_code = invite_code_text(result["inviteCode"])
+        if invite_code is None:
+            result.pop("inviteCode")
+        else:
+            result["inviteCode"] = invite_code
+    return result
 
 
 def merge_metadata(request, loader, defaults=None, *, top_level=False):
@@ -83,6 +122,9 @@ def merge_metadata(request, loader, defaults=None, *, top_level=False):
         else:
             context.pop(field, None)
             context.pop(external, None)
+    invite_code = context.get("inviteCode") or invite_code_text(defaults.get("inviteCode"))
+    if invite_code is not None:
+        context["inviteCode"] = invite_code
     if context or "context" in result:
         result["context"] = context
     return result
@@ -123,6 +165,9 @@ def wire_fields(request, allowed, loader):
                 raise ValueError("JSON content must be an object or array")
             if field in {"context", "consent"} and not isinstance(decoded, dict):
                 raise ValueError("JSON content must be an object")
+            if field == "context":
+                # Validate without rewriting a previously frozen request. Author: yinjie.
+                invite_code_text(decoded.get("inviteCode"))
             no_credentials(decoded)
             result[field] = dumps(decoded)
         elif field == "planVersion":
@@ -188,13 +233,14 @@ class CollectionJournal:
         self.bind(owner)
         with self.db:
             saved = json.loads(self.db.execute("SELECT metadata FROM task WHERE id=1").fetchone()[0])
-            if not isinstance(saved, dict) or set(saved) - {"model", "clientRegion"}:
+            if not isinstance(saved, dict) or set(saved) - TASK_METADATA_FIELDS:
                 raise ValueError("Invalid task metadata")
-            result = {field: metadata_text(value) for field, value in saved.items()}
+            result = {field: (invite_code_text(value) if field == "inviteCode" else metadata_text(value))
+                      for field, value in saved.items()}
             for field, value in (updates or {}).items():
-                if field not in {"model", "clientRegion"}:
+                if field not in TASK_METADATA_FIELDS:
                     raise ValueError("Unknown task metadata")
-                value = metadata_text(value)
+                value = invite_code_text(value) if field == "inviteCode" else metadata_text(value)
                 if value is not None:
                     result[field] = value
             result = {field: value for field, value in result.items() if value is not None}
@@ -264,10 +310,14 @@ def _command_request(request, args, journal, owner, loader, error_type, *, top_l
     except (TypeError, ValueError, OSError, sqlite3.Error):
         raise error_type("COLLECTION_JOURNAL_INVALID") from None
     try:
-        defaults.update(command_metadata(args))
+        observed = command_metadata(args)
+        # Attribution belongs to the task; a later installation must not relabel it. Author: yinjie.
+        if defaults.get("inviteCode"):
+            observed.pop("inviteCode", None)
+        defaults.update(observed)
         enriched = merge_metadata(request, loader, defaults, top_level=top_level)
         context = enriched.get("context", {})
-        metadata = {field: context[field] for field in ("model", "clientRegion") if field in context}
+        metadata = {field: context[field] for field in TASK_METADATA_FIELDS if field in context}
     except (TypeError, ValueError, error_type):
         raise error_type("COLLECTION_REQUEST_INVALID") from None
     try:

@@ -14,7 +14,7 @@
   },
   "archive": {
     "path": "lux3d-plugin/common/lux3d-plugin-1.1.0-common-skill.zip",
-    "sha256": "ad88f4791698660360b698b3b07aa11952cf0d4b73e86fe1b6946beb3c6719aa",
+    "sha256": "8849f06fa4bf9596eb16fc52064878fd48658a5318f6008e2c613cfbd118bf8f",
     "checksumPath": "lux3d-plugin/common/lux3d-plugin-1.1.0-common-skill.zip.sha256",
     "releaseRecordPath": "lux3d-plugin/common/lux3d-plugin-1.1.0-common-skill.release.json",
     "fileCount": 46
@@ -38,7 +38,7 @@
   },
   "sharedCore": {
     "version": "0.2.0",
-    "digest": "688d90c4c702e3d5d8a9676666673632923d81c2c296a51ee12b50937d78b67c",
+    "digest": "147b326aa86d54ff926c619247754165cab50b2400938f1c649590ecd4843929",
     "digestSource": "upstream-build-info"
   },
   "validation": {

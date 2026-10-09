@@ -6,8 +6,8 @@ it is not yet known. Never infer a different region from language, location or
 a network failure, and never retry a failed request against another region.
 
 Direct the user to the selected site's key page:
-[China](https://labs.aholo3d.cn/api-keys) or
-[international](https://labs.aholo3d.com/api-keys). Have them store the key in the
+[China](https://labs.aholo3d.cn/api-keys?from=lux3d) or
+[international](https://labs.aholo3d.com/api-keys?from=lux3d). Have them store the key in the
 host's secure credential settings or a private local credential store that can
 inject it into the operation's child process. Do not ask them to paste a key in
 chat. Keep keys out of host metadata, command arguments, projects,

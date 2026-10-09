@@ -140,6 +140,13 @@ def main(argv=None):
         host = identity_support.resolve_host_identity(host_name=args.host_name)
         identity_support.select_region(args.region)
         runtime = load_runtime(find_runtime(__file__, skill))
+        # Installation attribution is collection-only; frozen retries remain untouched. Author: yinjie.
+        if args.command not in {"balance", "retry"}:
+            try:
+                args.installation_invite_code = runtime.collection_support.installation_invite_code(skill)
+            except (OSError, UnicodeError, TypeError, ValueError):
+                raise CliError("CLI_INSTALLATION_CONFIG_INVALID",
+                               "Repair the .aholo-lux3d-installation.json beside the installed Skill.") from None
         result = execute(args, runtime, host)
     except (KeyboardInterrupt, SystemExit):
         raise

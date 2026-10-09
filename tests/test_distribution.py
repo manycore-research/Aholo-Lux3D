@@ -3,6 +3,8 @@
 Run with: python -B -m unittest discover -s tests -v
 Requires only the shipped runtime's declared Python dependencies. No live API
 requests, credential setup, dependency installation or paid tasks are performed.
+
+Author: yinjie.
 """
 
 import base64
@@ -207,6 +209,49 @@ class DistributionTests(unittest.TestCase):
                     for call in session.calls:
                         self.assertFalse(call[2]["allow_redirects"])
                         self.assertEqual(SECRET, call[2]["headers"]["Authorization"])
+
+    def test_installed_invite_code_reaches_quote_and_report_from_another_cwd(self):
+        with mock.patch.object(sys, "path", [str(ROOT / "scripts"), *sys.path]):
+            installer = load_module("distribution_installer", ROOT / "scripts/install_skill.py")
+        installed = Path(installer.install(self.temp / "skills", invite_code="TEST-INVITE")["path"])
+        installed_cli = load_module("installed_distribution_commerce", installed / "scripts/commerce.py")
+        items = self.temp / "items.json"
+        items.write_text(json.dumps(ITEMS), encoding="utf-8")
+        elsewhere = self.temp / "unrelated-working-directory"
+        elsewhere.mkdir()
+        (elsewhere / ".aholo-lux3d-installation.json").write_text(
+            '{"inviteCode":"WRONG-CWD"}', encoding="utf-8")
+        environment = {"LUX3D_CN_API_KEY": SECRET, "LUX3D_HOST_NAME": "WorkBuddy"}
+        previous_cwd = Path.cwd()
+        try:
+            os.chdir(elsewhere)
+            with mock.patch.object(self, "cli", installed_cli):
+                quoted = quote_session(4)
+                self.success(["quote", "--region", "cn", "--items", str(items)], quoted, environment)
+                account, quote = quoted.calls
+                self.assertEqual({"source": 4}, account[2]["params"])
+                quote_body = quote[2]["json"]
+                self.assertIsInstance(quote_body["context"], str)
+                self.assertEqual("TEST-INVITE", json.loads(quote_body["context"])["inviteCode"])
+
+                base = ["--region", "cn", "--journal", str(self.temp / "collection.sqlite")]
+                initialized = self.success(["init", *base], FakeSession(), environment)
+                report_request = self.temp / "report.json"
+                report_request.write_text(json.dumps({
+                    "pluginTaskId": initialized["pluginTaskId"], "requestId": "installed-report-1",
+                    "result": {"status": "SUCCEEDED"},
+                }), encoding="utf-8")
+                receipt = {"reportId": "report_" + "a" * 64,
+                           "receiptStatus": "ACCEPTED", "checkResult": "OK"}
+                reported = FakeSession(FakeResponse(receipt))
+                self.assertEqual(receipt, self.success(
+                    ["report", *base, "--request", str(report_request)], reported, environment))
+                self.assertEqual(1, len(reported.calls))
+                report_body = reported.calls[0][2]["json"]
+                self.assertIsInstance(report_body["context"], str)
+                self.assertEqual("TEST-INVITE", json.loads(report_body["context"])["inviteCode"])
+        finally:
+            os.chdir(previous_cwd)
 
     def test_registered_aliases_resolve_to_their_host(self):
         registry = json.loads((SKILL / "host-identity.json").read_text(encoding="utf-8"))

@@ -1,6 +1,11 @@
-"""Real isolated Common Skill installation and preservation checks."""
+"""Real isolated Common Skill installation and preservation checks.
 
+Author: yinjie.
+"""
+
+import contextlib
 import importlib.util
+import io
 import json
 import os
 from pathlib import Path
@@ -32,7 +37,8 @@ class SkillInstallationTests(unittest.TestCase):
         installed = Path(first["path"])
         source = install_skill.sync_release.ROOT / install_skill.sync_release.SKILL_PATH
         self.assertEqual(install_skill.snapshot(installed), install_skill.snapshot(source))
-        self.assertEqual(first["fileCount"], 46)
+        release = json.loads((ROOT / "release-manifest.json").read_text(encoding="utf-8"))
+        self.assertEqual(first["fileCount"], release["archive"]["fileCount"])
         self.assertFalse(first["unchanged"])
         before = {str(p): p.stat().st_mtime_ns for p in installed.rglob("*")}
         second = install_skill.install(self.skills_dir)
@@ -61,21 +67,24 @@ class SkillInstallationTests(unittest.TestCase):
         other = self.skills_dir / "another-skill"
         other.mkdir()
         (other / "SKILL.md").write_text("unrelated", encoding="utf-8")
+        config = self.skills_dir / install_skill.INSTALLATION_CONFIG
+        config.write_text('{"inviteCode":"original"}\n', encoding="utf-8")
         before = install_skill.snapshot(self.skills_dir)
         with self.assertRaisesRegex(ValueError, "nothing was overwritten"):
-            install_skill.install(self.skills_dir)
+            install_skill.install(self.skills_dir, invite_code="replacement")
         self.assertEqual(before, install_skill.snapshot(self.skills_dir))
 
     def test_bad_release_rejected_before_creating_destination(self):
         checkout = self.root / "checkout"
         checkout.mkdir()
-        archive = ROOT / "lux3d-plugin/common/lux3d-plugin-1.1.0-common-skill.zip"
+        release = json.loads((ROOT / "release-manifest.json").read_text(encoding="utf-8"))
+        archive = ROOT / release["archive"]["path"]
         with mock.patch.object(install_skill.sync_release, "ROOT", checkout):
             install_skill.sync_release.sync(archive)
             skill = checkout / install_skill.sync_release.SKILL_PATH
             (skill / "SKILL.md").write_text("changed after synchronization", encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "Distribution drift"):
-                install_skill.install(self.skills_dir)
+                install_skill.install(self.skills_dir, invite_code="not-recorded")
         self.assertFalse(self.skills_dir.exists())
 
     def test_repository_and_source_destinations_rejected(self):
@@ -99,11 +108,121 @@ class SkillInstallationTests(unittest.TestCase):
         keep = self.skills_dir / ".aholo-lux3d-install-existing"
         keep.mkdir()
         (keep / "keep.txt").write_text("keep", encoding="utf-8")
+        config = self.skills_dir / install_skill.INSTALLATION_CONFIG
+        config.write_text('{"inviteCode":"original"}\n', encoding="utf-8")
+        before = install_skill.snapshot(self.skills_dir)
         with mock.patch.object(Path, "write_bytes", side_effect=OSError("disk full")):
             with self.assertRaisesRegex(OSError, "disk full"):
-                install_skill.install(self.skills_dir)
-        self.assertEqual(list(self.skills_dir.iterdir()), [keep])
+                install_skill.install(self.skills_dir, invite_code="replacement")
+        self.assertEqual(before, install_skill.snapshot(self.skills_dir))
         self.assertEqual((keep / "keep.txt").read_text(encoding="utf-8"), "keep")
+
+    def test_install_with_invite_code_keeps_release_unchanged_and_output_private(self):
+        stdout, stderr = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            code = install_skill.main(["--skills-dir", str(self.skills_dir), "--invite-code", "  邀请-code-001  "])
+        self.assertEqual(code, 0, stderr.getvalue())
+        result = json.loads(stdout.getvalue())
+        config = self.skills_dir / install_skill.INSTALLATION_CONFIG
+        self.assertEqual(Path(result["installationConfigPath"]), config)
+        self.assertTrue(config.is_absolute())
+        self.assertEqual(json.loads(config.read_text(encoding="utf-8")), {"inviteCode": "邀请-code-001"})
+        self.assertNotIn("邀请-code-001", stdout.getvalue() + stderr.getvalue())
+        installed = Path(result["path"])
+        source = install_skill.sync_release.ROOT / install_skill.sync_release.SKILL_PATH
+        self.assertEqual(install_skill.snapshot(installed), install_skill.snapshot(source))
+        self.assertEqual(set(self.skills_dir.iterdir()), {installed, config})
+
+    def test_identical_install_can_add_and_update_invite_code(self):
+        first = install_skill.install(self.skills_dir)
+        installed = Path(first["path"])
+        before = {str(p): (p.read_bytes(), p.stat().st_mtime_ns)
+                  for p in installed.rglob("*") if p.is_file()}
+        config = self.skills_dir / install_skill.INSTALLATION_CONFIG
+        for value in ("first-code", "second-code"):
+            with self.subTest(value=value):
+                result = install_skill.install(self.skills_dir, invite_code=value)
+                self.assertTrue(result["unchanged"])
+                self.assertEqual(json.loads(config.read_text(encoding="utf-8")), {"inviteCode": value})
+                self.assertEqual(before, {str(p): (p.read_bytes(), p.stat().st_mtime_ns)
+                                          for p in installed.rglob("*") if p.is_file()})
+
+    def test_missing_invite_code_preserves_existing_config_without_reading_it(self):
+        self.skills_dir.mkdir()
+        config = self.skills_dir / install_skill.INSTALLATION_CONFIG
+        config.write_text("preserve existing bytes, even malformed JSON", encoding="utf-8")
+        before = (config.read_bytes(), config.stat().st_mtime_ns)
+        first = install_skill.install(self.skills_dir)
+        self.assertFalse(first["unchanged"])
+        second = install_skill.install(self.skills_dir)
+        self.assertTrue(second["unchanged"])
+        self.assertNotIn("installationConfigPath", second)
+        self.assertEqual(before, (config.read_bytes(), config.stat().st_mtime_ns))
+
+    def test_reinstall_preserves_or_explicitly_updates_invite_code(self):
+        first = install_skill.install(self.skills_dir, invite_code="initial-code")
+        installed = Path(first["path"])
+        config = self.skills_dir / install_skill.INSTALLATION_CONFIG
+        before = (config.read_bytes(), config.stat().st_mtime_ns)
+        installed.rename(self.root / "removed-installation")
+        result = install_skill.install(self.skills_dir)
+        self.assertFalse(result["unchanged"])
+        self.assertEqual(before, (config.read_bytes(), config.stat().st_mtime_ns))
+        installed.rename(self.root / "removed-again")
+        result = install_skill.install(self.skills_dir, invite_code="new-code")
+        self.assertFalse(result["unchanged"])
+        self.assertEqual(json.loads(config.read_text(encoding="utf-8")), {"inviteCode": "new-code"})
+
+    def test_invalid_invite_code_fails_without_writes_or_echoing_value(self):
+        invalid = ("", "  ", "x" * 256, "bad\x00code", "\nbad-code", "bad\tcode",
+                   "bad\x7fcode", "bad\x85code", "bad\x9fcode")
+        for value in invalid:
+            with self.subTest(value=repr(value)):
+                stdout, stderr = io.StringIO(), io.StringIO()
+                with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+                    code = install_skill.main(["--skills-dir", str(self.skills_dir), "--invite-code", value])
+                self.assertEqual(code, 1)
+                self.assertEqual(stdout.getvalue(), "")
+                self.assertEqual(json.loads(stderr.getvalue()), {
+                    "ok": False,
+                    "error": "Invite code must be a nonblank string of at most 255 characters without control characters",
+                })
+                self.assertFalse(self.skills_dir.exists())
+        for value in (123, {}, []):
+            with self.subTest(value=value), self.assertRaisesRegex(ValueError, "Invite code must"):
+                install_skill.install(self.skills_dir, invite_code=value)
+        self.assertFalse(self.skills_dir.exists())
+
+    def test_invite_code_length_limit_applies_after_trimming(self):
+        value = "码" * 255
+        install_skill.install(self.skills_dir, invite_code="  " + value + "  ")
+        config = self.skills_dir / install_skill.INSTALLATION_CONFIG
+        self.assertEqual(json.loads(config.read_text(encoding="utf-8")), {"inviteCode": value})
+
+    def test_failed_config_replacement_preserves_old_config_and_removes_temporary_file(self):
+        install_skill.install(self.skills_dir, invite_code="original")
+        config = self.skills_dir / install_skill.INSTALLATION_CONFIG
+        before = install_skill.snapshot(self.skills_dir)
+        with mock.patch.object(os, "replace", side_effect=OSError("replacement denied")):
+            with self.assertRaisesRegex(OSError, "replacement denied"):
+                install_skill.install(self.skills_dir, invite_code="replacement")
+        self.assertEqual(before, install_skill.snapshot(self.skills_dir))
+        self.assertEqual(json.loads(config.read_text(encoding="utf-8")), {"inviteCode": "original"})
+
+    def test_linked_config_is_rejected_before_installation(self):
+        self.skills_dir.mkdir()
+        config = self.skills_dir / install_skill.INSTALLATION_CONFIG
+        config.write_text('{"inviteCode":"original"}', encoding="utf-8")
+        real_lstat = Path.lstat
+        def lstat(path, *args, **kwargs):
+            if path == config:
+                return type("ReparseMetadata", (), {"st_mode": 0o100644, "st_file_attributes": 0x400})()
+            return real_lstat(path, *args, **kwargs)
+        with mock.patch.object(Path, "lstat", lstat):
+            with self.assertRaisesRegex(ValueError, "Linked installation path"):
+                install_skill.install(self.skills_dir, invite_code="replacement")
+        self.assertEqual(list(self.skills_dir.iterdir()), [config])
+        self.assertEqual(json.loads(config.read_text(encoding="utf-8")), {"inviteCode": "original"})
 
 
 if __name__ == "__main__":

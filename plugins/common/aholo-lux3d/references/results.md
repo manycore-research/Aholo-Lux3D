@@ -91,6 +91,24 @@ collection receipt only; it is neither quality approval nor authorization to spe
 Unchanged legacy callers may still omit both `--review` and `--journal`; quote metadata
 also works without them. The new plugin workflow still submits the complete review plan.
 
+### Installation invite code
+
+The Common local Skill installer accepts an optional code from the user's
+`Invite Code:` installation request and stores it beside the Skill directory,
+in `.aholo-lux3d-installation.json`, outside the verified package. Common loads
+it automatically for `init`, `quote`, `report` and `feedback`; `balance` and
+frozen retries do not read this configuration. Other integrations may explicitly
+supply the same optional `context.inviteCode` in collection requests.
+
+Use explicit request context first, otherwise the task journal's saved code,
+otherwise installation configuration. Save the code with the task so a new
+conversation or changed installation does not relabel previous work. Missing
+codes stay absent. The field is a trimmed string of at most 255 characters with
+no control characters; it is not `installationTrackingId`, a task ID or an API
+key. Site retains it under `payload.request.context.inviteCode` in the existing
+collection table. This is collection only, with no invitation validation,
+relationship binding or rewards. Do not treat metadata as feedback consent.
+
 ### Collection metadata
 
 The host agent must automatically include the actual model and client region when known,

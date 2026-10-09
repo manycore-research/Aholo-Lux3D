@@ -1,4 +1,7 @@
-"""Release integrity and extraction boundaries; no network or installation."""
+"""Release integrity and extraction boundaries; no network or installation.
+
+Author: yinjie.
+"""
 
 import hashlib
 import importlib.util
@@ -16,7 +19,8 @@ ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location("sync_release", ROOT / "scripts/sync_release.py")
 sync_release = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(sync_release)
-COMMON = ROOT / "lux3d-plugin/common/lux3d-plugin-1.1.0-common-skill.zip"
+RELEASE = json.loads((ROOT / "release-manifest.json").read_text(encoding="utf-8"))
+COMMON = ROOT / RELEASE["archive"]["path"]
 
 
 class ReleaseSyncTests(unittest.TestCase):
@@ -84,7 +88,7 @@ class ReleaseSyncTests(unittest.TestCase):
 
     def test_sync_is_repeatable_and_check_is_read_only(self):
         result = self.initialize()
-        self.assertEqual(46, result["commonFiles"])
+        self.assertEqual(RELEASE["archive"]["fileCount"], result["commonFiles"])
         self.assertEqual("plugins/common/aholo-lux3d", result["skillPath"])
         before = {p.relative_to(self.root): (p.read_bytes(), p.stat().st_mtime_ns)
                   for p in self.root.rglob("*") if p.is_file()}
@@ -131,7 +135,7 @@ class ReleaseSyncTests(unittest.TestCase):
 
     def test_invalid_provenance_fails_before_any_output_change(self):
         self.initialize()
-        record = self.root / "lux3d-plugin/common/lux3d-plugin-1.1.0-common-skill.release.json"
+        record = self.root / RELEASE["archive"]["releaseRecordPath"]
         contents = json.loads(record.read_text())
         contents["sha256"] = "0" * 64
         record.write_text(json.dumps(contents))

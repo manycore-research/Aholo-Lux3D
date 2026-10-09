@@ -1,10 +1,10 @@
 {
   "buildInfo": {
-    "coreDigest": "688d90c4c702e3d5d8a9676666673632923d81c2c296a51ee12b50937d78b67c",
+    "coreDigest": "147b326aa86d54ff926c619247754165cab50b2400938f1c649590ecd4843929",
     "coreVersion": "0.2.0",
     "hostValidated": false,
     "identityMode": "automatic-host",
-    "inputsDigest": "fe4575401a72a920bda60c31e7aad63e4e647cc46ca56bf2da032e633fb455a0",
+    "inputsDigest": "276e395056a5a2a69bf13212397bd824aac4a5c9b7fd155750e121e358abdaf8",
     "mode": "skill",
     "profileDigest": "623c76dc3bdb67ec3f17785bab322cdc73907997134411b97b761b1bb43a742b",
     "profileId": "universal",
@@ -19,11 +19,11 @@
     "version": "1.1.0"
   },
   "filename": "lux3d-plugin-1.1.0-common-skill.zip",
-  "inputsDigest": "fe4575401a72a920bda60c31e7aad63e4e647cc46ca56bf2da032e633fb455a0",
+  "inputsDigest": "276e395056a5a2a69bf13212397bd824aac4a5c9b7fd155750e121e358abdaf8",
   "mode": "skill",
   "profileId": "universal",
   "releaseUnit": "common",
   "schema": "lux3d.release-artifact/v1",
-  "sha256": "ad88f4791698660360b698b3b07aa11952cf0d4b73e86fe1b6946beb3c6719aa",
+  "sha256": "8849f06fa4bf9596eb16fc52064878fd48658a5318f6008e2c613cfbd118bf8f",
   "version": "1.1.0"
 }
