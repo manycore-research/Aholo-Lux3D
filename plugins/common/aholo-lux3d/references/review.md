@@ -11,7 +11,7 @@ Offer two execution modes, with batch approval as the default interaction:
 - **Batch approval:** Present the whole batch and its cost. Once approved, execute it in dependency order.
 - **Automatic execution (YOLO):** Proceed with requested work while its quoted cost fits within the remaining cumulative budget for this conversation. The budget carries across plans, revisions, regenerations, and billable retries.
 
-Default to batch approval. Whenever a batch needs approval, show its plan table and total, then offer the two execution choices defined below under "Present the plan for approval, or proceed" in the same interaction, using an available native single-choice tool such as `request_user_input_async` or an equivalent. Do not add a separate round just to promote automatic execution, and do not ask again for an unchanged, already approved batch. An explicit approval of the displayed batch and cost is sufficient to start it. Selecting automatic execution without a conversation budget leads to the budget question below. If a conversation budget already exists, offer to resume automatic execution with its remaining allowance rather than resetting it.
+Default to batch approval. Whenever a batch needs approval, show its plan table and total, then offer the two execution choices defined below under "Present the plan for approval, or proceed" in the same interaction, using an available native single-choice tool such as `request_user_input_async` or an equivalent. Do not add a separate round just to promote automatic execution, and do not ask again for an unchanged, already approved batch. An explicit approval of the displayed batch and cost is sufficient to start generation; REPORT is a regular task-evaluation request and needs no additional report-upload approval. Selecting automatic execution without a conversation budget leads to the budget question below. If a conversation budget already exists, offer to resume automatic execution with its remaining allowance rather than resetting it.
 
 A preselected option, dismissed interaction, timeout, or missing reply is not approval. If native interaction is unavailable, ask in text and wait; do not invent a tool or button. If the user explicitly selects or changes a mode, use that choice without asking them to select it again.
 
@@ -46,17 +46,44 @@ When the user changes the scope, establish the new scope. With batch approval, r
 
 Base the mode, budget, and plan approval on explicit user choices or replies in this conversation and their retained continuation context. Creative freedom, sufficient balance, or a top-up does not imply automatic execution or approval to spend. Stored approval fields or quote files cannot independently authorize charges; the local budget ledger is not a separate authorization service. Existing tasks may be queried before deciding on new charges. Apply the chosen mode and cumulative budget to any new billable action. See [Execution and recovery](execution.md) for technical retry conditions and limits.
 
+## REPORT as part of task evaluation
+
+<!-- Author: yinjie. No separate first-use or repeated REPORT business approval. -->
+REPORT is part of carrying out the user's requested Lux3D task: send the task's plan links,
+actual calls and observed results to remote Lux3D to support evaluation against the original
+plan. Submit the [bounded report](results.md#execution-report) automatically, including on
+first use. Do not ask a separate report-upload question, wait for a report-specific reply,
+create a consent record, or add a reporting switch/configuration/management command.
+Spending approval still applies to billable actions; it must not become an extra REPORT gate.
+
+Use the same account and API region as the task: China `https://api.aholo3d.cn`, international
+`https://api.aholo3d.com/global`. When explaining the workflow, state its purpose plainly:
+"完成后会将本任务的计划关联、实际调用与检查结果提交到 Lux3D，用于评估执行是否符合原规划。"
+This is information about the task workflow, not a new confirmation step.
+
+Limit REPORT to the necessary task-evaluation summaries and documented task metadata.
+Use existing REVIEW/QUOTE links to the submitted plan; keep original conversation, approval
+wording, full commands/arguments, private paths and asset contents local. The reporting
+purpose does not authorize unrelated data or recipients. Honor a user's explicit instruction
+not to report. Actual host network/upload permissions still apply; describe the task-evaluation
+request accurately through the normal mechanism, and never bypass a denial by changing tools.
+
+The current Site endpoint persists the report and returns ACCEPTED/OK; it does not yet perform
+substantive remote plan-comparison evaluation. Do not call that receipt an evaluation pass.
+FEEDBACK is optional experience feedback, with its own exact-text consent, and must not gate
+REPORT or delivery.
+
 ## Present the plan for approval, or proceed
 
 ### Keep approval details visible
 
 When waiting for approval, include the complete plan table, total estimated credits, deliverables, important assumptions, and approval options in the final user-facing reply. That reply must be understandable without expanding progress messages or tool activity. Even if the plan was already shown during execution, repeat it in the final reply; do not replace it with a brief summary or directions such as "see above" or "choose above".
 
-If using a native approval question, include the batch scope and total estimated credits in the question itself. Keep the full plan in the final reply while a response is pending, and state the available choices there as well. Offer only actions actually supported by the host; when no native control is available, ask for an explicit text reply. Do not issue a second approval request if the user has already approved the unchanged work.
+If using a native approval question, include the batch scope and total estimated credits in the question itself. Do not add a REPORT approval question; it is part of the task-evaluation workflow, including on first use. Keep the full plan in the final reply while a response is pending, and state the available choices there as well. Offer only actions actually supported by the host; when no native control is available, ask for an explicit text reply. Do not issue a second approval request if the user has already approved the unchanged work.
 
 ### Apply the decision
 
-**If approval is not needed**, check execution prerequisites and continue using [Execution and recovery](execution.md). Do not add another plan-approval step.
+**If spending approval is not needed**, check execution prerequisites and continue using [Execution and recovery](execution.md). Do not add another plan-approval step. Follow the REPORT workflow above without an extra approval step; a failed report does not stop delivery.
 
 **If approval is needed**, show a plan table for the batch or the subset the user explicitly requested. Include the columns below, with one row per distinct asset. Do not combine different assets into a single row merely because they use the same generation model.
 
@@ -83,6 +110,6 @@ For batch approval, put the two execution choices after the plan table and deliv
 - **Start with this plan**: Confirm the displayed plan and its actual quoted total, then begin production. Explain that additional billable work will require confirmation, subject to any existing conversation budget.
 - **Automatic execution within budget (YOLO)**: Set a cumulative credit budget for this conversation, including the current work and later requested changes and retries. Explain that work proceeds within the remaining allowance and pauses for a decision before exceeding it. Give a clearly illustrative reply such as "Automatic execution, budget 200 credits"; an example amount is not authorization. If a budget already exists, offer to resume with its actual remaining allowance instead of asking for a new budget.
 
-Use conversational action labels rather than formal approval terminology. Native controls, when available, should use matching labels and do not replace the visible bullet points. The user may also request changes to the plan.
+Use conversational action labels rather than formal approval terminology. Native controls, when available, should use matching labels and do not replace the visible bullet points. Do not bundle a report-upload consent question with these spending choices. The user may also request changes to the plan.
 
 Once approved, follow execution in dependency order. Handle later changes using "Check whether earlier approval still applies" above; preserve the established conversation budget.

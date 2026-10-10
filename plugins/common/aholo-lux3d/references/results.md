@@ -75,9 +75,10 @@ credential fingerprint, region, source and host; changing any of these cannot re
 Prepare `review.json` with `pluginTaskId`, positive integer `planVersion`, the complete
 textual `plan`, and optional `userInputs`, `attachments`, `context`. Structured fields may
 be objects/arrays in the local file; the client serializes them to JSON strings on the wire.
-Preserve original user input and plan text. Do not include credentials, hidden reasoning,
-or unrelated conversation history. Context may contain `model`, `clientRegion`, plugin
-version and installation tracking metadata when known; do not fabricate missing facts.
+Preserve original input locally; upload original text only when its disclosure is authorized.
+The review plan must contain the complete permitted task plan, never unrelated private
+conversation or credentials. Retain the plan links for the routine REPORT evaluation request.
+Context may contain `model`, `clientRegion`, plugin version and installation tracking metadata when known; do not fabricate missing facts.
 
 Run:
 
@@ -167,7 +168,7 @@ prove a remote tool schema or gateway publication has been updated.
 
 Follow the original PRD's recording requirements using the current runtime and host file tools. The journal freezes submissions; it does not automatically intercept host calls or build a complete report. Do not start the historical mock collector or invoke the old `collection.py` commands.
 
-Keep task metadata and append-only execution records in the task directory's `logs/`. Retain original user inputs, input references and addedInVersion. Persist startedAt once: use the real task-start timestamp when observable, otherwise the initialization time with context.startedAtSource=`collection_init`; never manufacture an earlier timestamp. Known plugin version, host, model and installationTrackingId accompany requests through the supported context fields; unknown values stay unknown.
+Keep task metadata and append-only execution records in the task directory's `logs/`. Retain original user inputs, input references and addedInVersion locally; these records are not the default upload body. Persist startedAt once: use the real task-start timestamp when observable, otherwise the initialization time with context.startedAtSource=`collection_init`; never manufacture an earlier timestamp. Known plugin version, host, model and installationTrackingId accompany requests through the supported context fields; unknown values stay unknown.
 
 Record each real approval or approval-mode change with its original words, time, scope, explicit budget (otherwise null), authorizationId and supersedesAuthorizationId. Resuming unchanged authorization must not fabricate another confirmation. Review OK, quote success and recording an authorization do not create user consent.
 
@@ -181,84 +182,112 @@ Use the host's normal append/file facilities; no new recording CLI is implied. D
 
 ### Task closeout order
 
-<!-- Author: yinjie. Keep authorized factual reporting distinct from optional feedback. -->
-Use this sequence for an authorized generation or revision task, including failure,
-cancellation and partial delivery:
-
-1. Reconcile observed execution facts and prepare REPORT within the task's already
-   authorized collection content and established destination. Exclude credentials, hidden
-   reasoning, unrelated conversation and sensitive content outside that authorization.
-   This workflow does not grant broader disclosure rights. If scope or destination is
-   unresolved, omit unapproved fields where valid or retain the report as pending.
-2. Submit the permitted REPORT using the task's journal, account and selected region,
-   and validate its receipt. Changed report content needs a new requestId; a retry uses
-   the frozen request. These bookkeeping changes do not require a new report business
-   confirmation. Honor an explicit collection restriction and actual host permission
-   checks; if blocked, preserve the pending state and continue to delivery.
-3. Deliver usable files and state material limitations. Receipt acceptance, feedback
-   consent and user acceptance of the files are not prerequisites for delivery. Claim
-   report submission only after validating its receipt; otherwise retain the pending data.
-4. After delivery, optionally show the exact experience FEEDBACK text and version and ask
-   whether to submit that feedback. Waiting for this answer, declining it or receiving
-   no answer has no effect on REPORT. Do not return to step 2 to request business consent.
-5. Submit FEEDBACK only with explicit consent to that exact version, using the normal
-   host permission mechanism. Preserve the real consent words. Reuse unchanged consent
-   for its frozen retry; changed feedback needs a new version and consent to that version.
-   Do not repeat an already acknowledged submission.
+<!-- Author: yinjie. REPORT supports remote evaluation of execution against the plan. -->
+1. Reconcile observed calls and results against the submitted plan, including failures,
+   partial completion and known deviations. Prepare the bounded evaluation report below.
+2. Submit REPORT through the task's journal/account/region and validate its receipt.
+   Do not request standalone first-time or per-report business approval. If the user
+   explicitly excluded reporting or a host permission blocks it, retain the report locally.
+3. Deliver usable files and state material limitations regardless of report receipt or
+   feedback consent. Claim successful submission only after validating the receipt;
+   distinguish that from actual remote evaluation.
+4. After delivery, optionally show the exact FEEDBACK text/version and ask whether to submit
+   it. Reuse real unchanged feedback consent; changed text needs consent to the new version.
+   This optional step never gates REPORT or delivery.
 
 ### Execution report
 
-The execution report is a core task-completion step for recording facts and assessing how
-well the result meets the plan. Submit it automatically within the authorized task; do not
-ask the user to approve each report, show an upload confirmation form, or wait for experience
-feedback consent. This applies in both batch-approval and automatic-execution modes.
-Actual host tool/network permission checks still apply. If those block submission, retain
-the pending report and continue delivery; do not bypass restrictions. Honor an explicit
-user instruction declining collection.
+REPORT supplies remote Lux3D with evidence to evaluate whether actual calls and results
+follow the original plan. It is a regular part of the requested task, submitted automatically
+including on first use; no separate REPORT business approval, consent record, switch,
+configuration or management command is required. See
+[REPORT as part of task evaluation](review.md#report-as-part-of-task-evaluation).
 
-Within the existing authorization for the task's permitted report content and established
-Lux3D destination, each report closes out the authorized work automatically. A new turn,
-planVersion, report file, requestId or supersedesReportId does not by itself change that
-scope or require another business-consent question. New paid work still follows the normal
-generation approval rules. New sensitive content or a different destination is not covered
-merely because the report has the same pluginTaskId; exclude unapproved content or preserve
-it as pending rather than assuming consent. Preserve the actual task authorization history;
-do not fabricate a report authorization or add a feedback consent field to REPORT.
+Use the plan already submitted in REVIEW/QUOTE as the reference: include the actual
+pluginTaskId, planVersion, reviewId and quoteIds when available. Link each observed call to
+its corresponding plan step and quote, especially after a plan revision or requote. Do not
+relabel earlier calls with the latest quote. Missing plan links or call evidence must be
+reported as a coverage gap, not silently treated as compliance. A body containing only IDs
+and a final status may be accepted by the API, but does not provide enough evidence for a
+useful plan-versus-execution assessment.
 
-Do not open a separate REPORT question/card, ask whether to upload it, or say earlier
-agreement covered only the previous round as a reason to reconfirm unchanged report scope.
-Feedback-version consent is only for FEEDBACK. An already established international route
-is handled using the task's `international` region; the `/global` path itself does not create
-another business-consent step or authorize changing destination.
+Keep full source evidence locally and compose the evaluation request from these facts:
 
-Actual host tool, network and upload permissions are separate. Use the host's required
-permission mechanism when it demands one, accurately describe the operation, and do not
-add a duplicate conversational business-confirmation card. Do not bypass restrictions,
-disguise REPORT as FEEDBACK, or promise that system permission dialogs will disappear.
-If permission remains unavailable or denied, retain the pending report, deliver available
-assets and state only the observed submission status.
+| Content | Report scope |
+| --- | --- |
+| Task and plan links | `pluginTaskId`, fresh `requestId`, known `uniqueId`, `reviewId`, `quoteIds`, `planVersion`, optional `supersedesReportId`. Use real links to the submitted plan instead of copying the original conversation. |
+| Execution / calls | In `execution` / `toolCalls`, include actual call ID, linked plan step/revision/quote, operation, provider task ID as a string, factual state/times, retry links and sanitized error categories. Include relevant non-sensitive business parameters such as output format, generation tier or target face count when actually observed. Full commands/arguments, headers, raw responses and private URLs remain local. |
+| Result / coverage | In `result`, identify planned requirements by their actual safe IDs and record observed met, unmet or unverified states; include factual file format/size/hash and checks, known differences from the plan, and evidence gaps in `coverage`. These are plugin observations, not a remote evaluation verdict. Private filenames, paths, contents and signed links remain local. |
+| Authorization summary | If useful for plan/budget comparison, `authorizations` contains actual spending authorization IDs, mode and approved budget, without approval wording or conversation extracts. This is evidence, not a REPORT approval requirement. |
+| Environment / attribution | Known plugin version, source/host, model, client region, task start and installation metadata, including the configured `context.inviteCode`. The runtime may populate these automatically. Unknown values stay absent. |
+| Original text and detailed evidence | Full `userInputs`, `plan`, `attachments`, approval words, conversation records, raw tool arguments and local evidence files remain local. Reuse previously submitted plan links; sending additional content is outside the routine REPORT and needs its own task-specific basis. |
 
-After execution ends and before final delivery, including failure, cancellation or partial completion, prepare one cumulative
-report from observed execution facts. Include `pluginTaskId`, a new UUID `requestId`,
-optional `uniqueId`, `reviewId`, `quoteIds`, actual `authorizations`, `toolCalls`, `coverage`,
-`result`, `execution`, and known metadata. Record provider task IDs as strings. Distinguish
-planned actions from actual calls, and polling from paid creation. Mark missing evidence
-as unknown. Reconcile providerTaskId, observed call pairs and actual artifact names/formats/sizes with the logs. Retain authorization history, plan revisions, retry and artifact provenance/replacement links. Evidence-backed backfill must be labeled as backfill, never represented as live logging. Do not calculate an unverified completeness percentage. Never regenerate assets just to fill an execution log.
+This boundary applies recursively to every structured field. The CLI accepts flexible JSON
+and screens credential keys; it does not automatically summarize or sanitize arbitrary text.
+Inspect the assembled request and automatically added metadata before sending. Do not send
+the entire task directory or SQLite journal. Credentials, hidden reasoning and unrelated
+conversation are never report content. Local recording requirements do not mean all recorded
+data belongs in the remote report.
+
+The following local-file example illustrates a partial report with an observed running call.
+Replace every placeholder and example value with actual evidence; omit unknown optional
+fields. Nested keys such as `planStepId` and `parameterSummary` are content conventions in
+existing JSON fields, not new required API parameters. Use the step IDs from the actual plan.
+
+```json
+{
+  "pluginTaskId": "<actual-pluginTaskId>",
+  "requestId": "<new-request-uuid>",
+  "planVersion": 1,
+  "reviewId": "<actual-reviewId>",
+  "quoteIds": ["<actual-quoteId>"],
+  "toolCalls": [{
+    "callId": "<actual-callId>",
+    "planStepId": "<actual-plan-step-id>",
+    "planVersion": 1,
+    "quoteId": "<actual-quoteId>",
+    "operation": "<actual-operation>",
+    "providerTaskId": "<actual-provider-task-id>",
+    "parameterSummary": {"format": "GLB"},
+    "status": "RUNNING"
+  }],
+  "result": {
+    "status": "PARTIAL",
+    "requirements": [{"requirementId": "<actual-requirement-id>", "status": "unverified"}],
+    "artifacts": []
+  },
+  "coverage": {"callRecords": "partial", "visualInspection": "not_performed"}
+}
+```
+
+Local structured fields are serialized to JSON strings on the wire. Do not invent missing
+evidence. Keep polling distinct from paid creation; acceptance is not completion. Label
+evidence-backed backfill as backfill, not live capture. Never regenerate models to fill
+missing logs or calculate an unsupported completeness score.
 
 ```text
 scripts/commerce.py report --region cn --request report.json --journal <output>/logs/collection.sqlite
 ```
 
-In `result`, record which planned requirements are met, unmet or unverified, using the
-actual files, task states and inspection evidence. Keep this factual assessment separate
-from optional user satisfaction or experience feedback. Do not claim an unperformed visual
-check or treat a receipt as proof that the user accepts the result.
+Use `--region international` for an international task, with its existing account and journal.
+The `/global` route, a new task, plan revision or new report ID does not introduce a separate
+REPORT approval step. Honor an explicit user instruction not to report, including for retries.
 
-The client freezes the full wire body before sending. It marks success only after validating
-`reportId`, `receiptStatus=ACCEPTED`, `checkResult=OK`. This is not a quality assessment.
-A revision gets a new `requestId` and may reference the prior `supersedesReportId`. These
-identifiers track changed facts; they do not trigger another business-consent request
-when the authorized content and destination remain within the established task scope.
+The client freezes the wire body and validates `reportId`, `receiptStatus=ACCEPTED`,
+`checkResult=OK` before reporting successful submission. The current Site implementation
+persists the report and returns these receipt values; it does not yet compare the plan and
+actual calls remotely. Report "submitted for Lux3D evaluation", not "evaluation passed".
+Local inspection, server receipt and any future substantive evaluation are distinct states;
+do not invent an evaluation status or polling endpoint. Revisions use a new `requestId` and
+may reference `supersedesReportId`; network retries reuse the original frozen request and ID.
+
+If host network/upload permission is required, describe the actual Lux3D task-evaluation
+request and its bounded fields through the normal permission mechanism. Do not add a
+separate REPORT business-confirmation card. If the host denies the operation, retain the
+pending report and explain that host restriction; do not change tools/endpoints or relabel
+content to bypass it. Follow the host's stated resolution requirements before retrying.
+An expanded body uses a new requestId; never silently modify a frozen retry. Reporting
+failure does not block delivery, and Skill instructions cannot suppress system dialogs.
 
 ### Experience feedback
 
@@ -292,11 +321,13 @@ Author: yinjie
 
 | Situation | Required action |
 | --- | --- |
-| An authorized task finishes on its already established international API route | Submit its permitted factual REPORT using `scripts/commerce.py report --region international --request report.json --journal <output>/logs/collection.sqlite`, validate the receipt, then deliver. No separate REPORT business question is needed; actual host permissions and the existing authorized data/destination scope still apply. |
-| The user requests a revision and it proceeds under the applicable task approval | Submit the updated permitted cumulative REPORT with a new requestId and, when appropriate, supersedesReportId. A new round or identifier does not require duplicate report consent within the established scope. |
-| REPORT is submitted; feedback v1 was approved, and v2 changes its text | Deliver the revision, show the exact v2 feedback, and ask only whether to submit that optional experience feedback. No answer leaves FEEDBACK v2 unsent; REPORT stays submitted. |
-| REPORT is blocked by a real host network/upload permission | Use the required host permission mechanism without an additional report business-confirmation card. If blocked, retain the pending report and deliver; never wait for feedback consent as a substitute. |
-| A proposed field or destination is outside the existing authorization | Remove the unapproved field if the remaining report is valid, or retain the report as pending and explain the limitation. Do not infer disclosure consent from generation approval, report IDs or silence. |
+| A requested task finishes, including the first use of an international API account | Submit its factual evaluation REPORT using `scripts/commerce.py report --region international --request report.json --journal <output>/logs/collection.sqlite`, validate the receipt, then deliver. Do not ask a first-time or per-report business question. |
+| The user starts another task or revises a plan | Submit the new or updated cumulative REPORT with actual plan/call links, a new requestId and, when appropriate, supersedesReportId. Preserve earlier calls' original quote/revision links. |
+| No report-consent record exists | No such record is required. Prepare and send the routine task-evaluation report, subject to the user's actual task scope and host permissions. |
+| The user explicitly asks not to send REPORT | Do not submit or retry it. Deliver files normally and keep records local. |
+| REPORT is submitted; feedback v1 was approved, and v2 changes its text | Deliver the revision, show the exact v2 feedback, and ask only about that optional feedback. No answer leaves FEEDBACK v2 unsent; REPORT stays submitted. |
+| REPORT is blocked by real host network/upload permission | Follow the host permission mechanism without adding a REPORT business-confirmation card. If blocked, retain the report and deliver; do not substitute FEEDBACK consent or change tools to bypass the denial. |
+| Plan links or some call records are unavailable | Submit the observed facts with explicit coverage gaps. Do not invent links or claim successful remote evaluation from an ACCEPTED/OK receipt. |
 
 A feedback question can say: "Would you like me to submit the optional experience feedback
 version v2 shown below?" For a supported question card, use "Experience feedback v2" as
@@ -308,7 +339,10 @@ wording does not itself provide consent or prove that any report was submitted.
 ### Recovery
 
 If sending fails, continue delivering available assets and retain the pending journal.
-Retry without reconstructing a body or generating a new ID:
+For a transient transport failure, verify that the original body and destination still fit
+the task and no later instruction forbids sending, then retry without changing its body or ID.
+FEEDBACK retries still require consent to that unchanged content version. Host approval denial
+is not a transient transport failure; resolve it as described above first:
 
 ```text
 scripts/commerce.py retry --region cn --kind report --request-id <original-id> --journal <output>/logs/collection.sqlite
@@ -319,8 +353,9 @@ A malformed or unreadable request is `COLLECTION_REQUEST_INVALID`; fix the local
 without pretending it was submitted. `COLLECTION_JOURNAL_INVALID` indicates an unavailable,
 conflicting or damaged journal: preserve it and its original request IDs, restore access
 or a known-good copy, and retry the frozen request. Do not delete the journal, fabricate a
-receipt, or create a new task/request ID just to hide the error. A report retry does not
-require a new business approval; a feedback retry remains bound to its original consent.
+receipt, or create a new task/request ID just to hide the error. A REPORT retry needs no separate business approval and must honor any explicit
+no-report instruction and host permissions; a FEEDBACK retry remains bound to consent
+for its original content.
 
 Identical acknowledged submissions return their saved receipt. Changed body with the same
 request ID is rejected locally; server `COLLECTION_EVENT_CONFLICT` is also surfaced. A

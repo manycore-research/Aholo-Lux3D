@@ -17,7 +17,8 @@
     "sha256": "8849f06fa4bf9596eb16fc52064878fd48658a5318f6008e2c613cfbd118bf8f",
     "checksumPath": "lux3d-plugin/common/lux3d-plugin-1.1.0-common-skill.zip.sha256",
     "releaseRecordPath": "lux3d-plugin/common/lux3d-plugin-1.1.0-common-skill.release.json",
-    "fileCount": 46
+    "fileCount": 46,
+    "role": "historical-record"
   },
   "installation": {
     "mode": "local-skill",
@@ -38,12 +39,18 @@
   },
   "sharedCore": {
     "version": "0.2.0",
-    "digest": "147b326aa86d54ff926c619247754165cab50b2400938f1c649590ecd4843929",
-    "digestSource": "upstream-build-info"
+    "digest": "0fc88455509b83a68c04aa41562f236c8ab133e3cc9f1ef8d3529c97d8995800",
+    "digestSource": "github-skill-source-core-body-references"
   },
   "validation": {
     "upstreamHostValidated": false,
     "liveServiceValidated": false,
     "note": "Local copy and offline checks do not establish acceptance in every host or paid generation."
+  },
+  "source": {
+    "path": "plugins/common/aholo-lux3d",
+    "sha256": "3315bb3ce4e2c94c6137b1a3fff44a39b39547e2b4d7acf70c8d117026075e11",
+    "digestProtocol": "lux3d.entries/v1",
+    "fileCount": 46
   }
 }

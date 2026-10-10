@@ -1,4 +1,4 @@
-"""Install the verified Common Skill into an explicitly chosen local Skill directory.
+"""Install the verified maintained Common Skill source into an explicitly chosen local Skill directory.
 
 Only Python's standard library is used. This copies the complete release without
 changing host settings, downloading dependencies, or contacting Lux3D.
@@ -16,7 +16,6 @@ import shutil
 import stat
 import sys
 import tempfile
-import zipfile
 
 import sync_release
 
@@ -181,7 +180,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
     try:
         result = install(args.skills_dir, args.invite_code)
-    except (OSError, ValueError, KeyError, zipfile.BadZipFile) as exc:
+    except (OSError, ValueError, KeyError) as exc:
         print(json.dumps({"ok": False, "error": str(exc)}, ensure_ascii=False), file=sys.stderr)
         return 1
     print(json.dumps({"ok": True, **result}, ensure_ascii=False, indent=2))

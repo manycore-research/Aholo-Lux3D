@@ -10,6 +10,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import shutil
 import sys
 import tempfile
 import unittest
@@ -38,7 +39,7 @@ class SkillInstallationTests(unittest.TestCase):
         source = install_skill.sync_release.ROOT / install_skill.sync_release.SKILL_PATH
         self.assertEqual(install_skill.snapshot(installed), install_skill.snapshot(source))
         release = json.loads((ROOT / "release-manifest.json").read_text(encoding="utf-8"))
-        self.assertEqual(first["fileCount"], release["archive"]["fileCount"])
+        self.assertEqual(first["fileCount"], release["source"]["fileCount"])
         self.assertFalse(first["unchanged"])
         before = {str(p): p.stat().st_mtime_ns for p in installed.rglob("*")}
         second = install_skill.install(self.skills_dir)
@@ -74,18 +75,48 @@ class SkillInstallationTests(unittest.TestCase):
             install_skill.install(self.skills_dir, invite_code="replacement")
         self.assertEqual(before, install_skill.snapshot(self.skills_dir))
 
-    def test_bad_release_rejected_before_creating_destination(self):
+    def source_checkout(self):
         checkout = self.root / "checkout"
-        checkout.mkdir()
-        release = json.loads((ROOT / "release-manifest.json").read_text(encoding="utf-8"))
-        archive = ROOT / release["archive"]["path"]
+        shutil.copytree(ROOT / install_skill.sync_release.SKILL_PATH,
+                        checkout / install_skill.sync_release.SKILL_PATH)
+        shutil.copyfile(ROOT / "release-manifest.json", checkout / "release-manifest.json")
+        return checkout
+
+    def test_bad_release_rejected_before_creating_destination(self):
+        checkout = self.source_checkout()
         with mock.patch.object(install_skill.sync_release, "ROOT", checkout):
-            install_skill.sync_release.sync(archive)
-            skill = checkout / install_skill.sync_release.SKILL_PATH
-            (skill / "SKILL.md").write_text("changed after synchronization", encoding="utf-8")
-            with self.assertRaisesRegex(ValueError, "Distribution drift"):
+            install_skill.sync_release.sync()
+            body = checkout / install_skill.sync_release.SKILL_PATH / "body.md"
+            body.write_bytes(body.read_bytes() + b"\nUnrecorded source change.\n")
+            with self.assertRaisesRegex(ValueError, "Source integrity drift"):
                 install_skill.install(self.skills_dir, invite_code="not-recorded")
         self.assertFalse(self.skills_dir.exists())
+
+    def test_install_uses_latest_source_without_reading_historical_zip(self):
+        checkout = self.source_checkout()
+        release = json.loads((checkout / "release-manifest.json").read_text())
+        historical = checkout / release["archive"]["path"]
+        source = checkout / install_skill.sync_release.SKILL_PATH
+        names = ("SKILL.md", "body.md", "references/review.md", "references/results.md")
+        expected = {}
+        for name in names:
+            path = source / name
+            expected[name] = path.read_bytes() + b"\nNew source guidance preserved.\n"
+            path.write_bytes(expected[name])
+        with mock.patch.object(install_skill.sync_release, "ROOT", checkout):
+            install_skill.sync_release.sync()
+            for state in ("missing", "corrupt"):
+                with self.subTest(archive=state):
+                    if state == "corrupt":
+                        historical.parent.mkdir(parents=True)
+                        historical.write_bytes(b"not a ZIP; only a historical record")
+                    target = self.root / state / "skills"
+                    result = install_skill.install(target)
+                    installed = Path(result["path"])
+                    self.assertEqual(install_skill.snapshot(source), install_skill.snapshot(installed))
+                    for name in names:
+                        self.assertEqual(expected[name], (installed / name).read_bytes())
+            self.assertEqual(b"not a ZIP; only a historical record", historical.read_bytes())
 
     def test_repository_and_source_destinations_rejected(self):
         for parent in (ROOT, ROOT / "plugins/common", ROOT / "scripts",

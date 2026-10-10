@@ -1,72 +1,48 @@
-"""Synchronize the verified Common Skill archive for local installation in any supported host.
+"""Refresh or verify the maintained Common Skill source integrity record.
 
+The historical ZIP is a record only; this command never reads or writes it.
 Uses only Python's standard library. No installation, API calls or publishing.
 Run with --check to verify the checkout without writing any files.
+
+Author: yinjie.
 """
 
 from __future__ import annotations
 
 import argparse
 import hashlib
-import io
 import json
 from pathlib import Path, PurePosixPath
 import re
 import stat
 import unicodedata
-import zipfile
 
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILL_PATH = Path("plugins/common/aholo-lux3d")
 LEGACY_PATHS = ("plugins/codex", "lux3d-plugin/codex", ".agents/plugins/marketplace.json")
-COMMON_PREFIX = "aholo-lux3d/"
 MAX_BYTES = 256 * 1024 * 1024
-
-
-def digest(data):
-    return hashlib.sha256(data).hexdigest()
+DIGEST_PROTOCOL = "lux3d.entries/v1"
 
 
 def json_bytes(value):
     return (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
 
 
-def read_archive(path):
-    """Validate checksum and portable paths before extracting anything."""
-    payload = path.read_bytes()
-    checksum = path.with_suffix(path.suffix + ".sha256").read_text(encoding="utf-8").split()
-    if len(checksum) != 2 or checksum[1].lstrip("*") != path.name or checksum[0] != digest(payload):
-        raise ValueError(f"Archive checksum mismatch: {path.name}")
-    files, seen, total = {}, set(), 0
-    with zipfile.ZipFile(io.BytesIO(payload)) as archive:
-        for entry in archive.infolist():
-            # ZipInfo normalizes Windows separators and truncates at NUL;
-            # validate the original spelling, before that normalization.
-            name = entry.orig_filename
-            parts = PurePosixPath(name).parts
-            if (not name.startswith(COMMON_PREFIX) or "\\" in name or any(c in name for c in ':<>"|?*')
-                    or name.startswith("/") or any(p in ("", ".", "..") for p in name.split("/"))
-                    or any(p.endswith((".", " ")) or re.fullmatch(r"(?i)(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\..*)?", p) for p in parts)
-                    or any(ord(c) < 32 for c in name) or entry.is_dir()
-                    or stat.S_IFMT(entry.external_attr >> 16) not in (0, stat.S_IFREG)):
-                raise ValueError(f"Unsafe or unsupported archive entry: {name}")
-            key = unicodedata.normalize("NFC", name).casefold()
-            if key in seen:
-                raise ValueError(f"Duplicate archive entry: {name}")
-            seen.add(key)
-            total += entry.file_size
-            if entry.file_size > 64 * 1024 * 1024 or total > MAX_BYTES:
-                raise ValueError("Archive exceeds release size limits")
-            files[name[len(COMMON_PREFIX):]] = archive.read(entry)
-    for name in seen:
-        if any(parent.as_posix() in seen for parent in PurePosixPath(name).parents):
-            raise ValueError(f"Archive file/directory collision: {name}")
-    return payload, files
+def entries_digest(files):
+    """Hash each path-length, content-length, path, content tuple using v1."""
+    value = hashlib.sha256((DIGEST_PROTOCOL + "\0").encode("ascii"))
+    for name, data in sorted(files.items()):
+        name = name.encode("utf-8")
+        value.update(len(name).to_bytes(8, "big"))
+        value.update(len(data).to_bytes(8, "big"))
+        value.update(name)
+        value.update(data)
+    return value.hexdigest()
 
 
 def safe_target(relative):
-    """Do not follow symlinks or Windows junctions in managed output paths."""
+    """Do not follow symlinks or Windows junctions in managed paths."""
     path = ROOT / relative
     path.resolve().relative_to(ROOT)
     cursor = ROOT
@@ -76,28 +52,49 @@ def safe_target(relative):
             attributes = getattr(cursor.lstat(), "st_file_attributes", 0)
         except FileNotFoundError:
             attributes = 0
-        # lstat works on Python 3.10/3.11 as well as hosts with is_junction().
         if cursor.is_symlink() or attributes & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400):
             raise ValueError(f"Linked output path is not supported: {cursor}")
     return path
 
 
+def validate_name(name):
+    parts = PurePosixPath(name).parts
+    if ("\\" in name or any(c in name for c in ':<>"|?*')
+            or name.startswith("/") or any(p in ("", ".", "..") for p in name.split("/"))
+            or any(p.endswith((".", " ")) or re.fullmatch(r"(?i)(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\..*)?", p) for p in parts)
+            or any(ord(c) < 32 for c in name)):
+        raise ValueError(f"Unsafe or unsupported source path: {name}")
+
+
 def tree_files(root):
-    result = {}
-    if root.exists():
-        for path in root.rglob("*"):
+    """Read regular source files without traversing linked directories."""
+    if not root.is_dir():
+        raise ValueError(f"Missing Common Skill source directory: {root}")
+    result, seen, total = {}, set(), 0
+    pending = [root]
+    while pending:
+        for path in pending.pop().iterdir():
             safe_target(path.relative_to(ROOT))
-            if path.is_file():
-                result[path.relative_to(root).as_posix()] = path.read_bytes()
+            name = path.relative_to(root).as_posix()
+            validate_name(name)
+            key = unicodedata.normalize("NFC", name).casefold()
+            if key in seen:
+                raise ValueError(f"Duplicate source path: {name}")
+            seen.add(key)
+            metadata = path.lstat()
+            if stat.S_ISDIR(metadata.st_mode):
+                pending.append(path)
+            elif stat.S_ISREG(metadata.st_mode):
+                total += metadata.st_size
+                if metadata.st_size > 64 * 1024 * 1024 or total > MAX_BYTES:
+                    raise ValueError("Skill source exceeds release size limits")
+                result[name] = path.read_bytes()
+            else:
+                raise ValueError(f"Unsupported entry in Skill source: {name}")
     return result
 
 
-def sync(common_archive=None, *, check=False):
-    if common_archive is None:
-        current = json.loads((ROOT / "release-manifest.json").read_text(encoding="utf-8"))
-        common_archive = safe_target(Path(current["archive"]["path"]))
-    common_archive = Path(common_archive)
-    archive_bytes, files = read_archive(common_archive)
+def validate_skill(files):
     build = json.loads(files["build-info.json"])
     adapter = json.loads(files["adapter.json"])
     version = build["version"]
@@ -127,80 +124,61 @@ def sync(common_archive=None, *, check=False):
             != {"codex": 1, "claude-code": 2, "deepseek": 3, "workbuddy": 4}
             or registry.get("fallback") != {"source": 100, "agentName": "detected-host-name"}):
         raise ValueError("Invalid Common host identity registry")
-    record_bytes = common_archive.with_suffix(".release.json").read_bytes()
-    record = json.loads(record_bytes)
-    if (record.get("schema") != "lux3d.release-artifact/v1"
-            or record.get("filename") != common_archive.name or record.get("sha256") != digest(archive_bytes)
-            or record.get("version") != version or record.get("buildInfo") != build
-            or record.get("releaseUnit") != "common" or record.get("mode") != "skill"):
-        raise ValueError("Common release provenance does not match its archive")
-    archive_path = Path(f"lux3d-plugin/common/lux3d-plugin-{version}-common-skill.zip")
-    if common_archive.name != archive_path.name:
-        raise ValueError(f"Expected archive name: {archive_path.name}")
-    checksum_path = archive_path.with_suffix(".zip.sha256")
-    record_path = archive_path.with_suffix(".release.json")
-    manifest = {
-        "schemaVersion": "aholo-lux3d-common-skill/v1",
-        "distributionRepository": "https://github.com/manycore-research/Aholo-Lux3D",
-        "distributionStatus": "local-skill",
-        "agentEntrypoint": "AGENTS.md",
-        "agentEntrypointURL": "https://raw.githubusercontent.com/manycore-research/Aholo-Lux3D/master/AGENTS.md",
-        "gitRef": "master",
-        "skill": {"name": "aholo-lux3d", "displayName": "Aholo Lux3D", "version": version,
-                  "path": SKILL_PATH.as_posix(), "identityMode": "automatic-host"},
-        "archive": {"path": archive_path.as_posix(), "sha256": digest(archive_bytes),
-                    "checksumPath": checksum_path.as_posix(), "releaseRecordPath": record_path.as_posix(),
-                    "fileCount": len(files)},
-        "installation": {"mode": "local-skill", "directoryName": "aholo-lux3d",
-                         "helper": "scripts/install_skill.py", "hostIdentityRegistry": "host-identity.json",
-                         "requires": ["local-skills", "python>=3.10", "filesystem", "https", "credential-injection"]},
-        "sites": {"china": "https://lux3d.aholo3d.cn", "international": "https://lux3d.aholo3d.com"},
-        "sharedCore": {"version": build["coreVersion"], "digest": build["coreDigest"],
-                       "digestSource": "upstream-build-info"},
-        "validation": {"upstreamHostValidated": build.get("hostValidated", False), "liveServiceValidated": False,
-                       "note": "Local copy and offline checks do not establish acceptance in every host or paid generation."},
-    }
-    expected = {SKILL_PATH / name: data for name, data in files.items()}
-    expected.update({archive_path: archive_bytes, record_path: record_bytes,
-                     checksum_path: f"{digest(archive_bytes)}  {archive_path.name}\n".encode(),
-                     Path("release-manifest.json"): json_bytes(manifest)})
+    return build
+
+
+def sync(common_archive=None, *, check=False):
+    if common_archive is not None:
+        raise ValueError("Archive import is no longer supported; maintain plugins/common/aholo-lux3d directly")
+    manifest_path = safe_target(Path("release-manifest.json"))
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     for relative in LEGACY_PATHS:
         if safe_target(Path(relative)).exists():
             raise ValueError(f"Obsolete Codex distribution must be removed before synchronization: {relative}")
-    actual = tree_files(safe_target(SKILL_PATH))
-    stale = [SKILL_PATH / name for name in actual.keys() - files.keys()]
-    for path in (*expected, *stale):
-        target = safe_target(path)
-        if target.is_dir() or any(parent.exists() and not parent.is_dir() for parent in target.parents):
-            raise ValueError(f"Output file/directory collision: {path}")
-    differences = [path.as_posix() for path, data in expected.items()
-                   if not (ROOT / path).is_file() or (ROOT / path).read_bytes() != data]
+    files = tree_files(safe_target(SKILL_PATH))
+    build = validate_skill(files)
+    build.update({
+        "inputsDigest": entries_digest({n: data for n, data in files.items() if n != "build-info.json"}),
+        "coreDigest": entries_digest({n: data for n, data in files.items()
+                                      if n == "body.md" or n.startswith(("core/", "references/"))}),
+        "inputsDigestSource": "github-skill-source-excluding-build-info",
+        "coreDigestSource": "github-skill-source-core-body-references",
+        "digestProtocol": DIGEST_PROTOCOL,
+    })
+    files["build-info.json"] = json_bytes(build)
+    # Historical archive metadata is deliberately preserved without opening the archive.
+    manifest["skill"].update({"name": "aholo-lux3d", "version": build["version"],
+                              "path": SKILL_PATH.as_posix(), "identityMode": "automatic-host"})
+    manifest["source"] = {"path": SKILL_PATH.as_posix(), "sha256": entries_digest(files),
+                          "digestProtocol": DIGEST_PROTOCOL, "fileCount": len(files)}
+    manifest["sharedCore"] = {"version": build["coreVersion"], "digest": build["coreDigest"],
+                              "digestSource": build["coreDigestSource"]}
+    expected = {SKILL_PATH / "build-info.json": files["build-info.json"],
+                Path("release-manifest.json"): json_bytes(manifest)}
+    for relative in expected:
+        target = safe_target(relative)
+        if not target.is_file():
+            raise ValueError(f"Expected source metadata file: {relative}")
+    differences = [relative.as_posix() for relative, data in expected.items()
+                   if (ROOT / relative).read_bytes() != data]
     if check:
-        if differences or stale:
-            raise ValueError("Distribution drift: " + ", ".join(differences + [p.as_posix() for p in stale]))
+        if differences:
+            raise ValueError("Source integrity drift: " + ", ".join(differences))
     else:
-        for path in stale:
-            safe_target(path).unlink()
-        for path, data in expected.items():
-            target = safe_target(path)
-            target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_bytes(data)
-        for path in sorted((ROOT / SKILL_PATH).rglob("*"), key=lambda p: len(p.parts), reverse=True):
-            if path.is_dir() and not any(path.iterdir()):
-                safe_target(path.relative_to(ROOT)).rmdir()
-    return {"valid": True, "checkOnly": check, "version": version, "commonFiles": len(files),
-            "skillPath": SKILL_PATH.as_posix(), "commonSha256": digest(archive_bytes)}
+        for relative in differences:
+            safe_target(Path(relative)).write_bytes(expected[Path(relative)])
+    return {"valid": True, "checkOnly": check, "version": build["version"], "commonFiles": len(files),
+            "skillPath": SKILL_PATH.as_posix(), "sourceSha256": manifest["source"]["sha256"]}
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--common-archive", type=Path)
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
     try:
-        print(json.dumps(sync(args.common_archive, check=args.check), indent=2))
-    except (OSError, ValueError, KeyError, zipfile.BadZipFile) as exc:
-        parser.exit(1, f"Release sync failed: {exc}\n")
+        print(json.dumps(sync(check=args.check), indent=2))
+    except (OSError, ValueError, KeyError) as exc:
+        parser.exit(1, f"Source verification failed: {exc}\n")
 
 
 if __name__ == "__main__":

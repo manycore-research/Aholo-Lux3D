@@ -6,14 +6,17 @@
   "status": "implementation-candidate",
   "coreVersion": "0.2.0",
   "profileDigest": "623c76dc3bdb67ec3f17785bab322cdc73907997134411b97b761b1bb43a742b",
-  "inputsDigest": "276e395056a5a2a69bf13212397bd824aac4a5c9b7fd155750e121e358abdaf8",
+  "inputsDigest": "3f78cd63414a2c2c4a14b97ae41e3a07bb216b4d97ed4d7baf01524b2d7af07e",
   "identityMode": "automatic-host",
   "toolchain": {
-    "node": "24.14.0",
+    "python": "3.12.1",
     "platform": "win32",
-    "arch": "x64"
+    "arch": "AMD64"
   },
   "hostValidated": false,
   "mode": "skill",
-  "coreDigest": "147b326aa86d54ff926c619247754165cab50b2400938f1c649590ecd4843929"
+  "coreDigest": "0fc88455509b83a68c04aa41562f236c8ab133e3cc9f1ef8d3529c97d8995800",
+  "inputsDigestSource": "github-skill-source-excluding-build-info",
+  "coreDigestSource": "github-skill-source-core-body-references",
+  "digestProtocol": "lux3d.entries/v1"
 }

@@ -21,21 +21,17 @@ One common [Aholo Lux3D](https://lux3d.aholo3d.com) Skill for local installation
 | China website | https://lux3d.aholo3d.cn |
 | Local Skill name | `aholo-lux3d` |
 | Version | `1.1.0` |
-| Expanded Skill | [`plugins/common/aholo-lux3d/`](plugins/common/aholo-lux3d/) |
-| Release archive | [`lux3d-plugin-1.1.0-common-skill.zip`](lux3d-plugin/common/lux3d-plugin-1.1.0-common-skill.zip) |
+| Maintained Skill source | [`plugins/common/aholo-lux3d/`](plugins/common/aholo-lux3d/) |
+| Historical archive (record only) | [`lux3d-plugin-1.1.0-common-skill.zip`](lux3d-plugin/common/lux3d-plugin-1.1.0-common-skill.zip) |
 
-## 1.1.0 local validation (2026-10-09)
+## 1.1.0 source maintenance (2026-10-10)
 
-The current change is maintained only in this GitHub repository, primarily
-under `plugins/common/aholo-lux3d/`. The installer copies that directory; its
-existing preflight uses the archive as a byte-for-byte verification snapshot.
-After retaining version 1.1.0, all 40 distribution tests and the read-only
-synchronization check passed, including an isolated installation with a
-synthetic invite code and simulated quote/report requests from another working
-directory. All 46 source files match the current snapshot. The old snapshot
-was backed up before replacement. Real host upgrade and backend receipt have
-not been validated; no Git push or publication was performed. The separate
-GitLab repository has no retained changes from this task.
+The maintained source and actual installation input are in
+`plugins/common/aholo-lux3d/`. Source validation uses its own integrity record.
+The ZIP and sidecars in `lux3d-plugin/common/` remain unchanged historical records;
+they are not rebuilt for source updates and are not used to gate installation.
+Version stays `1.1.0`. Changes are limited to this GitHub repository; no GitLab
+synchronization, host installation, Git push or publication is implied.
 
 ## English
 
@@ -47,7 +43,7 @@ Ask your agent to install the common Skill:
 Read https://raw.githubusercontent.com/manycore-research/Aholo-Lux3D/master/AGENTS.md and install Aholo Lux3D as a local Skill in the current host.
 ```
 
-The agent checks the host's supported local Skill directory and existing Aholo Lux3D installations, downloads the repository, verifies the release, and installs the complete `aholo-lux3d` directory. The host needs local Skill support, Python 3.10 or newer, file access, HTTPS access, and secure credential injection. Codex, WorkBuddy, and other compatible hosts use the same files; each host's installation directory and reload procedure may differ.
+The agent checks the host's supported local Skill directory and existing Aholo Lux3D installations, downloads the repository, verifies the maintained source, and installs the complete `aholo-lux3d` directory. The host needs local Skill support, Python 3.10 or newer, file access, HTTPS access, and secure credential injection. Codex, WorkBuddy, and other compatible hosts use the same files; each host's installation directory and reload procedure may differ.
 
 For a manual installation from a downloaded checkout, first identify the host's actual **parent directory for local Skills**, then run from the repository root:
 
@@ -79,36 +75,41 @@ The public `AGENTS.md` URL remains the installation entrypoint. A webpage can ke
 ### Repository layers and maintenance
 
 ```text
-plugins/common/aholo-lux3d/              Complete common Skill, unchanged from the ZIP
+plugins/common/aholo-lux3d/              Maintained Skill and installation input
   SKILL.md                             Skill entrypoint: aholo-lux3d
 lux3d-plugin/common/
-  lux3d-plugin-1.1.0-common-skill.zip    Current common release
-  *.sha256                             Archive checksum
-  *.release.json                       Upstream release record
-release-manifest.json                  Common distribution metadata
-scripts/sync_release.py                Import, expand, and verify the release
-scripts/install_skill.py               Install into a host's local Skill directory
+  lux3d-plugin-1.1.0-common-skill.zip    Historical artifact only; keep unchanged
+  *.sha256                             Historical archive checksum
+  *.release.json                       Historical release record
+release-manifest.json                  Source integrity and historical artifact metadata
+scripts/sync_release.py                Record and verify current Skill source
+scripts/install_skill.py               Copy verified source to the host's Skill directory
 AGENTS.md                              Agent installation and maintenance instructions
 ```
 
-The maintained code and actual installation input are in `plugins/common/aholo-lux3d/`. `lux3d-plugin/common/` contains a matching archive used by the existing consistency check. For this GitHub-only change, review and edit the local Skill source without modifying the separate GitLab repository. Preserve source/snapshot consistency and back up the previous snapshot before an authorized same-version replacement. An archive import replaces the source directory; do not run it over local edits unintentionally.
+Edit `plugins/common/aholo-lux3d/` and refresh its source integrity record. Keep the
+historical ZIP, checksum and release record untouched; current source may differ from
+that ZIP. Installation does not require the ZIP and never extracts it over source.
+Do not use the previous `--common-archive` import workflow for source maintenance.
+This GitHub-only change does not modify the separate GitLab repository.
 
 Use Python 3.10 or newer from the repository root:
 
-Synchronization and installation use only the Python standard library. Runtime tests also require `requests`, declared in `plugins/common/aholo-lux3d/core/runtime/requirements.txt`; install those dependencies in your Python environment before running the tests.
-
 ```text
-python -B scripts/sync_release.py --common-archive "<common-skill.zip>"
 python -B scripts/sync_release.py
 python -B scripts/sync_release.py --check
 python -B -m unittest discover -s tests -v
 ```
 
-An imported archive requires adjacent `.sha256` and `.release.json` files. An explicit path imports that release; no arguments use the archive already in this repository. `--check` validates without changing files. Keep version metadata and installation documentation consistent when updating releases.
+The default command refreshes the source integrity record; `--check` validates without
+writing. Neither command rebuilds or imports ZIPs. Installation verifies the maintained
+source and the staged copy, and rejects different existing installations. These scripts
+use the standard library; runtime tests also require `requests` from
+`plugins/common/aholo-lux3d/core/runtime/requirements.txt`.
 
-Version `1.1.0` is a local release candidate. Packaging and offline checks do not establish public publication, successful discovery in every host, or live paid-generation acceptance. Record the checks actually completed before publishing.
-
-Historical validation on 2026-10-09 applies to the old `1.1.0` snapshot before this invite-code change: 31 offline tests passed. An isolated Codex installation discovered `aholo-lux3d` as an enabled repository Skill (`scope=repo`, `pluginId=null`); all 46 installed files matched that old snapshot. Those results do not validate the replacement archive just because it retains version `1.1.0`; record the current package checks and host discovery separately. Actual WorkBuddy client loading and live paid generation remain unverified. Generate the release record for the rebuilt archive and report its actual `hostValidated` state.
+Record validation for the actual source revision. Historical tests of an older `1.1.0`
+archive do not validate later source edits with the same version. Offline checks do not
+establish public publication, real host upgrade, WorkBuddy loading or live paid generation.
 
 ## 中文
 
@@ -120,7 +121,7 @@ Historical validation on 2026-10-09 applies to the old `1.1.0` snapshot before t
 读取 https://raw.githubusercontent.com/manycore-research/Aholo-Lux3D/master/AGENTS.md，并将 Aholo Lux3D 作为本地 Skill 安装到当前宿主。
 ```
 
-Agent 会确认宿主支持的本地 Skill 目录、检查已有的 Aholo Lux3D 安装、下载仓库并验证发布包，再安装完整的 `aholo-lux3d` 目录。宿主需要支持本地 Skill、Python 3.10 及以上、文件访问、HTTPS 和安全凭据注入。Codex、WorkBuddy 及其他兼容宿主共用同一份内容，各自的安装目录和重新加载方式可以不同。
+Agent 会确认宿主支持的本地 Skill 目录、检查已有的 Aholo Lux3D 安装、下载仓库并验证当前源码，再安装完整的 `aholo-lux3d` 目录。宿主需要支持本地 Skill、Python 3.10 及以上、文件访问、HTTPS 和安全凭据注入。Codex、WorkBuddy 及其他兼容宿主共用同一份内容，各自的安装目录和重新加载方式可以不同。
 
 手动安装时，先下载仓库并确认宿主实际支持的**本地 Skill 父目录**，然后在仓库根目录执行：
 
@@ -133,7 +134,7 @@ python -B scripts/install_skill.py --skills-dir "<宿主的本地Skill目录>"
 
 若官网安装请求带有邀请码，在请求后保留 `Invite Code: <实际邀请码>` 或 `邀请码：<实际邀请码>`，将占位文字替换为实际值。Agent 会将它传给安装器；没有邀请码时省略，不需要询问或编造。手动安装时，在安装命令后添加 `--invite-code="<实际邀请码>"`，按当前 shell 的规则将值作为一个字面量参数传入。
 
-安装器去除首尾空白，校验剩余长度为 1–255 个字符且原值不含 C0/C1 控制字符；安装成功或确认同包已安装后，将 `{"inviteCode":"<去除首尾空白的邀请码>"}` 原子保存到 `<宿主的本地Skill目录>/.aholo-lux3d-installation.json`。显式传入新码可更新该文件，不传码则保留已有配置。配置位于 Skill 包外，不影响发布包校验；发布校验失败或安装冲突不会修改配置，命令输出不回显邀请码。
+安装器去除首尾空白，校验剩余长度为 1–255 个字符且原值不含 C0/C1 控制字符；安装成功或确认同包已安装后，将 `{"inviteCode":"<去除首尾空白的邀请码>"}` 原子保存到 `<宿主的本地Skill目录>/.aholo-lux3d-installation.json`。显式传入新码可更新该文件，不传码则保留已有配置。配置位于 Skill 目录外，不影响源码校验；源码校验失败或安装冲突不会修改配置，命令输出不回显邀请码。
 
 后续 quote/review/report/feedback 采集会携带 `context.inviteCode`。当前仅记录采集元数据，不建立邀请关系、不校验奖励资格或发放奖励；本地安装器不会调用 Lux3D 接口。
 
@@ -151,28 +152,28 @@ python -B scripts/install_skill.py --skills-dir "<宿主的本地Skill目录>"
 
 ### 仓库分层与维护
 
-- `plugins/common/aholo-lux3d/`：原始公共 ZIP 中完整 Skill 的逐字节展开内容，所有兼容宿主共用。
-- `lux3d-plugin/common/`：公共发布 ZIP、`.sha256` 校验文件和 `.release.json` 上游发布记录；同版本替换前另存旧快照，以 `release-manifest.json` 和校验值标识当前发布内容。
-- `release-manifest.json`：公共分发元数据。
-- `scripts/sync_release.py`：从公共包导入、同步和只读校验。
-- `scripts/install_skill.py`：将完整 Skill 安装到宿主支持的本地目录。
+- `plugins/common/aholo-lux3d/`：维护中的完整 Skill，也是所有兼容宿主的实际安装来源。
+- `lux3d-plugin/common/`：历史 ZIP、原 `.sha256` 和 `.release.json`，仅作记录，源码更新时不修改。
+- `release-manifest.json`：分别记录当前源码的完整性信息和历史归档信息。
+- `scripts/sync_release.py`：更新源码记录或进行只读校验，不导入、不重打 ZIP。
+- `scripts/install_skill.py`：将校验后的完整源码安装到宿主支持的本地目录。
 
-本次以 `plugins/common/aholo-lux3d/` 为维护源码和实际安装输入，仅修改 GitHub 仓库，不修改 GitLab。`lux3d-plugin/common/` 中的 ZIP 为现有校验流程使用的对应快照；安装器复制的是 plugins 目录，安装前仍会检查它与快照一致。导入 ZIP 会覆盖目录，存在本地代码修改时不要无意运行同步覆盖。仓库根目录使用 Python 3.10 及以上执行：
-
-同步和安装脚本只使用 Python 标准库。运行时测试还需要 `plugins/common/aholo-lux3d/core/runtime/requirements.txt` 声明的 `requests`，运行测试前请在所用 Python 环境中安装这些依赖。
+保持版本 `1.1.0`，仅修改 GitHub 的 `plugins/` 主源，不修改 GitLab。当前源码无需与
+历史 ZIP 内容一致，安装也不依赖该 ZIP；禁止为了同步而用旧 ZIP 覆盖源码。维护时使用
+Python 3.10 及以上，在仓库根目录执行：
 
 ```text
-python -B scripts/sync_release.py --common-archive "<common-skill.zip>"
 python -B scripts/sync_release.py
 python -B scripts/sync_release.py --check
 python -B -m unittest discover -s tests -v
 ```
 
-源 ZIP 旁需要 `.sha256` 和 `.release.json` 文件。指定路径时导入发布包，不传参数时使用仓库中的公共包，`--check` 只验证不写入。更新版本时同步维护元数据和安装说明。
+不带参数时更新源码完整性记录，`--check` 只验证不写入；不要再使用旧的
+`--common-archive` 导入流程。安装器仍校验源码及暂存副本，并拒绝覆盖内容不同的已有
+安装。脚本只使用标准库，运行时测试另需安装 `core/runtime/requirements.txt` 中的依赖。
 
-这里的 `1.1.0` 是本地发布候选。打包和离线检查不代表已公开发布、所有宿主已发现并加载 Skill，或付费生成已经通过真实验收；发布前记录实际完成的检查。
-
-2026-10-09 的历史验收针对本次邀请码修改前的 `1.1.0` 旧快照：31 项离线测试通过；独立 Codex 环境成功发现已启用的仓库级 `aholo-lux3d` Skill（`scope=repo`、`pluginId=null`），安装后的 46 个文件与旧快照发布包一致。本次保持 `1.1.0` 版本号并替换归档，旧结果不自动成为替换后内容的验收；重新打包后需执行发布包与离线检查，宿主发现情况单独记录。真实 WorkBuddy 客户端加载及付费生成仍未验收。应根据重新构建的归档生成发布记录，并如实报告 `hostValidated` 状态。
+验收结果对应实际源码修订。同为 `1.1.0` 的旧归档测试不能替代新源码验证；离线测试
+不代表已推送 GitHub、已更新用户安装、已通过真实 WorkBuddy 加载或付费生成验收。
 
 ## 日本語
 

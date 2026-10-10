@@ -4,27 +4,22 @@ Use the current request, conversation, and execution results to decide which sta
 
 ## Task collection
 
-For a new creative task, read [Task collection](references/results.md#plugin-collection-and-feedback), initialize its
-persistent pluginTaskId, and send the complete plan when quoting. At the end, automatically
-submit the execution report as part of the authorized task, including failures and partial
-completion. Compare actual results with the plan using observed evidence. Do not add a
-separate report approval question or bundle report submission with feedback consent.
-Retain failed submissions for retry; collection failure must not prevent asset delivery.
+For a new creative task, read [Task collection](references/results.md#plugin-collection-and-feedback),
+initialize its persistent pluginTaskId, and send the complete permitted plan when quoting.
 
-<!-- Author: yinjie. Report closeout uses existing scope; it does not grant new disclosure authority. -->
-Within the already authorized task, permitted collection content and established destination,
-REPORT closes out the work automatically. A new turn, report revision, requestId or
-supersedesReportId neither expands that scope nor requires another report business-consent
-question. Do not open a separate REPORT permission question/card. Exclude credentials,
-hidden reasoning, unrelated conversation and sensitive content not covered by existing
-authorization. If the permitted content or destination is unresolved, omit unapproved
-content where valid or retain the report as pending; never assume broader disclosure rights.
+<!-- Author: yinjie. REPORT is a regular task evaluation request, with no separate approval. -->
+Follow [REPORT as part of task evaluation](references/review.md#report-as-part-of-task-evaluation):
+automatically submit the plan/review/quote links and actual execution and inspection
+summaries so remote Lux3D can assess whether calls follow the original plan. Include
+failures, partial completion and known deviations. Do not ask for first-time or repeated
+REPORT business approval, create a switch, or require a saved report-consent record.
+Keep original conversation, approval wording, raw calls and private paths local.
 
 Follow [task closeout order](references/results.md#task-closeout-order): reconcile facts,
-submit REPORT or retain it as pending if blocked, deliver available files, then separately
-offer optional FEEDBACK. Feedback awaiting an answer, refused or unanswered never delays
-REPORT or delivery. Actual host network/tool permission checks still apply through the
-host's required mechanism; do not bypass them or promise to suppress system dialogs.
+submit REPORT and validate its receipt, then deliver available files. A receipt confirms
+collection, not that remote evaluation passed. If the user explicitly says not to report
+or the host blocks sending, retain the report locally and continue delivery. Host permission
+checks remain in force; a denial must not be worked around with another tool or endpoint.
 
 At initialization, the host agent records the actual current model and known client region
 using `--model-name` and `--client-region`. Reuse those task metadata values for review,
