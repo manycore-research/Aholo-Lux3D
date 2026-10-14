@@ -69,12 +69,18 @@ h2 { font-size: 1.4rem; font-weight: 550; line-height: 1.2; letter-spacing: -.02
 .card-body { min-width: 0; }
 .viewport { height: 320px; position: relative; touch-action: none; background: radial-gradient(ellipse at 50% 35%, #f7f9fc 0%, var(--stage) 85%); outline-offset: -4px; }
 .viewport:focus-visible { outline-color: #1c5bad; }
+.preview-stages { min-width: 0; }
+.preview-stages .viewport + .viewport { border-top: 1px solid var(--border); }
 .preview-notice { position: absolute; inset: 0; display: grid; align-content: center; text-align: center; padding: 32px; font-size: 13px; line-height: 1.7; color: #455772; z-index: 4; background: var(--stage); }
 .stage-label { position: absolute; top: 15px; left: 20px; z-index: 4; pointer-events: none; font-size: 9px; letter-spacing: .13em; color: #55667c; }
 .stage-tools { position: absolute; bottom: 14px; left: 20px; right: 16px; z-index: 4; display: flex; align-items: center; justify-content: space-between; gap: 12px; pointer-events: none; }
 .stage-hint { font-size: 10px; color: #4c5e75; padding: 5px 0; }
 .reset { pointer-events: auto; border: 1px solid #b3c0d1; border-radius: 6px; background: #ffffffdd; padding: 7px 10px; font: inherit; font-size: 10px; color: #233d5d; cursor: pointer; }
 .reset:hover { background: #fff; border-color: #6a8dbb; }
+.animation-tools { position: absolute; bottom: 56px; left: 20px; right: 16px; z-index: 4; display: flex; align-items: center; gap: 8px; }
+.animation-select { min-width: 0; max-width: 65%; border: 1px solid #b3c0d1; border-radius: 6px; background: #ffffffdd; padding: 7px; font: inherit; font-size: 10px; color: #233d5d; }
+.action-results { margin: 0; padding: 0 22px 22px 39px; font-size: 11px; overflow-wrap: anywhere; }
+.action-results .failed { color: #f6d091; }
 .metadata { margin: 0; padding: 21px 22px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 21px 20px; }
 .metadata div { min-width: 0; }
 dt { font-size: 9px; text-transform: uppercase; letter-spacing: .1em; color: #94a7c0; margin-bottom: 7px; }

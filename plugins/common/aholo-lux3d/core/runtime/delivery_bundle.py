@@ -110,12 +110,13 @@ def _validate_state(state):
     }:
         raise ValueError("Task region must be cn or international")
     version = request.get("version")
-    if request["operation"] not in {"four-view", "export"} and (
+    versionless_operations = {"four-view", "mesh-retopology", "export", "articulation-animation", "auto-rig", "animation-retarget"}
+    if request["operation"] not in versionless_operations and (
         not isinstance(version, str) or not version.strip()
     ):
         raise ValueError("Generation workflow version must be a non-empty string")
-    if request["operation"] in {"four-view", "export"} and version is not None:
-        raise ValueError("Four-view/export workflow does not accept version")
+    if request["operation"] in versionless_operations and version is not None:
+        raise ValueError("This workflow operation does not accept version")
     expected = state.get("expectedFormats")
     if (
         not isinstance(expected, list)
@@ -127,8 +128,14 @@ def _validate_state(state):
         or len(set(expected)) != len(expected)
     ):
         raise ValueError("Invalid expectedFormats")
-    if not expected and request["operation"] != "four-view":
+    if not expected and request["operation"] != "four-view" and not (
+        request["operation"] == "articulation-animation" and status != "succeeded"
+    ):
         raise ValueError("3D workflow expectedFormats must not be empty")
+    if request["operation"] in {"auto-rig", "animation-retarget"}:
+        requested_format = "glb" if request["operation"] == "auto-rig" else request.get("outFormat", "glb")
+        if expected != [requested_format]:
+            raise ValueError("Digital-human expectedFormats must match the requested output")
     downloaded = state.get("downloadedArtifacts", [])
     if not isinstance(downloaded, list) or any(
         not isinstance(value, dict)
@@ -141,6 +148,12 @@ def _validate_state(state):
         value["format"] for value in downloaded
     }:
         raise ValueError("Succeeded workflow is missing requested artifacts")
+    if request["operation"] == "animation-retarget":
+        artifact_delivery.validate_action_delivery(
+            request, state.get("actionResults", []), state.get("completion"),
+            downloaded, complete=status == "succeeded",
+        )
+
 
 
 def _local_timing(state):
@@ -340,7 +353,7 @@ def _ready_scene(scene, spec_dir, items, artifacts, sources):
                 "sha256": artifact["sha256"],
             }
         )
-    # Two separators keep these IDs disjoint from every attempt:format asset ID.
+    # These scene roles cannot collide with supported attempt:format[:ordinal] IDs.
     scene_id, evidence_id = "scene:assembled:glb", "scene:execution:json"
     artifacts[scene_id] = {
         **inspected,
@@ -450,28 +463,42 @@ def _prepare(spec, spec_dir):
                 else:
                     task_ref = None
                 artifact_ids = []
-                for source in state.get("downloadedArtifacts") or []:
+                for source_index, source in enumerate(state.get("downloadedArtifacts") or []):
                     path = pathlib.Path(source["path"])
                     if not path.is_absolute():
                         path = state_dir / path
                     inspected = artifact_delivery.inspect_artifact(
-                        path, source.get("format")
+                        path, source.get("format"),
+                        require_embedded_glb=state["request"]["operation"] in {"auto-rig", "animation-retarget"},
+                        require_rig=state["request"]["operation"] in {"auto-rig", "animation-retarget"},
+                        require_animation=state["request"]["operation"] == "animation-retarget",
+                        minimum_animation_clips=len(source.get("actionIds", [])) or 1,
                     )
                     output_format = inspected["format"]
                     artifact_id = f"{attempt_id}:{output_format}"
+                    basename = output_format
+                    if state["request"]["operation"] == "animation-retarget":
+                        artifact_id += f":{source_index + 1:02}"
+                        basename += f"-{source_index + 1:02}"
                     if artifact_id in artifacts:
                         raise ValueError(
                             f"Duplicate artifact format in attempt: {attempt_id}"
                         )
                     extension = EXTENSIONS.get(output_format, output_format)
+                    if output_format == "file":
+                        extension = path.suffix.lower().lstrip(".")
+                        if not extension.isascii() or not extension.isalnum() or len(extension) > 11:
+                            extension = "bin"
                     sources[artifact_id] = pathlib.Path(inspected["path"])
                     artifacts[artifact_id] = {
                         **inspected,
                         "id": artifact_id,
                         "attemptId": attempt_id,
                         "taskRef": task_ref,
-                        "path": f"assets/{attempt_id}/{output_format}.{extension}",
+                        "path": f"assets/{attempt_id}/{basename}.{extension}",
                     }
+                    if "actionIds" in source:
+                        artifacts[artifact_id]["actionIds"] = list(source["actionIds"])
                     artifact_ids.append(artifact_id)
                 attempts[attempt_id] = {
                     "id": attempt_id,
@@ -480,6 +507,11 @@ def _prepare(spec, spec_dir):
                     **_local_timing(state),
                     "artifactIds": artifact_ids,
                 }
+                for field in ("actionResults", "completion"):
+                    if field in state:
+                        attempts[attempt_id][field] = artifact_delivery.without_transient_urls(state[field])
+                if state["request"]["operation"] == "articulation-animation":
+                    attempts[attempt_id]["warnings"] = ["JOINT_MOTION_NOT_VERIFIED"]
             if attempt_id in attempt_ids:
                 raise ValueError(f"Duplicate attempt reference in item: {attempt_id}")
             attempt_ids.append(attempt_id)
@@ -499,6 +531,7 @@ def _prepare(spec, spec_dir):
             and bool(item_artifacts)
             and selected_task is not None
             and selected_task["providerStatus"] == 3
+            and selected.get("completion", {}).get("status") != "partial"
         )
         items[item_id] = {
             "id": item_id,

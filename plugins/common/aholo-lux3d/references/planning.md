@@ -105,3 +105,33 @@ The command validates the quote-file structure, refreshes the account, and reque
 - After a successful quote, use [Review and approval](review.md) to decide whether execution can proceed. Obtain a new quote when parameters, quantities, accounts, or pricing conditions change, or when the quote expires.
 - A quote is an estimate before entitlements are applied, not the settled charge. Even a valid zero estimate does not guarantee free execution. Never treat failed or unknown costs as zero. Pause billable work if its cost cannot be quoted.
 - Handle credentials and other call failures through [Execution and recovery](execution.md). Planning and quoting do not submit generation tasks.
+
+
+## Model articulation plan
+
+Use `articulation-animation` to add joints and motion to an existing GLB. Collect
+the model and a prompt describing moving parts, fixed parts, motion and constraints.
+Upload local inputs through the regional Asset API. A URL without a `.glb` suffix
+is acceptable if it serves a GLB. Do not split parts or regenerate the model as an
+implicit prerequisite, or confuse articulation with character rigging/retargeting.
+
+Quote POST `/lux3d/v1/articulation-animation/task/create` with exactly `glbUrl` and
+`prompt`, using `build_articulation_animation_payload` to normalize inputs. No
+`version`, `contentId`, `uniqueId`, output-format or algorithm fields are accepted.
+Keep the quote and approval in the local execution record. Returned format is
+determined by the service; do not promise ZIP, a particular animation quality, or
+remote MCP support. Use the existing budget, quote and current-dialogue approval rules.
+
+## Mesh retopology plan
+
+Input is an existing static, non-Draco GLB URL (upload local files first). Bones, skinning,
+animation and morph targets are unsupported; original parts are not preserved by contract.
+Obtain a user-confirmed faceLimit: quad=true 1000–500000, quad=false 2000–1000000.
+No default budget. quad defaults true, bakeTextures false, textureSize 2048
+(512/1024/2048/4096 only). No public version or algorithm controls.
+The face count is a target, not a guaranteed exact count/all-quad/shape-preservation promise.
+
+Quote the real POST /lux3d/v1/mesh-retopology/task/create with the exact normalized public
+body returned by build_mesh_retopology_payload. Keep the existing account/region/source,
+plan review and current-conversation paid authorization. If pricing does not support the
+endpoint, stop the paid submission; do not bypass quoting or reuse another operation's quote.

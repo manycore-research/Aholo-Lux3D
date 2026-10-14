@@ -73,7 +73,7 @@
     "quoteEndpoint": "/lux3d/v1/pricing/openapi-quotes",
     "baseUrls": {
       "cn": "https://api.aholo3d.cn",
-      "intl": "https://api.aholo3d.com/global"
+      "intl": "https://api.aholo.ai/global"
     },
     "requestUrlComposition": "regional-base-url-plus-canonical-api-path; /global is part of the international base URL only",
     "authentication": {

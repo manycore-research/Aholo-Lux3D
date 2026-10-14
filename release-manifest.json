@@ -39,7 +39,7 @@
   },
   "sharedCore": {
     "version": "0.2.0",
-    "digest": "0fc88455509b83a68c04aa41562f236c8ab133e3cc9f1ef8d3529c97d8995800",
+    "digest": "0a7f834095f11bfe659370eafc237d74119cd5ede73a539e12783979c405cab7",
     "digestSource": "github-skill-source-core-body-references"
   },
   "validation": {
@@ -49,8 +49,8 @@
   },
   "source": {
     "path": "plugins/common/aholo-lux3d",
-    "sha256": "3315bb3ce4e2c94c6137b1a3fff44a39b39547e2b4d7acf70c8d117026075e11",
+    "sha256": "639caba1f61342c843e3ab808014051fae6b689f2a3ef3a8ede34bb0a869acf9",
     "digestProtocol": "lux3d.entries/v1",
-    "fileCount": 46
+    "fileCount": 48
   }
 }

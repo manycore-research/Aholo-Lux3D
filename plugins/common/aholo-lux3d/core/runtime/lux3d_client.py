@@ -7,6 +7,11 @@ upload API before calling a Lux3D task endpoint.
 import argparse
 import json
 import os
+import pathlib
+import math
+import struct
+import tempfile
+import zipfile
 import sys
 import time
 import urllib.parse
@@ -15,7 +20,7 @@ import requests
 
 
 CN_BASE_URL = "https://api.aholo3d.cn"
-INTERNATIONAL_BASE_URL = "https://api.aholo3d.com/global"
+INTERNATIONAL_BASE_URL = "https://api.aholo.ai/global"
 REGION_BASE_URLS = {
     "cn": CN_BASE_URL,
     "international": INTERNATIONAL_BASE_URL,
@@ -26,7 +31,7 @@ REGION_API_KEY_ENV = {
 }
 ASSET_UPLOAD_DOCS = {
     "cn": "https://labs.aholo3d.cn/api-docs/api-reference#tag/asset",
-    "international": "https://labs.aholo3d.com/api-docs/en/api-reference#tag/asset",
+    "international": "https://labs.aholo.ai/api-docs/en/api-reference#tag/asset",
 }
 
 DEFAULT_REGION = "cn"
@@ -51,7 +56,11 @@ MATERIAL_VERSION = "v3.0-standard"
 GENERATION_FORMATS = {"zip", "glb", "ply"}
 MATERIAL_FORMATS = {"zip", "glb", "usdz", "obj_zip", "fbx_zip"}
 EXPORT_FORMATS = {"usdz", "obj_zip", "fbx_zip", "stl", "3mf"}
-DOWNLOAD_FORMATS = GENERATION_FORMATS | MATERIAL_FORMATS | EXPORT_FORMATS
+DOWNLOAD_FORMATS = GENERATION_FORMATS | MATERIAL_FORMATS | EXPORT_FORMATS | {"obj"}
+ANIMATION_FORMATS = {"glb", "fbx"}
+ANIMATION_OUTPUT_MODES = {"separate", "combined"}
+with (pathlib.Path(__file__).resolve().parents[1] / "contracts/lux3d-generation.v1.json").open(encoding="utf-8") as _contract_file:
+    ANIMATION_IDS = tuple(json.load(_contract_file)["sharedFields"]["animationId"]["values"])
 SUPPORTED_TASK_STATUSES = {0, 1, 2, 3, 4, 5, 6}
 TASK_LIST_FILTER_STATUSES = {0, 1, 3, 4}
 FACE_COUNT_MIN = 10000
@@ -103,8 +112,9 @@ class TaskTerminalError(RuntimeError):
     @author yinjie
     """
 
-    def __init__(self, provider_status):
+    def __init__(self, provider_status, task_data=None):
         self.last_provider_status = provider_status
+        self.task_data = task_data
         prefix = "Task was cancelled" if provider_status == 6 else "Task failed"
         super().__init__(f"{prefix}: provider status={provider_status}")
 
@@ -235,6 +245,8 @@ def normalize_base_url(base_url=None, region=None):
             return REGION_BASE_URLS[normalize_region(region)]
     normalized = str(base_url).strip().rstrip("/")
     if normalized == "https://api.aholo3d.com":
+        normalized += "/global"
+    if normalized == "https://api.aholo.ai":
         normalized = INTERNATIONAL_BASE_URL
 
     explicit_region = region
@@ -243,6 +255,7 @@ def normalize_base_url(base_url=None, region=None):
     public_url_regions = {
         CN_BASE_URL: "cn",
         INTERNATIONAL_BASE_URL: "international",
+        "https://api.aholo3d.com/global": "international",
     }
     if normalized in public_url_regions and explicit_region is not None:
         selected_region = normalize_region(explicit_region)
@@ -262,6 +275,7 @@ def resolve_request_region(base_url=None, region=None):
     public_url_regions = {
         CN_BASE_URL: "cn",
         INTERNATIONAL_BASE_URL: "international",
+        "https://api.aholo3d.com/global": "international",
     }
     if normalized_base_url in public_url_regions:
         return public_url_regions[normalized_base_url]
@@ -594,6 +608,46 @@ def build_multi_format_export_payload(
     return payload
 
 
+def validate_digital_human_model_url(value, field_name, region=None):
+    """Validate the digital-human endpoint's public HTTPS GLB input."""
+    model_url = validate_url_suffix(value, field_name, (".glb",), region)
+    parsed = urllib.parse.urlsplit(model_url)
+    if parsed.scheme != "https" or not parsed.hostname or parsed.username is not None or parsed.password is not None or parsed.fragment:
+        raise ValueError(f"{field_name} must be a public HTTPS GLB URL without credentials or a fragment")
+    return model_url
+
+
+def build_auto_rig_payload(modelUrl, *, region=None):
+    """Build the exact body used for auto-rig quotation and creation."""
+    model_url = validate_digital_human_model_url(modelUrl, "modelUrl", region)
+    return {"modelUrl": model_url}
+
+
+def build_animation_retarget_payload(
+    rigModelUrl,
+    animationIds,
+    *,
+    animationOutputMode=None,
+    outFormat=None,
+    animateInPlace=None,
+    region=None,
+):
+    """Build one normalized call, independent of quote correlation metadata."""
+    model_url = validate_digital_human_model_url(rigModelUrl, "rigModelUrl", region)
+    if not isinstance(animationIds, (list, tuple)) or not 1 <= len(animationIds) <= 10:
+        raise ValueError("animationIds must contain 1-10 distinct public animation IDs")
+    if any(not isinstance(item, str) or not item.strip() or item != item.strip() or item not in ANIMATION_IDS for item in animationIds):
+        raise ValueError("animationIds must use the exact public animation IDs")
+    if len(set(animationIds)) != len(animationIds):
+        raise ValueError("animationIds must not contain duplicates")
+    mode = "separate" if animationOutputMode is None else animationOutputMode
+    output_format = "glb" if outFormat is None else outFormat
+    if not isinstance(mode, str) or not isinstance(output_format, str) or mode not in ANIMATION_OUTPUT_MODES or output_format not in ANIMATION_FORMATS:
+        raise ValueError("animationOutputMode must be separate/combined and outFormat must be glb/fbx")
+    in_place = False if animateInPlace is None else validate_boolean(animateInPlace, "animateInPlace")
+    return {"rigModelUrl": model_url, "animationIds": list(animationIds), "animationOutputMode": mode, "outFormat": output_format, "animateInPlace": in_place}
+
+
 def generation_result_formats(version, outputFormat=None):
     """Return the documented output order for a generation request."""
     formats = normalize_output_formats(outputFormat)
@@ -743,6 +797,53 @@ def submit_task(
             "Create response d must be a positive long task ID"
         )
     return str(task_id)
+
+
+def create_auto_rig_task(
+    modelUrl,
+    *,
+    base_url=None,
+    region=None,
+    api_key=None,
+    credential_provider=None,
+    content_id=None,
+):
+    """Create one auto-rig task; content_id is the bound quoteId."""
+    return submit_task(
+        "/lux3d/v1/animations/rig/task/create",
+        build_auto_rig_payload(modelUrl, region=region),
+        base_url=base_url,
+        region=region,
+        api_key=api_key,
+        credential_provider=credential_provider,
+        content_id=content_id,
+    )
+
+
+def create_animation_retarget_task(
+    rigModelUrl,
+    animationIds,
+    *,
+    animationOutputMode=None,
+    outFormat=None,
+    animateInPlace=None,
+    base_url=None,
+    region=None,
+    api_key=None,
+    credential_provider=None,
+    content_id=None,
+):
+    """Create one task for 1-10 actions with the current bound quoteId."""
+    payload = build_animation_retarget_payload(rigModelUrl, animationIds, animationOutputMode=animationOutputMode, outFormat=outFormat, animateInPlace=animateInPlace, region=region)
+    return submit_task(
+        "/lux3d/v1/animations/retarget/task/create",
+        payload,
+        base_url=base_url,
+        region=region,
+        api_key=api_key,
+        credential_provider=credential_provider,
+        content_id=content_id,
+    )
 
 
 def create_image_to_3d_task(
@@ -1057,6 +1158,10 @@ def task_output_items(task_data):
 
 def parse_fixed_output_slots(task_data, output_slots):
     """Map fixed-position task outputs without guessing from URL suffixes."""
+    if tuple(output_slots) == ARTICULATION_OUTPUT_SLOTS:
+        return parse_articulation_animation_output(task_data)
+    if tuple(output_slots) == RETOPOLOGY_OUTPUT_SLOTS:
+        return parse_mesh_retopology_output(task_data)
     outputs = task_output_items(task_data)
     slots = tuple(output_slots)
     if len(outputs) != len(slots):
@@ -1088,6 +1193,12 @@ def parse_task_outputs(task_data):
             view_urls = json.loads(contents[0])
         except (TypeError, ValueError):
             view_urls = None
+        if isinstance(view_urls, dict) and "error" in view_urls:
+            return view_urls
+        if isinstance(view_urls, dict) and "actions" in view_urls:
+            if not isinstance(view_urls["actions"], list) or not view_urls["actions"]:
+                raise RuntimeError("Animation result actions must be a non-empty array")
+            return view_urls
         if (
             isinstance(view_urls, list)
             and len(view_urls) == 4
@@ -1109,6 +1220,46 @@ def parse_task_outputs(task_data):
     else:
         return artifacts
     return contents[0] if len(contents) == 1 else contents
+
+
+def validate_animation_results(outputs, animationIds, *, outFormat="glb", animationOutputMode="separate"):
+    """Validate every action against the accepted request without guessing file order."""
+    if not isinstance(outputs, dict) or not isinstance(outputs.get("actions"), list):
+        raise ValueError("Animation output must contain an actions array")
+    actions = outputs["actions"]
+    if len(actions) != len(animationIds):
+        raise ValueError("Animation output is missing or has extra requested actions")
+    url_key = {"glb": "animationGlbUrl", "fbx": "fbxUrl"}.get(outFormat)
+    if url_key is None or animationOutputMode not in ANIMATION_OUTPUT_MODES:
+        raise ValueError("Accepted animation format or output mode is invalid")
+    results = {}
+    for action in actions:
+        if not isinstance(action, dict):
+            raise ValueError("Animation action must be an object")
+        action_id = action.get("animation_id")
+        if not isinstance(action_id, str) or action_id not in animationIds or action_id in results:
+            raise ValueError("Animation output has an unknown or duplicate action")
+        status = action.get("status")
+        result = {"animation_id": action_id, "status": status}
+        if status == "success":
+            other_key = "fbxUrl" if outFormat == "glb" else "animationGlbUrl"
+            if action.get(other_key) is not None:
+                raise ValueError("Animation success has a result in the wrong requested format")
+            result[url_key] = validate_http_url(action.get(url_key), url_key)
+        elif status == "failed":
+            error = action.get("error")
+            if not isinstance(error, dict) or any(not isinstance(error.get(key), str) or not error[key].strip() for key in ("code", "message")):
+                raise ValueError("Failed animation must have an error code and message")
+            result["error"] = {"code": error["code"], "message": error["message"]}
+        else:
+            raise ValueError("Animation action must have terminal success or failed status")
+        results[action_id] = result
+    urls = [action[url_key] for action in results.values() if action["status"] == "success"]
+    if animationOutputMode == "combined" and len(set(urls)) > 1:
+        raise ValueError("Combined actions must reference the same returned file")
+    if animationOutputMode == "separate" and len(set(urls)) != len(urls):
+        raise ValueError("Separate actions must reference independent returned files")
+    return [results[action_id] for action_id in animationIds]
 
 
 def query_task_status(
@@ -1154,7 +1305,7 @@ def query_task_status(
                     task_data=task_data,
                 ) from exc
         if status in {4, 5, 6}:
-            raise TaskTerminalError(status)
+            raise TaskTerminalError(status, task_data=task_data)
         if status not in {0, 1, 2}:
             raise TaskQueryError(
                 f"Unknown task status: {status}",
@@ -1611,6 +1762,291 @@ def generate_four_views(
     return result
 
 
+
+ARTICULATION_OUTPUT_SLOTS = ("articulation-artifact",)
+
+
+def build_articulation_animation_payload(glbUrl, prompt, *, region=None):
+    """The public endpoint accepts exactly these two fields."""
+    return {"glbUrl": validate_http_url(glbUrl, "glbUrl", region),
+            "prompt": validate_prompt(prompt)}
+
+
+def create_articulation_animation_task(
+    glbUrl, prompt, *, base_url=None, region=None, api_key=None, credential_provider=None,
+):
+    request_region = resolve_request_region(base_url, region)
+    return submit_task(
+        "/lux3d/v1/articulation-animation/task/create",
+        build_articulation_animation_payload(glbUrl, prompt, region=request_region),
+        base_url=base_url, region=request_region,
+        api_key=api_key, credential_provider=credential_provider,
+    )
+
+
+def parse_articulation_animation_output(task_data):
+    outputs = task_output_items(task_data)
+    if len(outputs) != 1 or not isinstance(outputs[0], dict):
+        raise ValueError("Articulation requires exactly one result URL")
+    return validate_http_url(outputs[0].get("content"), "articulation result")
+
+
+def articulation_result_extension(url):
+    path = urllib.parse.unquote(urllib.parse.urlparse(validate_http_url(url, "result")).path)
+    extension = os.path.splitext(path)[1].lower()
+    if not extension[1:].isascii() or not extension[1:].isalnum() or len(extension) > 12:
+        return ".bin"
+    return extension
+
+
+def resume_articulation_animation(
+    task_id, output_path=None, *, base_url=None, region=None,
+    max_attempts=DEFAULT_POLL_ATTEMPTS, interval=DEFAULT_POLL_INTERVAL,
+    api_key=None, credential_provider=None,
+):
+    if output_path is not None:
+        validate_output_path(output_path)
+    url = query_task_status(
+        task_id, base_url=base_url, region=region, max_attempts=max_attempts,
+        interval=interval, output_slots=ARTICULATION_OUTPUT_SLOTS,
+        api_key=api_key, credential_provider=credential_provider,
+    )
+    result = {"taskId": str(task_id), "artifactUrl": url}
+    if output_path is not None:
+        from artifact_delivery import inspect_articulation_artifact
+        target = os.path.splitext(os.fspath(output_path))[0] + articulation_result_extension(url)
+        with tempfile.NamedTemporaryFile(dir=os.path.dirname(os.path.abspath(target)),
+                                         prefix=".articulation-", delete=False) as stream:
+            temporary = stream.name
+        try:
+            download_model(url, temporary)
+            inspected = inspect_articulation_artifact(temporary, articulation_result_extension(url))
+            os.replace(temporary, target)
+            result["downloads"] = [{"path": target, "format": inspected["format"],
+                                    "size": inspected["size"], "validation": inspected["validation"]}]
+        finally:
+            if os.path.exists(temporary):
+                os.unlink(temporary)
+    return result
+
+
+def generate_articulation_animation(
+    glbUrl, prompt, output_path=None, *, base_url=None, region=None,
+    max_attempts=DEFAULT_POLL_ATTEMPTS, interval=DEFAULT_POLL_INTERVAL,
+    api_key=None, credential_provider=None,
+):
+    if output_path is not None:
+        validate_output_path(output_path)
+    if isinstance(max_attempts, bool) or not isinstance(max_attempts, int) or max_attempts < 1:
+        raise ValueError("max_attempts must be a positive integer")
+    if isinstance(interval, bool) or not isinstance(interval, (int, float)) or not 0 <= interval < float("inf"):
+        raise ValueError("interval must be finite and non-negative")
+    task_id = create_articulation_animation_task(
+        glbUrl, prompt, base_url=base_url, region=region,
+        api_key=api_key, credential_provider=credential_provider,
+    )
+    print(f"Task created: {task_id}", file=sys.stderr)
+    return resume_articulation_animation(
+        task_id, output_path, base_url=base_url, region=region,
+        max_attempts=max_attempts, interval=interval,
+        api_key=api_key, credential_provider=credential_provider,
+    )
+
+
+RETOPOLOGY_OUTPUT_SLOTS = ("glb", "obj", "obj_zip")
+
+
+def build_mesh_retopology_payload(
+    modelUrl, faceLimit, *, quad=True, bakeTextures=False, textureSize=2048,
+    region=None,
+):
+    """Validate public retopology fields before any paid submission."""
+    model_url = validate_url_suffix(modelUrl, "modelUrl", (".glb",), region)
+    if not isinstance(quad, bool) or not isinstance(bakeTextures, bool):
+        raise ValueError("quad and bakeTextures must be booleans")
+    minimum, maximum = (1000, 500000) if quad else (2000, 1000000)
+    if (isinstance(faceLimit, bool) or not isinstance(faceLimit, int)
+            or not minimum <= faceLimit <= maximum):
+        raise ValueError(f"faceLimit must be an integer between {minimum} and {maximum}")
+    if (isinstance(textureSize, bool) or not isinstance(textureSize, int)
+            or textureSize not in {512, 1024, 2048, 4096}):
+        raise ValueError("textureSize must be one of 512, 1024, 2048 or 4096")
+    return {"modelUrl": model_url, "faceLimit": faceLimit, "quad": quad,
+            "bakeTextures": bakeTextures, "textureSize": textureSize}
+
+
+def parse_mesh_retopology_output(task_data):
+    """Preserve three provider slots, accepting only the documented empty ZIP."""
+    outputs = task_data.get("outputs")
+    if not isinstance(outputs, list) or len(outputs) != 3:
+        raise RuntimeError("Retopology requires exactly three output slots")
+    artifacts = {}
+    for index, name in enumerate(RETOPOLOGY_OUTPUT_SLOTS):
+        item = outputs[index]
+        if not isinstance(item, dict) or not isinstance(item.get("content"), str):
+            raise RuntimeError(f"Invalid retopology output slot: {name}")
+        content = item["content"]
+        if index == 2 and content == "":
+            continue
+        try:
+            artifacts[name] = validate_http_url(content, name)
+        except ValueError as exc:
+            raise RuntimeError(f"Invalid retopology output URL: {name}") from exc
+    return artifacts
+
+
+def retopology_result(task_id, artifacts, bake_textures):
+    return {
+        "taskId": str(task_id), "artifacts": artifacts,
+        "texturePackageAvailable": "obj_zip" in artifacts,
+        "warnings": ["TEXTURE_PACKAGE_NOT_GENERATED"]
+        if bake_textures and "obj_zip" not in artifacts else [],
+    }
+
+
+def create_mesh_retopology_task(
+    modelUrl, faceLimit, *, quad=True, bakeTextures=False, textureSize=2048,
+    base_url=None, region=None, content_id=None, api_key=None, credential_provider=None,
+):
+    payload = build_mesh_retopology_payload(
+        modelUrl, faceLimit, quad=quad, bakeTextures=bakeTextures,
+        textureSize=textureSize, region=region,
+    )
+
+    return submit_task(
+        "/lux3d/v1/mesh-retopology/task/create", payload,
+        base_url=base_url, region=region,
+        content_id=content_id, api_key=api_key, credential_provider=credential_provider,
+    )
+
+
+
+def validate_retopology_download(file_path, kind):
+    """Check downloaded model structure before replacing a previous result."""
+    size = os.path.getsize(file_path)
+    if size == 0:
+        raise ValueError("Retopology artifact is empty")
+    if kind == "glb":
+        with open(file_path, "rb") as stream:
+            header = stream.read(20)
+            if (len(header) != 20 or header[:4] != b"glTF"
+                    or struct.unpack_from("<I", header, 4)[0] != 2
+                    or struct.unpack_from("<I", header, 8)[0] != size
+                    or header[16:20] != b"JSON"):
+                raise ValueError("Invalid retopology GLB")
+            length = struct.unpack_from("<I", header, 12)[0]
+            if length > size - 20:
+                raise ValueError("Invalid GLB JSON chunk")
+            document = json.loads(stream.read(length).decode("utf-8"))
+            if not isinstance(document, dict) or not document.get("meshes"):
+                raise ValueError("Retopology GLB has no meshes")
+    elif kind == "obj":
+        counts = [0, 0, 0]
+        faces = 0
+        with open(file_path, encoding="utf-8-sig") as stream:
+            for line in stream:
+                parts = line.split("#", 1)[0].split()
+                if not parts:
+                    continue
+                if parts[0] in ("v", "vt", "vn"):
+                    slot = ("v", "vt", "vn").index(parts[0])
+                    minimum = 1 if slot == 1 else 3
+                    if len(parts) <= minimum or not all(math.isfinite(float(v)) for v in parts[1:]):
+                        raise ValueError("Invalid OBJ coordinate")
+                    counts[slot] += 1
+                elif parts[0] == "f":
+                    if len(parts) < 4:
+                        raise ValueError("Invalid OBJ face")
+                    for token in parts[1:]:
+                        refs = token.split("/")
+                        if len(refs) > 3 or not refs[0]:
+                            raise ValueError("Invalid OBJ face reference")
+                        for slot, value in enumerate(refs):
+                            if not value:
+                                if slot == 1 and len(refs) == 3 and refs[2]:
+                                    continue
+                                raise ValueError("Empty OBJ face reference")
+                            index = int(value)
+                            if index == 0 or abs(index) > counts[slot]:
+                                raise ValueError("OBJ face index out of bounds")
+                    faces += 1
+        if not counts[0] or not faces:
+            raise ValueError("OBJ has no geometry")
+    elif kind == "obj_zip":
+        with zipfile.ZipFile(file_path) as archive:
+            names = [n.lower() for n in archive.namelist()]
+            if (archive.testzip() is not None or
+                    not any(n.endswith(".obj") for n in names) or
+                    not any(n.endswith(".mtl") for n in names) or
+                    sum(n.endswith(".png") for n in names) < 3):
+                raise ValueError("Invalid retopology OBJ texture package")
+    return size
+
+
+def download_retopology_artifacts(artifacts, output_path):
+    """Keep prior downloads intact if a resumed transfer fails."""
+    base, _ = os.path.splitext(os.fspath(output_path))
+    downloads = []
+    for kind in RETOPOLOGY_OUTPUT_SLOTS:
+        if kind not in artifacts:
+            continue
+        target = f"{base}_{kind}.{output_extension(kind)}"
+        directory = os.path.dirname(os.path.abspath(target))
+        with tempfile.NamedTemporaryFile(dir=directory, prefix=".retopology-", delete=False) as stream:
+            temporary = stream.name
+        try:
+            download_model(artifacts[kind], temporary)
+            size = validate_retopology_download(temporary, kind)
+            os.replace(temporary, target)
+            downloads.append((target, size))
+        finally:
+            if os.path.exists(temporary):
+                os.unlink(temporary)
+    return downloads
+
+
+def resume_mesh_retopology(
+    task_id, output_path=None, *, bakeTextures=False, base_url=None, region=None,
+    max_attempts=DEFAULT_POLL_ATTEMPTS, interval=DEFAULT_POLL_INTERVAL,
+    api_key=None, credential_provider=None,
+):
+    """Resume the original task; never create another task on query/download failure."""
+    if not isinstance(bakeTextures, bool):
+        raise ValueError("bakeTextures must be a boolean")
+    artifacts = query_task_status(
+        task_id, base_url=base_url, region=region, max_attempts=max_attempts,
+        interval=interval, output_slots=RETOPOLOGY_OUTPUT_SLOTS,
+        api_key=api_key, credential_provider=credential_provider,
+    )
+    result = retopology_result(task_id, artifacts, bakeTextures)
+    if output_path is not None:
+        result["downloads"] = download_retopology_artifacts(artifacts, output_path)
+    return result
+
+
+def generate_mesh_retopology(
+    modelUrl, faceLimit, output_path=None, *, quad=True, bakeTextures=False,
+    textureSize=2048, base_url=None, region=None, content_id=None,
+    max_attempts=DEFAULT_POLL_ATTEMPTS, interval=DEFAULT_POLL_INTERVAL,
+    api_key=None, credential_provider=None,
+):
+    if output_path is not None:
+        validate_output_path(output_path)
+    task_id = create_mesh_retopology_task(
+        modelUrl, faceLimit, quad=quad, bakeTextures=bakeTextures,
+        textureSize=textureSize, base_url=base_url, region=region,
+        content_id=content_id,
+        api_key=api_key, credential_provider=credential_provider,
+    )
+    # Persist this ID in the caller's task record before polling; CLI also emits it.
+    print(json.dumps({"taskId": str(task_id)}), file=sys.stderr, flush=True)
+    return resume_mesh_retopology(
+        task_id, output_path, bakeTextures=bakeTextures, base_url=base_url,
+        region=region, max_attempts=max_attempts, interval=interval,
+        api_key=api_key, credential_provider=credential_provider,
+    )
+
+
 def generate_multi_format_export(
     modelUrl,
     output_path=None,
@@ -1793,6 +2229,36 @@ def build_parser():
     )
     add_poll_arguments(four_view_parser)
 
+    retopology_parser = subparsers.add_parser(
+        "retopology", help="Retopologize a static GLB; face budget is required."
+    )
+    retopology_parser.add_argument("modelUrl")
+    retopology_parser.add_argument("output_path", nargs="?")
+    retopology_parser.add_argument("--face-limit", type=int, required=True, dest="faceLimit")
+    retopology_parser.add_argument("--triangle", action="store_true")
+    retopology_parser.add_argument("--bake-textures", action="store_true", dest="bakeTextures")
+    retopology_parser.add_argument("--texture-size", type=int, default=2048, dest="textureSize")
+    retopology_parser.add_argument("--content-id", dest="content_id")
+    add_poll_arguments(retopology_parser)
+    resume_retopology_parser = subparsers.add_parser(
+        "retopology-result", help="Resume polling/downloading an existing retopology task."
+    )
+    resume_retopology_parser.add_argument("task_id")
+    resume_retopology_parser.add_argument("output_path", nargs="?")
+    resume_retopology_parser.add_argument("--bake-textures", action="store_true", dest="bakeTextures")
+    add_poll_arguments(resume_retopology_parser)
+
+    articulation_parser = subparsers.add_parser("articulation", help="Add joints and motion to a GLB model.")
+    articulation_parser.add_argument("glbUrl")
+    articulation_parser.add_argument("output_path", nargs="?")
+    articulation_parser.add_argument("--prompt", required=True)
+    articulation_parser.add_argument("--submit-only", action="store_true")
+    add_poll_arguments(articulation_parser)
+    articulation_result_parser = subparsers.add_parser("articulation-result", help="Resume an articulation task without creating it again.")
+    articulation_result_parser.add_argument("task_id")
+    articulation_result_parser.add_argument("output_path", nargs="?")
+    add_poll_arguments(articulation_result_parser)
+
     export_parser = subparsers.add_parser(
         "export", help="Export a Lux3D ZIP or GLB URL to other formats."
     )
@@ -1809,7 +2275,16 @@ def build_parser():
     )
     add_poll_arguments(export_parser)
 
-    for create_parser in (image_parser, text_parser, material_parser, four_view_parser, export_parser):
+    rig_parser = subparsers.add_parser("auto-rig", help="Create auto-rig and return its task ID before querying or delivery.")
+    rig_parser.add_argument("modelUrl", help="Public HTTPS character GLB URL")
+    retarget_parser = subparsers.add_parser("retarget", help="Create one animation task and return its task ID before querying or delivery.")
+    retarget_parser.add_argument("rigModelUrl", help="Public HTTPS rigged character GLB URL")
+    retarget_parser.add_argument("--animation-id", dest="animationIds", action="append", required=True, choices=ANIMATION_IDS)
+    retarget_parser.add_argument("--output-mode", dest="animationOutputMode", choices=sorted(ANIMATION_OUTPUT_MODES), default="separate")
+    retarget_parser.add_argument("--format", dest="outFormat", choices=sorted(ANIMATION_FORMATS), default="glb")
+    retarget_parser.add_argument("--animate-in-place", dest="animateInPlace", action="store_true")
+
+    for create_parser in (image_parser, text_parser, material_parser, four_view_parser, export_parser, rig_parser, retarget_parser):
         create_parser.add_argument(
             "--content-id", dest="content_id",
             help="Current quoteId for generation correlation; not spending authorization",
@@ -1851,7 +2326,7 @@ def main():
         raise SystemExit(1)
 
     common = {"base_url": args.base_url, "region": args.region}
-    if args.command in {"image", "text", "material", "four-view", "export"}:
+    if args.command in {"image", "text", "material", "four-view", "export", "auto-rig", "retarget"}:
         common["content_id"] = args.content_id
     if args.command == "image":
         image_urls = [args.img] + list(args.imageViews or [])
@@ -1908,6 +2383,34 @@ def main():
             interval=args.interval,
             **common,
         )
+    elif args.command == "articulation":
+        if args.submit_only:
+            if args.output_path is not None:
+                parser.error("--submit-only cannot be used with output_path")
+            result = create_articulation_animation_task(args.glbUrl, args.prompt, **common)
+        else:
+            result = generate_articulation_animation(
+                args.glbUrl, args.prompt, args.output_path,
+                max_attempts=args.max_attempts, interval=args.interval, **common,
+            )
+    elif args.command == "articulation-result":
+        result = resume_articulation_animation(
+            args.task_id, args.output_path,
+            max_attempts=args.max_attempts, interval=args.interval, **common,
+        )
+    elif args.command == "retopology":
+        result = generate_mesh_retopology(
+            args.modelUrl, args.faceLimit, args.output_path, quad=not args.triangle,
+            bakeTextures=args.bakeTextures, textureSize=args.textureSize,
+            base_url=args.base_url, region=args.region, content_id=args.content_id,
+            max_attempts=args.max_attempts, interval=args.interval,
+        )
+    elif args.command == "retopology-result":
+        result = resume_mesh_retopology(
+            args.task_id, args.output_path, bakeTextures=args.bakeTextures,
+            base_url=args.base_url, region=args.region,
+            max_attempts=args.max_attempts, interval=args.interval,
+        )
     elif args.command == "export":
         result = generate_multi_format_export(
             args.modelUrl,
@@ -1917,6 +2420,10 @@ def main():
             interval=args.interval,
             **common,
         )
+    elif args.command == "auto-rig":
+        result = {"taskId": create_auto_rig_task(args.modelUrl, **common)}
+    elif args.command == "retarget":
+        result = {"taskId": create_animation_retarget_task(args.rigModelUrl, args.animationIds, animationOutputMode=args.animationOutputMode, outFormat=args.outFormat, animateInPlace=args.animateInPlace, **common)}
     elif args.command == "query":
         result = get_task(args.task_id, **common)
     elif args.command == "list":

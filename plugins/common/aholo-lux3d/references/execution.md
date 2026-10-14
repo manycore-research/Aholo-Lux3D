@@ -40,6 +40,10 @@ Use the bundled Python API in `core/runtime/lux3d_client.py`. With the configure
 | Material transfer | `create_material_transfer_task` |
 | Four-view generation | `create_image_to_four_view_task` |
 | Format conversion | `create_multi_format_export_task` |
+| Character auto-rigging | `create_auto_rig_task` |
+| Character animation retargeting | `create_animation_retarget_task` |
+
+For digital-human inputs, actions and structured results, follow [Digital humans](digital-human.md). These operations do not use a generation `version`; retargeting returns one action result per requested animation instead of one URL per format.
 
 Generation correlation is an explicit per-call argument, not process-global state. Example: `create_text_to_3d_task(prompt, version=version, region=region, content_id=current_quote["quoteId"])`. If using a `generate_*` convenience wrapper, pass the same `content_id`; existing create CLI commands use `--content-id <quoteId>`. Do not add it to query/list or quote input parameters. This metadata does not authorize spending.
 
@@ -48,7 +52,7 @@ These functions submit one task and return its ID. Use them separately from poll
 1. Check that the current step still satisfies the agreed constraints in the plan, and that its inputs and dependencies are ready. Inspect generated four-view inputs using the check below before submitting them to 3D generation. Match the actual operation, model, parameters, quantity, account, and region to a successful, unexpired quote from `scripts/commerce.py quote`. Requote changed or expired work and apply [Review and approval](review.md), including the remaining cumulative conversation allowance and any new retry costs. Check the account facts and required entitlements; refresh stale facts before submission.
 2. Use the attempt record and recovery rules below to establish that this step has not already been submitted. Keep one submitting process per attempt.
 3. Before making the call, save a local attempt record with the region, a non-secret account reference, the operation and approved parameter snapshot, quote/approval references, retry count, and submission start time. If a conversation budget is active, reserve the quoted allowance through the task's single budget coordinator and associate it with this attempt. Reuse an existing batch reservation rather than count the same amount again. Immediately before dispatch, mark submission as started and move the reservation to committed allowance. Keep temporary input URLs in private working files; do not copy credentials or signed URLs into portable records.
-4. Call the selected `create_*_task` function once, passing `content_id=current_quote["quoteId"]` from the successful, unexpired quote matched to this step. The wire field is `contentId`. Do not omit it for newly quoted plugin work, substitute `uniqueId`/`pluginTaskId`, or invent an ID. Immediately save its returned ID to the attempt record and budget ledger before polling or doing other work. If the call times out, its result cannot be parsed, or saving the ID fails, preserve all available evidence and treat the outcome as uncertain. Keep its allowance committed; do not rerun the create call or assume a refund to recover it.
+4. Call the selected `create_*_task` function once, passing `content_id=current_quote["quoteId"]` from the successful, unexpired quote matched to this step. The wire field is `contentId`. For articulation, omit this argument and keep quoteId in the local attempt record because its public body accepts only glbUrl and prompt. For other newly quoted plugin work, do not omit it, substitute `uniqueId`/`pluginTaskId`, or invent an ID. Immediately save its returned ID to the attempt record and budget ledger before polling or doing other work. If the call times out, its result cannot be parsed, or saving the ID fails, preserve all available evidence and treat the outcome as uncertain. Keep its allowance committed; do not rerun the create call or assume a refund to recover it.
 5. Query the saved ID until it reaches a terminal state, updating the record with actual status and timestamps. Download and inspect successful outputs, then follow [Results and delivery](results.md). A tracking interruption resumes from the saved ID.
 
 This is agent orchestration using existing client functions, not a runtime-enforced approval, budget, or idempotency guarantee. Do not route this path through `workflow_runner.py run` or `resume`: its default CLI does not supply the required execution adapters. Their absence does not make the client functions unavailable. An actual authentication, entitlement, permission, or service rejection must still be handled; do not change accounts or endpoints to evade it.
@@ -108,3 +112,46 @@ Inspect successful 3D outputs against the agreed structure, orientation, silhoue
 - Verify an uncertain submission result before proceeding. If it cannot be verified, pause that attempt and its dependent work instead of resubmitting. Independent work may continue only when its inputs, authorization, and budget remain established, with the uncertain amount still committed.
 - After a confirmed generation failure, automatically resubmit the original step at most once, only if the failure is suitable for retry and the cost has the required approval. A new task ID does not reset this limit. Stop after another failure.
 - If generation succeeds but downloading, opening files for inspection, or previewing fails, recover that local stage using [Results and delivery](results.md), without regenerating. A successfully inspected model that visibly misses agreed requirements follows the visual-correction rules above; a user-requested appearance change follows [Understanding and planning](planning.md).
+
+
+## Local model-articulation execution
+
+Use workflow operation `articulation-animation` with `glbUrl`, `prompt`, `region`,
+`target` and the existing submission context. The workflow preserves quoteId locally
+and applies the existing quote verifier, submission gate and registry; the actual
+POST body contains only `glbUrl` and `prompt`.
+
+The client exposes `create_articulation_animation_task(glbUrl, prompt, region=...)`,
+`generate_articulation_animation` and `resume_articulation_animation`. It accepts no
+`content_id`. Prefer create → immediately record task ID → resume when managing the
+execution ledger directly. CLI equivalents:
+
+```text
+python core/runtime/lux3d_client.py --region cn articulation GLB_URL --prompt "Keep the base fixed and slowly open the lid" --submit-only
+python core/runtime/lux3d_client.py --region cn articulation-result TASK_ID output-basename
+```
+
+Only submit after the matched quote and current-dialogue approval. Queries use the
+regional shared task endpoint; status 3 must contain exactly one HTTP(S) result URL.
+Query/download failures resume the same task and never create a replacement automatically.
+Unknown submission outcomes require reconciliation with task history. Do not add a
+Connector tool name until it is available through live MCP discovery.
+
+## Local mesh-retopology execution
+
+Use workflow operation `mesh-retopology` with modelUrl, faceLimit, quad, bakeTextures and
+textureSize. Reuse the existing trusted generation port, quote verifier, current-conversation
+submission gate and registry. Do not place version in this workflow. contentId comes from
+the current valid quoteId, not uniqueId/pluginTaskId, and is not idempotency protection.
+
+The shared client also exposes create_mesh_retopology_task and generate_mesh_retopology;
+pass content_id=current_quote["quoteId"] at actual creation. The CLI is
+`retopology <GLB_URL> [output-basename] --face-limit N [--triangle] [--bake-textures] [--texture-size 2048] [--content-id QUOTE_ID]`.
+This is a low-level capability, not a new authorization bypass: preserve the existing confirmed
+plan/price checks before invoking it. No new live paid submission is authorized by this guide.
+
+Persist the returned task ID immediately; CLI emits it before polling. Use workflow resume
+or `retopology-result TASK_ID [output-basename] [--bake-textures]` after an interruption.
+Creation outcome unknown requires reconciliation, never blind POST retry.
+Query/download/report retries do not recreate the paid generation task.
+Remote mode requires an observed real tool/schema; do not invent tool names or switch modes silently.

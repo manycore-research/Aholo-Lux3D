@@ -12,11 +12,15 @@ from typing import Any, Mapping
 
 WORKFLOW_CONTRACT = "lux3d-workflow/v2"
 CREATE_PATHS = {
+    "articulation-animation": "/lux3d/v1/articulation-animation/task/create",
+    "mesh-retopology": "/lux3d/v1/mesh-retopology/task/create",
     "image-to-3d": "/lux3d/v1/generate/img-to-3d/task/create",
     "text-to-3d": "/lux3d/v1/generate/text-to-3d/task/create",
     "material-transfer": "/lux3d/v1/generate/material-transfer/task/create",
     "four-view": "/lux3d/v1/generate/image-to-four-view/task/create",
     "export": "/lux3d/v1/multi-format-export/task/create",
+    "auto-rig": "/lux3d/v1/animations/rig/task/create",
+    "animation-retarget": "/lux3d/v1/animations/retarget/task/create",
 }
 SUBMISSION_CONTEXT_FIELDS = {
     "accountRef",
@@ -120,7 +124,8 @@ def generation_port_request(request):
         if key not in {"submission", "outputBasename", "target"}
     }
     result["uniqueId"] = context["uniqueId"]
-    result["contentId"] = context["quoteId"]
+    if request["operation"] != "articulation-animation":
+        result["contentId"] = context["quoteId"]
     result["workflowContext"] = {
         "accountRef": context["accountRef"],
         "source": context["source"],

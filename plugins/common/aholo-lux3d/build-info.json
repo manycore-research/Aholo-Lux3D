@@ -6,7 +6,7 @@
   "status": "implementation-candidate",
   "coreVersion": "0.2.0",
   "profileDigest": "623c76dc3bdb67ec3f17785bab322cdc73907997134411b97b761b1bb43a742b",
-  "inputsDigest": "3f78cd63414a2c2c4a14b97ae41e3a07bb216b4d97ed4d7baf01524b2d7af07e",
+  "inputsDigest": "6aab5d076167ca52c76dabf1cde607b74f64e137850fe117b26a8df8b8b80923",
   "identityMode": "automatic-host",
   "toolchain": {
     "python": "3.12.1",
@@ -15,7 +15,7 @@
   },
   "hostValidated": false,
   "mode": "skill",
-  "coreDigest": "0fc88455509b83a68c04aa41562f236c8ab133e3cc9f1ef8d3529c97d8995800",
+  "coreDigest": "0a7f834095f11bfe659370eafc237d74119cd5ede73a539e12783979c405cab7",
   "inputsDigestSource": "github-skill-source-excluding-build-info",
   "coreDigestSource": "github-skill-source-core-body-references",
   "digestProtocol": "lux3d.entries/v1"

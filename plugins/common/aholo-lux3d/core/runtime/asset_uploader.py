@@ -17,7 +17,7 @@ import lux3d_client
 
 REGION_BASE_URLS = {
     "cn": "https://api.aholo3d.cn",
-    "international": "https://api.aholo3d.com/global",
+    "international": "https://api.aholo.ai/global",
 }
 TERMINAL_SUCCESS = 5
 TERMINAL_FAILURES = {6, 8}

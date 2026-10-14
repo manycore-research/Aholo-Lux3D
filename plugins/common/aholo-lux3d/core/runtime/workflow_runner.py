@@ -17,11 +17,15 @@ STATE_SCHEMA = "lux3d.workflow-state/v2"
 LEGACY_STATE_SCHEMA = "lux3d.workflow-state/v1"
 DELIVERY_FILENAME = "lux3d-delivery.json"
 OPERATIONS = {
+    "articulation-animation",
     "image-to-3d",
     "text-to-3d",
     "material-transfer",
     "four-view",
+    "mesh-retopology",
     "export",
+    "auto-rig",
+    "animation-retarget",
 }
 PREVIEW_OPERATIONS = {"four-view"}
 ARTIFACT_OPERATIONS = OPERATIONS - PREVIEW_OPERATIONS
@@ -34,6 +38,7 @@ COMMON_FIELDS = {
     "submission",
 }
 OPERATION_FIELDS = {
+    "articulation-animation": {"glbUrl", "prompt"},
     "image-to-3d": {
         "img",
         "imgs",
@@ -61,14 +66,21 @@ OPERATION_FIELDS = {
         "customSize",
     },
     "four-view": {"img", "prompt"},
+    "mesh-retopology": {"modelUrl", "faceLimit", "quad", "bakeTextures", "textureSize"},
     "export": {"modelUrl", "outputFormat"},
+    "auto-rig": {"modelUrl"},
+    "animation-retarget": {"rigModelUrl", "animationIds", "animationOutputMode", "outFormat", "animateInPlace"},
 }
 DEFAULT_BASENAMES = {
+    "articulation-animation": "lux3d-articulation",
     "image-to-3d": "lux3d-image-model",
     "text-to-3d": "lux3d-text-model",
     "material-transfer": "lux3d-material-model",
     "four-view": "lux3d-four-view",
+    "mesh-retopology": "lux3d-retopology",
     "export": "lux3d-export",
+    "auto-rig": "lux3d-rigged-character",
+    "animation-retarget": "lux3d-animated-character",
 }
 QUERYABLE_STATES = {
     "submitted",
@@ -316,7 +328,7 @@ def prepare_request(request):
     if operation not in OPERATIONS:
         raise ValueError(
             "operation must be image-to-3d, text-to-3d, material-transfer, "
-            "four-view, or export"
+            "four-view, mesh-retopology, export, articulation-animation, auto-rig, or animation-retarget"
         )
     unknown = set(request) - COMMON_FIELDS - OPERATION_FIELDS[operation]
     if unknown:
@@ -332,13 +344,30 @@ def prepare_request(request):
         _validate_text_request(request, region)
     elif operation == "material-transfer":
         _validate_material_request(request, region)
+    elif operation == "animation-retarget":
+        request.update(lux3d_client.build_animation_retarget_payload(request.get("rigModelUrl"), request.get("animationIds"), animationOutputMode=request.get("animationOutputMode"), outFormat=request.get("outFormat"), animateInPlace=request.get("animateInPlace"), region=region))
+    elif operation == "auto-rig":
+        request.update(lux3d_client.build_auto_rig_payload(request.get("modelUrl"), region=region))
+    elif operation == "articulation-animation":
+        if "version" in request:
+            raise ValueError("articulation-animation does not accept version")
+        request.update(lux3d_client.build_articulation_animation_payload(
+            request.get("glbUrl"), request.get("prompt"), region=region,
+        ))
+    elif operation == "mesh-retopology":
+        if request.get("version") is not None:
+            raise ValueError("mesh-retopology does not accept version")
+        request.update(lux3d_client.build_mesh_retopology_payload(
+            request.get("modelUrl"), request.get("faceLimit"),
+            quad=request.get("quad", True),
+            bakeTextures=request.get("bakeTextures", False),
+            textureSize=request.get("textureSize", 2048), region=region,
+        ))
     elif operation in PREVIEW_OPERATIONS:
         payload = lux3d_client.build_multimodal_payload(
             request.get("img"), request.get("prompt"), region
         )
         request.update(payload)
-        if request.get("version") is not None:
-            raise ValueError(f"{operation} does not accept version")
     else:
         model_url, formats = lux3d_client.validate_export_options(
             request.get("modelUrl"), request.get("outputFormat"), region
@@ -346,8 +375,8 @@ def prepare_request(request):
         request["modelUrl"] = model_url
         if request.get("outputFormat") is not None:
             request["outputFormat"] = formats
-        if request.get("version") is not None:
-            raise ValueError("export does not accept version")
+    if operation in {"auto-rig", "animation-retarget", "four-view", "export"} and request.get("version") is not None:
+        raise ValueError(f"{operation} does not accept version")
     return request
 
 
@@ -380,17 +409,27 @@ def expected_formats(request):
         return lux3d_client.generation_result_formats(
             request["version"], request.get("outputFormat")
         )
+    if operation == "mesh-retopology":
+        return ["glb", "obj"]
     if operation == "material-transfer":
         return lux3d_client.material_result_formats(request.get("outputFormat"))
     if operation == "export":
         return lux3d_client.export_result_formats(
             request["modelUrl"], request.get("outputFormat")
         )
+    if operation == "auto-rig":
+        return ["glb"]
+    if operation == "animation-retarget":
+        return [request["outFormat"]]
     return []
 
 
 def fixed_output_slots(request):
     """Return a fixed provider slot contract for operations that define one."""
+    if request["operation"] == "articulation-animation":
+        return lux3d_client.ARTICULATION_OUTPUT_SLOTS
+    if request["operation"] == "mesh-retopology":
+        return lux3d_client.RETOPOLOGY_OUTPUT_SLOTS
     if request["operation"] == "material-transfer":
         return lux3d_client.MATERIAL_OUTPUT_SLOTS
     if request["operation"] == "export":
@@ -400,6 +439,31 @@ def fixed_output_slots(request):
 
 def validate_requested_provider_outputs(request, outputs, formats):
     """Ensure image/text success contains every artifact requested this run."""
+    if request["operation"] == "animation-retarget":
+        try:
+            actions = lux3d_client.validate_animation_results(outputs, request["animationIds"], outFormat=request.get("outFormat", "glb"), animationOutputMode=request.get("animationOutputMode", "separate"))
+            if not any(action["status"] == "success" for action in actions):
+                raise ValueError("Provider status 3 has no successful animation result")
+            return actions
+        except ValueError as exc:
+            raise lux3d_client.TaskOutputError(f"Animation result does not match the accepted request: {exc}") from exc
+    if request["operation"] == "articulation-animation":
+        try:
+            lux3d_client.validate_http_url(outputs, "articulation result")
+        except ValueError as exc:
+            raise lux3d_client.TaskOutputError("Articulation requires one result URL") from exc
+        return
+    if request["operation"] == "mesh-retopology":
+        if not isinstance(outputs, dict) or not {"glb", "obj"} <= outputs.keys():
+            raise lux3d_client.TaskOutputError("Retopology requires GLB and OBJ")
+        try:
+            for name, url in outputs.items():
+                if name not in lux3d_client.RETOPOLOGY_OUTPUT_SLOTS:
+                    raise ValueError("Unknown retopology artifact")
+                lux3d_client.validate_http_url(url, name)
+        except ValueError as exc:
+            raise lux3d_client.TaskOutputError("Invalid retopology output") from exc
+        return
     if request["operation"] not in {"image-to-3d", "text-to-3d"}:
         return
     try:
@@ -414,6 +478,14 @@ def submit_task(request):
     operation = request["operation"]
     region = request["region"]
     content_id = request.get("contentId")
+    if operation == "animation-retarget":
+        return lux3d_client.create_animation_retarget_task(request["rigModelUrl"], request["animationIds"], animationOutputMode=request.get("animationOutputMode"), outFormat=request.get("outFormat"), animateInPlace=request.get("animateInPlace"), region=region, content_id=content_id)
+    if operation == "auto-rig":
+        return lux3d_client.create_auto_rig_task(request["modelUrl"], region=region, content_id=content_id)
+    if operation == "articulation-animation":
+        return lux3d_client.create_articulation_animation_task(
+            request["glbUrl"], request["prompt"], region=region,
+        )
     if operation == "image-to-3d":
         return lux3d_client.create_image_to_3d_task(
             request.get("img"),
@@ -456,6 +528,14 @@ def submit_task(request):
         return lux3d_client.create_image_to_four_view_task(
             request.get("img"), prompt=request.get("prompt"), region=region, content_id=content_id
         )
+    if operation == "mesh-retopology":
+        return lux3d_client.create_mesh_retopology_task(
+            request["modelUrl"], request["faceLimit"],
+            quad=request.get("quad", True),
+            bakeTextures=request.get("bakeTextures", False),
+            textureSize=request.get("textureSize", 2048),
+            region=region, content_id=content_id,
+        )
     return lux3d_client.create_multi_format_export_task(
         request["modelUrl"],
         outputFormat=request.get("outputFormat"),
@@ -470,43 +550,67 @@ def artifact_path(output_dir, basename, output_format, multiple):
     return output_dir / f"{stem}.{suffix}"
 
 
-def download_and_validate(state_path, state, outputs, *, generation_port=None):
+def download_and_validate(state_path, state, outputs, *, actions, generation_port=None):
     request = state["request"]
     formats = state["expectedFormats"]
-    urls = lux3d_client.map_artifact_urls(outputs, formats)
+    if request["operation"] == "animation-retarget":
+        key = "animationGlbUrl" if request["outFormat"] == "glb" else "fbxUrl"
+        records_by_url = {}
+        for action in actions:
+            if action["status"] != "success":
+                continue
+            record = records_by_url.setdefault(action[key], {"url": action[key], "format": request["outFormat"], "actionIds": []})
+            record["actionIds"].append(action["animation_id"])
+        records = list(records_by_url.values())
+    else:
+        urls = lux3d_client.map_artifact_urls(outputs, formats)
+        records = [{"url": urls[output_format], "format": output_format} for output_format in formats]
     output_dir = pathlib.Path(state["outputDir"])
     output_dir.mkdir(parents=True, exist_ok=True)
     artifacts = []
     try:
-        for output_format in formats:
-            target = artifact_path(
-                output_dir,
-                request["outputBasename"],
-                output_format,
-                len(formats) > 1,
-            )
+        for index, record in enumerate(records, 1):
+            output_format = record["format"]
+            if request["operation"] == "animation-retarget":
+                stem = request["outputBasename"]
+                if request["animationOutputMode"] == "separate":
+                    stem += f"_action_{index:02d}"
+                target = output_dir / f"{stem}.{lux3d_client.output_extension(output_format)}"
+                inspection_options = {"require_rig": True, "require_animation": True, "minimum_animation_clips": len(record["actionIds"])}
+            else:
+                target = artifact_path(output_dir, request["outputBasename"], output_format, len(formats) > 1)
+                inspection_options = {"require_rig": True} if request["operation"] == "auto-rig" else {}
+            if request["operation"] == "articulation-animation":
+                target = output_dir / (request["outputBasename"] +
+                    lux3d_client.articulation_result_extension(record["url"]))
             temporary = target.with_name(f".{target.name}.part")
             if temporary.exists():
                 temporary.unlink()
             try:
                 downloaded_size = (
                     lux3d_client.download_model(
-                        urls[output_format], str(temporary)
+                        record["url"], str(temporary)
                     )
                     if generation_port is None
                     else generation_port.download(
-                        urls[output_format], str(temporary)
+                        record["url"], str(temporary)
                     )
                 )
                 if downloaded_size <= 0:
                     raise ValueError(f"Downloaded artifact is empty: {output_format}")
-                inspected = artifact_delivery.inspect_artifact(temporary, output_format)
+                if request["operation"] == "mesh-retopology" and output_format == "obj_zip":
+                    lux3d_client.validate_retopology_download(str(temporary), output_format)
+                if request["operation"] == "articulation-animation":
+                    artifact_delivery.inspect_articulation_artifact(temporary, target.suffix)
+                else:
+                    artifact_delivery.inspect_artifact(temporary, output_format, **inspection_options)
                 os.replace(temporary, target)
-                inspected = artifact_delivery.inspect_artifact(target, output_format)
             finally:
                 if temporary.exists():
                     temporary.unlink()
-            artifact = {"path": inspected["path"], "format": output_format}
+            artifact = {"path": str(target.expanduser().resolve()), "format": output_format}
+            if "actionIds" in record:
+                artifact["actionIds"] = record["actionIds"]
             artifacts.append(artifact)
             update_state(state_path, state, downloadedArtifacts=list(artifacts))
 
@@ -526,7 +630,12 @@ def download_and_validate(state_path, state, outputs, *, generation_port=None):
             "artifacts": artifacts,
             "target": request["target"],
         }
+        for key in ("actionResults", "completion"):
+            if key in state:
+                spec[key] = state[key]
         manifest = artifact_delivery.build_manifest(spec)
+        if state.get("deliveryWarnings"):
+            manifest["warnings"] = state["deliveryWarnings"]
         manifest_path = output_dir / DELIVERY_FILENAME
         artifact_delivery.write_json_atomic(manifest_path, manifest)
         update_state(
@@ -649,6 +758,16 @@ def resume_workflow(
         raise
     except RuntimeError as exc:
         message = str(exc)
+        failure_facts = {}
+        if isinstance(exc, lux3d_client.TaskTerminalError) and request["operation"] in {"auto-rig", "animation-retarget"} and exc.task_data:
+            try:
+                failed_outputs = lux3d_client.parse_task_outputs(exc.task_data)
+                if request["operation"] == "animation-retarget" and isinstance(failed_outputs, dict) and "actions" in failed_outputs:
+                    failure_facts["actionResults"] = lux3d_client.validate_animation_results(failed_outputs, request["animationIds"], outFormat=request["outFormat"], animationOutputMode=request["animationOutputMode"])
+                elif isinstance(failed_outputs, dict) and isinstance(failed_outputs.get("error"), dict):
+                    failure_facts["providerError"] = failed_outputs["error"]
+            except (ValueError, RuntimeError) as output_error:
+                failure_facts["outputError"] = str(output_error)
         if isinstance(exc, lux3d_client.TaskOutputError):
             update_state(
                 state_path,
@@ -686,10 +805,11 @@ def resume_workflow(
             queryHealth=query_health,
             lastKnownProviderStatus=provider_status,
             lastError=message,
+            **failure_facts,
         )
         raise
     try:
-        validate_requested_provider_outputs(request, outputs, state["expectedFormats"])
+        actions = validate_requested_provider_outputs(request, outputs, state["expectedFormats"])
     except lux3d_client.TaskOutputError as exc:
         update_state(
             state_path,
@@ -700,6 +820,23 @@ def resume_workflow(
             lastError=str(exc),
         )
         raise
+    result_facts = {}
+    if actions is not None:
+        succeeded = [action["animation_id"] for action in actions if action["status"] == "success"]
+        failed = [action["animation_id"] for action in actions if action["status"] == "failed"]
+        result_facts = {"actionResults": actions, "completion": {"status": "partial" if failed else "complete", "successfulActionIds": succeeded, "failedActionIds": failed}}
+    if operation == "articulation-animation":
+        extension = lux3d_client.articulation_result_extension(outputs)
+        state["expectedFormats"] = ["glb" if extension == ".glb" else "file"]
+        state["deliveryWarnings"] = ["JOINT_MOTION_NOT_VERIFIED"]
+    if operation == "mesh-retopology":
+        # Optional ZIP follows actual provider output, not the original bake request.
+        state["expectedFormats"] = [
+            name for name in lux3d_client.RETOPOLOGY_OUTPUT_SLOTS if name in outputs
+        ]
+        state["deliveryWarnings"] = lux3d_client.retopology_result(
+            state["taskId"], outputs, request.get("bakeTextures", False)
+        )["warnings"]
     update_state(
         state_path,
         state,
@@ -708,6 +845,7 @@ def resume_workflow(
         lastKnownProviderStatus=3,
         artifactExpiresInSeconds=lux3d_client.ARTIFACT_TTL_SECONDS,
         lastError=None,
+        **result_facts,
     )
 
     if operation == "four-view":
@@ -729,7 +867,7 @@ def resume_workflow(
         return {**state, "fourViewUrls": outputs}
 
     return download_and_validate(
-        state_path, state, outputs, generation_port=generation_port
+        state_path, state, outputs, actions=actions, generation_port=generation_port
     )
 
 

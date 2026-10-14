@@ -43,6 +43,16 @@
         3,
         4
       ]
+    },
+    "digitalHumanVerification": {
+      "reviewedOn": "2026-10-08",
+      "service": "ai-generate-service",
+      "revision": "ca5df742f5eb34b67bc3252c4c0992ac519180c4",
+      "sources": [
+        "open.yaml",
+        "Lux3dDigitalHumanPreparation.java",
+        "Lux3dAnimationResults.java"
+      ]
     }
   },
   "transport": {
@@ -55,11 +65,11 @@
         "assetUploadDocs": "https://labs.aholo3d.cn/api-docs/api-reference#tag/asset"
       },
       "international": {
-        "host": "https://api.aholo3d.com",
+        "host": "https://api.aholo.ai",
         "pathPrefix": "/global",
-        "effectiveBaseUrl": "https://api.aholo3d.com/global",
-        "apiKeyPage": "https://labs.aholo3d.com/api-keys?from=lux3d",
-        "assetUploadDocs": "https://labs.aholo3d.com/api-docs/en/api-reference#tag/asset"
+        "effectiveBaseUrl": "https://api.aholo.ai/global",
+        "apiKeyPage": "https://labs.aholo.ai/api-keys?from=lux3d",
+        "assetUploadDocs": "https://labs.aholo.ai/api-docs/en/api-reference#tag/asset"
       }
     },
     "regionIsolation": {
@@ -157,7 +167,9 @@
       "text-to-3d",
       "material-transfer",
       "multimodal-image",
-      "four-view"
+      "four-view",
+      "mesh-retopology",
+      "articulation-animation"
     ],
     "excludedCreateOperations": [
       "multi-format-export"
@@ -197,6 +209,98 @@
         "glass"
       ],
       "default": "photorealistic"
+    },
+    "animationId": {
+      "type": "string",
+      "values": [
+        "A_TPose",
+        "Dance_Loop",
+        "Idle_Rail_Call",
+        "Idle_TalkingPhone_Loop",
+        "Idle_Talking_Loop",
+        "Yes",
+        "Crouch_Idle_Loop",
+        "Idle_FoldArms_Loop",
+        "Idle_Lantern_Loop",
+        "Idle_Loop",
+        "Idle_No_Loop",
+        "Idle_Rail_Loop",
+        "Idle_Torch_Loop",
+        "ClimbUp_1m",
+        "Crouch_Fwd_Loop",
+        "Jog_Fwd_Loop",
+        "Sprint_Loop",
+        "Swim_Fwd_Loop",
+        "Swim_Idle_Loop",
+        "Walk_Formal_Loop",
+        "Walk_Loop",
+        "Jump_Land",
+        "Jump_Loop",
+        "Jump_Start",
+        "NinjaJump_Idle_Loop",
+        "NinjaJump_Land",
+        "NinjaJump_Start",
+        "Roll",
+        "Slide_Exit",
+        "Slide_Loop",
+        "Slide_Start",
+        "Sword_Attack",
+        "Sword_Block",
+        "Sword_Dash",
+        "Sword_Heavy_Combo",
+        "Sword_Idle",
+        "Sword_Regular_A",
+        "Sword_Regular_A_Rec",
+        "Sword_Regular_B",
+        "Sword_Regular_B_Rec",
+        "Sword_Regular_C",
+        "Sword_Regular_Combo",
+        "Idle_Shield_Break",
+        "Idle_Shield_Loop",
+        "Shield_Dash",
+        "Shield_OneShot",
+        "Melee_Hook",
+        "Melee_Hook_Rec",
+        "Punch_Cross",
+        "Punch_Jab",
+        "Pistol_Aim_Down",
+        "Pistol_Aim_Neutral",
+        "Pistol_Aim_Up",
+        "Pistol_Idle_Loop",
+        "Pistol_Reload",
+        "Pistol_Shoot",
+        "Spell_Simple_Enter",
+        "Spell_Simple_Exit",
+        "Spell_Simple_Idle_Loop",
+        "Spell_Simple_Shoot",
+        "Chest_Open",
+        "Consume",
+        "Driving_Loop",
+        "Farm_Harvest",
+        "Farm_PlantSeed",
+        "Farm_Watering",
+        "Fixing_Kneeling",
+        "Interact",
+        "OverhandThrow",
+        "PickUp_Table",
+        "Push_Loop",
+        "TreeChopping_Loop",
+        "Walk_Carry_Loop",
+        "LayToIdle",
+        "Sitting_Enter",
+        "Sitting_Exit",
+        "Sitting_Idle_Loop",
+        "Sitting_Talking_Loop",
+        "Death01",
+        "Hit_Chest",
+        "Hit_Head",
+        "Hit_Knockback",
+        "Zombie_Idle_Loop",
+        "Zombie_Scratch",
+        "Zombie_Walk_Fwd_Loop"
+      ],
+      "caseSensitive": true,
+      "trimmed": true
     }
   },
   "versionProfiles": {
@@ -507,6 +611,197 @@
           "exclusive": true
         }
       }
+    },
+    "auto-rig": {
+      "method": "POST",
+      "path": "/lux3d/v1/animations/rig/task/create",
+      "kind": "create",
+      "request": {
+        "required": [
+          "modelUrl"
+        ],
+        "optional": [
+          "contentId"
+        ],
+        "modelUrl": {
+          "type": "string",
+          "scheme": "https",
+          "pathSuffix": ".glb"
+        }
+      },
+      "output": {
+        "format": "glb",
+        "content": "rigged-glb-url",
+        "failureEncoding": "json-object-string",
+        "failure": "error.code and error.message"
+      },
+      "connectorSupported": true
+    },
+    "animation-retarget": {
+      "method": "POST",
+      "path": "/lux3d/v1/animations/retarget/task/create",
+      "kind": "create",
+      "request": {
+        "required": [
+          "rigModelUrl",
+          "animationIds"
+        ],
+        "optional": [
+          "animationOutputMode",
+          "outFormat",
+          "animateInPlace",
+          "contentId"
+        ],
+        "rigModelUrl": {
+          "type": "string",
+          "scheme": "https",
+          "pathSuffix": ".glb"
+        },
+        "animationIds": {
+          "type": "array",
+          "minimumItems": 1,
+          "maximumItems": 10,
+          "uniqueItems": true,
+          "ordered": true,
+          "valuesRef": "sharedFields.animationId.values"
+        },
+        "animationOutputMode": {
+          "values": [
+            "separate",
+            "combined"
+          ],
+          "default": "separate"
+        },
+        "outFormat": {
+          "values": [
+            "glb",
+            "fbx"
+          ],
+          "default": "glb"
+        },
+        "animateInPlace": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "output": {
+        "encoding": "json-object-string",
+        "actions": "One terminal action result per requested animation_id",
+        "successUrlByFormat": {
+          "glb": "animationGlbUrl",
+          "fbx": "fbxUrl"
+        },
+        "failure": "error.code and error.message",
+        "combined": "Deduplicate shared file URLs; each action keeps an independent animation clip.",
+        "partialSuccess": "Provider status 3 may contain failed actions; deliver successes and preserve failures."
+      },
+      "connectorSupported": true
+    },
+    "mesh-retopology": {
+      "method": "POST",
+      "path": "/lux3d/v1/mesh-retopology/task/create",
+      "kind": "create",
+      "request": {
+        "required": [
+          "modelUrl",
+          "faceLimit"
+        ]
+      },
+      "versionExposed": false,
+      "fields": {
+        "modelUrl": {
+          "type": "string",
+          "suffix": ".glb",
+          "staticOnly": true,
+          "draco": false
+        },
+        "faceLimit": {
+          "type": "integer",
+          "quad": {
+            "minimum": 1000,
+            "maximum": 500000
+          },
+          "triangle": {
+            "minimum": 2000,
+            "maximum": 1000000
+          }
+        },
+        "quad": {
+          "type": "boolean",
+          "default": true
+        },
+        "bakeTextures": {
+          "type": "boolean",
+          "default": false
+        },
+        "textureSize": {
+          "type": "integer",
+          "default": 2048,
+          "enum": [
+            512,
+            1024,
+            2048,
+            4096
+          ]
+        },
+        "contentId": {
+          "type": "string",
+          "optional": true,
+          "purpose": "current quoteId, not idempotency"
+        }
+      },
+      "fixedOutputSlots": [
+        "glb",
+        "obj",
+        "obj_zip"
+      ],
+      "requiredOutputSlots": [
+        "glb",
+        "obj"
+      ],
+      "optionalEmptySlots": [
+        "obj_zip"
+      ],
+      "resultRule": "Three fixed slots; empty ZIP does not fail geometry. A requested bake with empty ZIP must be disclosed. Never recreate a task for query/download failure.",
+      "connectorSupported": true,
+      "cliExposed": true,
+      "workflowRunnerExposed": true,
+      "reviewedOn": "2026-10-09"
+    },
+    "articulation-animation": {
+      "method": "POST",
+      "path": "/lux3d/v1/articulation-animation/task/create",
+      "kind": "create",
+      "request": {
+        "required": [
+          "glbUrl",
+          "prompt"
+        ],
+        "additionalProperties": false,
+        "fields": {
+          "glbUrl": {
+            "type": "string",
+            "format": "http-or-https-url",
+            "content": "GLB model"
+          },
+          "prompt": {
+            "type": "string",
+            "nonBlank": true
+          }
+        }
+      },
+      "versionExposed": false,
+      "contentIdSupported": false,
+      "output": {
+        "count": 1,
+        "content": "actual-format-artifact-url",
+        "fixedFormat": false
+      },
+      "connectorSupported": true,
+      "cliExposed": true,
+      "workflowRunnerExposed": true,
+      "reviewedOn": "2026-10-13",
+      "documentation": "https://lux3d-beta.aholo3d.cn/lux3d/doc?lang=zh_CN#api-reference"
     }
   },
   "outOfScopePlaceholders": {

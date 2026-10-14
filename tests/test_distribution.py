@@ -187,7 +187,7 @@ class DistributionTests(unittest.TestCase):
         )
         for region, variable, base in (
             ("cn", "LUX3D_CN_API_KEY", "https://api.aholo3d.cn"),
-            ("international", "LUX3D_GLOBAL_API_KEY", "https://api.aholo3d.com/global"),
+            ("international", "LUX3D_GLOBAL_API_KEY", "https://api.aholo.ai/global"),
         ):
             for flags, metadata, source, name in hosts:
                 with self.subTest(region=region, host=name):

@@ -7,7 +7,7 @@ a network failure, and never retry a failed request against another region.
 
 Direct the user to the selected site's key page:
 [China](https://labs.aholo3d.cn/api-keys?from=lux3d) or
-[international](https://labs.aholo3d.com/api-keys?from=lux3d). Have them store the key in the
+[international](https://labs.aholo.ai/api-keys?from=lux3d). Have them store the key in the
 host's secure credential settings or a private local credential store that can
 inject it into the operation's child process. Do not ask them to paste a key in
 chat. Keep keys out of host metadata, command arguments, projects,
@@ -16,7 +16,7 @@ version control, quote files, logs and deliverables.
 | Selected region | Process environment variable | Service origin |
 | --- | --- | --- |
 | `cn` | `LUX3D_CN_API_KEY` | `https://api.aholo3d.cn` |
-| `international` | `LUX3D_GLOBAL_API_KEY` | `https://api.aholo3d.com` |
+| `international` | `LUX3D_GLOBAL_API_KEY` | `https://api.aholo.ai` |
 
 The bundled clients use the raw key in `Authorization`; do not prepend
 `Bearer`. International HTTP calls use `/global`, while quote plans keep the

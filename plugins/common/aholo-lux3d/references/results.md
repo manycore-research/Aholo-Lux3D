@@ -12,8 +12,8 @@ Use `prepare` in `core/runtime/delivery_bundle.py`. Read its `--help` for argume
 
 For tasks submitted through the client API, create each referenced `statePath` from the actual local attempt record and query/download results. The existing reader in `core/runtime/delivery_bundle.py` accepts a delivery snapshot with `schema: lux3d.workflow-state/v2`, the real `taskId`, `status`, `lastKnownProviderStatus`, a sanitized `request`, `expectedFormats`, and `downloadedArtifacts`. This is input to the delivery reader, not a complete runner execution record or proof that its submission checks ran. Keep private approval/quote records separate.
 
-- In `request`, use the operation identifiers `text-to-3d`, `image-to-3d`, `material-transfer`, `four-view`, or `export`, and the actual `region`. Include the actual `version` for the first three; omit it for four-view and export.
-- Use the output helpers in [Execution and recovery](execution.md) for `expectedFormats`. Each `downloadedArtifacts` entry has a real `path` (absolute or relative to its state file) and a supported `format`. Keep format identifiers such as `obj_zip` and `fbx_zip` even though their filenames end in `.zip`.
+- In `request`, use the operation identifiers `text-to-3d`, `image-to-3d`, `material-transfer`, `four-view`, `export`, `mesh-retopology`, `articulation-animation`, `auto-rig`, or `animation-retarget`, and the actual `region`. Include the actual `version` for the first three; omit it for the other operations.
+- Use the output helpers in [Execution and recovery](execution.md) for `expectedFormats`. Each `downloadedArtifacts` entry has a real `path` (absolute or relative to its state file) and a supported `format`. Keep format identifiers such as `obj_zip` and `fbx_zip` even though their filenames end in `.zip`. Digital-human retargeting uses `glb` or bare `fbx`, with the real `actionIds` associated with each file. Follow [Digital humans](digital-human.md) for multiple files of the same format and partial results.
 - Use the documented runtime status names. For success, set `status: succeeded` and `lastKnownProviderStatus: 3` only after all expected model artifacts have been downloaded and inspected. Preserve known provider status separately from query or delivery errors. If the submission outcome is unknown and no task ID is available, use `submission_unknown`, not an invented ID or an unsupported `unknown` status.
 - Record actual timezone-qualified `createdAt`, `updatedAt`, and the first `localCompletedAt` where known. The delivery tool computes `localDurationMs`; preserve these timestamps across preview rebuilds. Omit unknown times.
 - The model delivery reader does not package PNG/JPEG artifacts. Keep four-view images outside `downloadedArtifacts` and use an empty `expectedFormats` for a four-view snapshot. When they are intermediate inputs, include the resulting 3D assets in model delivery. For an image-only four-view request, deliver the verified image files directly; do not create an unrequested 3D model to satisfy the bundler.
@@ -155,8 +155,10 @@ an amendment to the old retry.
 
 ### Generation correlation
 
-Use the current quote's `quoteId` as optional generation `contentId`. The six shared
-Python create helpers and generate convenience wrappers accept `content_id=quote_id`; wire requests use `contentId`. Existing create CLI commands accept `--content-id <quoteId>`. The active execution instruction requires passing the current matching quote explicitly.
+For endpoints supporting `contentId`, pass the current quote's `quoteId` as
+`content_id=quote_id` to the create helper or convenience wrapper, or `--content-id`
+to its CLI. Articulation accepts only `glbUrl` and `prompt`: retain its quoteId in
+local records and never add it to the HTTP body.
 The workflow generation-port request derives `contentId` from the verified submission's
 `quoteId`. Keep generation parameters identical to the quoted parameters; correlation is
 transport metadata added after pricing, not a creative input or authorization.
@@ -174,7 +176,7 @@ Record each real approval or approval-mode change with its original words, time,
 
 For each observable task-relevant call not already captured by a reliable recorder:
 1. Before execution append a start record with a fresh UUID callId, actual host tool name, operation, pluginTaskId, planVersion, time, screened input summary and applicable authorizationId/quoteId. Free local work has no fabricated quote. A confirmed retry uses a new callId and retryOf.
-2. Invoke the actual tool normally. Recording is a side operation, not an execution proxy. Pass the current matching quoteId as content_id for every quoted Lux3D create.
+2. Invoke the actual tool normally. Recording is a side operation, not an execution proxy. Pass the current matching quoteId as content_id for endpoints that support it; articulation keeps this association locally.
 3. Append the actual finish with the same callId and links captured at start, its status/time and observed output or error. Capture providerTaskId as soon as creation is accepted; acceptance is not completion. Polling is separate from creation and must not inflate generation counts.
 4. After interruption retain unmatched starts and uncertain outcomes. Recover from actual task or host evidence, without repeating paid creates to fill missing logs.
 
@@ -362,3 +364,32 @@ request ID is rejected locally; server `COLLECTION_EVENT_CONFLICT` is also surfa
 credential or region change prevents sending another account's pending data. Journals do
 not grant spending permission. They contain collection content and belong with the task's
 private output files, not in public delivery bundles or source control.
+
+
+## Model-articulation delivery
+
+Deliver the actual file from the single result URL. Preserve its extension (use
+`.bin` when the URL has no safe extension); do not rename every result to ZIP or
+discard a ZIP because it lacks a GLB. GLB results receive structural validation;
+other results use manifest format `file`, with archive integrity checks for ZIPs
+or explicitly limited nonempty-file validation. Such files are downloadable but
+are not automatically a previewable model. Keep `JOINT_MOTION_NOT_VERIFIED` until
+the requested part motion has actually been inspected in a compatible viewer/DCC.
+The existing preview pipeline does not by itself verify joint motion.
+
+Use the original task ID for recovery. Never create another paid task merely
+because the output is an unfamiliar format or a download failed.
+
+## Mesh-retopology delivery
+
+Parse exactly three fixed slots: GLB, white/untextured OBJ, OBJ ZIP. GLB and OBJ must be valid
+URLs; the third slot is either a valid URL or the empty string. Preserve all available original
+files and the ZIP intact. GLB preview does not replace formal OBJ topology or the texture package.
+The runtime validates standalone OBJ geometry and includes it in the delivery manifest.
+
+Requested bake with no ZIP remains a successful geometry delivery with
+`TEXTURE_PACKAGE_NOT_GENERATED`: state "geometry is available, but no texture package was
+generated." Do not claim baking succeeded, infer the private failure cause, or resubmit.
+Provider failure/cancellation is not success. Do not interpret private quality scores in the client.
+Continue existing execution REPORT/feedback consent rules with real task IDs, missing outputs
+and observed outcomes; never fabricate model/region metadata or retry paid creation for collection.

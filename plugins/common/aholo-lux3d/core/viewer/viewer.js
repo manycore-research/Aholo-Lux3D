@@ -22,6 +22,7 @@ let environment;
 let draco;
 let ktx2;
 let loader;
+let lastFrame;
 
 function element(tag, text, className) {
   const result = document.createElement(tag);
@@ -47,7 +48,9 @@ function localDuration(attempt) {
 }
 
 function downloadLink(artifact) {
-  const label = t('download', { format: artifact.format.toUpperCase() });
+  const label = artifact.actionIds?.length
+    ? t('downloadActions', { format: artifact.format.toUpperCase(), actions: artifact.actionIds.join(', ') })
+    : t('download', { format: artifact.format.toUpperCase() });
   const link = element('a', label);
   link.setAttribute('aria-label', label);
   link.href = '#';
@@ -101,6 +104,36 @@ function fit(view) {
   view.controls.update();
 }
 
+function addAnimationControls(view) {
+  if (!view.gltf.animations.length) return;
+  view.mixer = new THREE.AnimationMixer(view.gltf.scene);
+  view.mixer.timeScale = 0;
+  const select = element('select', undefined, 'animation-select');
+  select.setAttribute('aria-label', t('animationClip'));
+  view.gltf.animations.forEach((clip, index) => {
+    const option = element('option', clip.name || t('unnamedClip', { index: index + 1 }));
+    option.value = String(index); select.append(option);
+  });
+  const chooseClip = index => {
+    view.mixer.stopAllAction();
+    view.mixer.clipAction(view.gltf.animations[index]).reset().play();
+    view.mixer.update(0);
+  };
+  select.addEventListener('change', () => chooseClip(Number(select.value)));
+  const toggle = element('button', t('playAnimation'), 'reset');
+  toggle.type = 'button'; toggle.setAttribute('aria-pressed', 'false');
+  toggle.addEventListener('click', () => {
+    view.mixer.timeScale = view.mixer.timeScale ? 0 : 1;
+    toggle.textContent = t(view.mixer.timeScale ? 'pauseAnimation' : 'playAnimation');
+    toggle.setAttribute('aria-pressed', String(Boolean(view.mixer.timeScale)));
+  });
+  const tools = element('div', undefined, 'animation-tools');
+  tools.addEventListener('pointerdown', event => event.stopPropagation());
+  tools.addEventListener('wheel', event => event.stopPropagation());
+  tools.append(select, toggle); view.viewport.append(tools);
+  chooseClip(0);
+}
+
 async function addPreview(viewport, artifact) {
   const notice = element('div', t('loading'), 'preview-notice');
   viewport.append(notice);
@@ -127,6 +160,7 @@ async function addPreview(viewport, artifact) {
     const tools = element('div', undefined, 'stage-tools');
     tools.append(element('span', t('orbitHint'), 'stage-hint'), reset);
     viewport.append(element('span', t('localPreview'), 'stage-label'), tools);
+    addAnimationControls(view);
     fit(view);
     views.push(view);
   } catch {
@@ -135,7 +169,9 @@ async function addPreview(viewport, artifact) {
   }
 }
 
-function render() {
+function render(time) {
+  const delta = lastFrame === undefined ? 0 : (time - lastFrame) / 1000;
+  lastFrame = time;
   const ratio = renderer.getPixelRatio();
   if (renderer.domElement.width !== Math.floor(innerWidth * ratio) || renderer.domElement.height !== Math.floor(innerHeight * ratio)) {
     renderer.setSize(innerWidth, innerHeight);
@@ -146,6 +182,7 @@ function render() {
   renderer.clear();
   renderer.setScissorTest(true);
   for (const view of views) {
+    view.mixer?.update(delta);
     const rect = view.viewport.getBoundingClientRect();
     if (rect.bottom <= 0 || rect.top >= innerHeight || rect.right <= 0 || rect.left >= innerWidth) continue;
     view.camera.aspect = rect.width / rect.height;
@@ -179,10 +216,32 @@ function card(item, index) {
   for (const id of item.artifactIds) downloads.append(downloadLink(artifacts.get(id)));
   const info = element('div', undefined, 'asset-info');
   info.append(metadata, downloads);
+  if (selected?.actionResults?.length) {
+    const results = element('ul', undefined, 'action-results');
+    for (const action of selected.actionResults) {
+      results.append(element('li', action.status === 'success'
+        ? `${action.animation_id} · ${t('actionAvailable')}`
+        : `${action.animation_id} · ${t('actionFailed')} · ${action.error.code}: ${action.error.message}`,
+      action.status));
+    }
+    info.append(results);
+  }
   const body = element('div', undefined, 'card-body');
-  body.append(viewport, info);
+  const previews = item.artifactIds.map(id => artifacts.get(id)).filter(artifact => artifact.format === 'glb');
+  if (previews.length > 1) {
+    const stages = element('div', undefined, 'preview-stages');
+    stages.append(viewport);
+    for (const artifact of previews.slice(1)) {
+      const additional = element('div', undefined, 'viewport');
+      additional.tabIndex = 0;
+      additional.setAttribute('aria-label', t('itemPreview', { label: `${item.label} · ${artifact.actionIds.join(', ')}` }));
+      stages.append(additional);
+      void addPreview(additional, artifact);
+    }
+    body.append(stages, info);
+  } else body.append(viewport, info);
   result.append(heading, body);
-  const preview = item.artifactIds.map(id => artifacts.get(id)).find(artifact => artifact.format === 'glb');
+  const preview = previews[0];
   if (preview) void addPreview(viewport, preview);
   else { viewport.dataset.previewState = 'unavailable'; viewport.append(element('div', t('noGlb'), 'preview-notice')); }
   return result;
@@ -257,7 +316,8 @@ document.querySelector('footer').append(notices);
 for (const attempt of manifest.attempts) {
   const task = tasks.get(attempt.taskRef);
   const row = element('tr');
-  for (const value of [attempt.id, task ? `${task.taskId} / ${task.region}` : t('unavailable'), t(`state.${attempt.status}`), attempt.localStartedAt ?? t('unavailable'), attempt.localCompletedAt ?? t('unavailable'), localDuration(attempt) ?? t('unavailable')]) row.append(element('td', value));
+  const stateLabel = attempt.completion?.status === 'partial' ? t('partialActions') : t(`state.${attempt.status}`);
+  for (const value of [attempt.id, task ? `${task.taskId} / ${task.region}` : t('unavailable'), stateLabel, attempt.localStartedAt ?? t('unavailable'), attempt.localCompletedAt ?? t('unavailable'), localDuration(attempt) ?? t('unavailable')]) row.append(element('td', value));
   const originals = element('td');
   for (const id of attempt.artifactIds) originals.append(downloadLink(artifacts.get(id)));
   if (!attempt.artifactIds.length) originals.textContent = t('noOriginals');
@@ -267,6 +327,8 @@ for (const attempt of manifest.attempts) {
 window.addEventListener('pagehide', () => {
   renderer?.setAnimationLoop(null);
   for (const view of views) {
+    view.mixer?.stopAllAction();
+    view.mixer?.uncacheRoot(view.gltf.scene);
     view.controls.dispose();
     view.scene.traverse(object => {
       object.geometry?.dispose();

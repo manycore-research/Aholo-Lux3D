@@ -1,6 +1,6 @@
 ---
 name: aholo-lux3d
-description: Generate and process 3D assets with Lux3D OpenAPI, resume tasks, and deliver verified model files with an offline preview from any compatible host using the same complete local Skill.
+description: Generate and process 3D assets with Lux3D OpenAPI, including retopology, model articulation, character rigging and animation retargeting, resume tasks, and deliver verified model files with an offline preview from any compatible host using the same complete local Skill.
 ---
 
 # Aholo Lux3D
@@ -11,6 +11,18 @@ contracts and viewer. Resolve paths from this installed Skill, independent of
 the current directory. The host must support local Python processes, file
 access, HTTPS and secure credential injection. Python, dependency downloads
 and Blender are not bundled. Communicate in the user's language.
+
+## Model processing and animation
+
+The maintained source supports mesh retopology, model articulation, character
+auto-rigging and animation retargeting in addition to image/text generation,
+materials and exports. Read [planning](references/planning.md) and
+[execution](references/execution.md) for retopology and articulation, and
+[digital humans](references/digital-human.md) for rigging and retargeting.
+All paid stages retain account, complete-plan review/quote and authorization
+checks. Record each real task ID immediately and resume the same task after
+interruption. Articulation sends only `glbUrl` and `prompt`; other supported
+create operations use the matching quoteId as `contentId`.
 
 ## Install the complete shared Skill
 

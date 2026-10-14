@@ -24,7 +24,7 @@ One common [Aholo Lux3D](https://lux3d.aholo3d.com) Skill for local installation
 | Maintained Skill source | [`plugins/common/aholo-lux3d/`](plugins/common/aholo-lux3d/) |
 | Historical archive (record only) | [`lux3d-plugin-1.1.0-common-skill.zip`](lux3d-plugin/common/lux3d-plugin-1.1.0-common-skill.zip) |
 
-## 1.1.0 source maintenance (2026-10-10)
+## 1.1.0 source maintenance
 
 The maintained source and actual installation input are in
 `plugins/common/aholo-lux3d/`. Source validation uses its own integrity record.
@@ -32,6 +32,19 @@ The ZIP and sidecars in `lux3d-plugin/common/` remain unchanged historical recor
 they are not rebuilt for source updates and are not used to gate installation.
 Version stays `1.1.0`. Changes are limited to this GitHub repository; no GitLab
 synchronization, host installation, Git push or publication is implied.
+
+The current maintained Skill also supports mesh retopology, model articulation,
+character auto-rigging and animation retargeting. Each paid stage uses a matching
+quote and the existing task authorization; interrupted work resumes from the
+recorded provider task ID. Retargeting preserves per-action partial results.
+Installation invite-code collection and the automatic execution REPORT flow are
+retained. These changes update the maintained source; the historical ZIP stays
+unchanged. International API requests use `https://api.aholo.ai/global`, matching
+the [official API reference](https://labs.aholo3d.com/api-docs/en/llms.txt).
+
+当前维护的 Skill 源码已支持重拓扑、模型关节化、人物自动绑骨和动作迁移，
+继续使用已有报价、授权和任务恢复流程；邀请码采集与自动 REPORT 行为保留。
+版本仍为 `1.1.0`，安装内容以源码摘要区分，历史 ZIP 不变。
 
 ## English
 

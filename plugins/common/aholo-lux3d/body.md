@@ -52,7 +52,9 @@ When no further approval is needed, briefly report the new work's estimated cost
 
 ### Execute and track
 
-Once the current step has the required approval, follow [Execution and recovery](references/execution.md) to check actual inputs, parameters, dependencies, balance, and required entitlements. Submit and track the step when these checks pass. Pass the matched quoteId as `content_id` on the actual generation call, and keep the task's execution log current. Fix input or parameter errors locally. If balance or entitlements are insufficient, help the user address the issue, then check again.
+For character auto-rigging or animation retargeting, read [Digital humans](references/digital-human.md) for GLB prerequisites, public animation IDs, the two-step workflow, per-action results and delivery. Reuse the same account, quote and approval flow for each actual creation call.
+
+Once the current step has the required approval, follow [Execution and recovery](references/execution.md) to check actual inputs, parameters, dependencies, balance, and required entitlements. Submit and track the step when these checks pass. Pass the matched quoteId as `content_id` on generation calls that support it (articulation accepts only `glbUrl` and `prompt`; retain its quoteId locally), and keep the task's execution log current. Fix input or parameter errors locally. If balance or entitlements are insufficient, help the user address the issue, then check again.
 
 For an existing task, query that task and continue from its status; a new message does not require a new submission. Use the same reference for queries, recovery, changes to running tasks, and cancellation. When the required assets are ready, proceed to assembly if needed, or to inspection and delivery.
 
@@ -78,3 +80,18 @@ For requested revisions, identify the affected objects and scope, then continue 
 ## Command conventions
 
 Tool paths in the references are relative to the directory containing the installed entrypoint `SKILL.md`. Run scripts with the Python interpreter configured for that environment. Read each command's `--help` for arguments and the linked contract for request-file structure.
+
+
+## Existing-model retopology
+
+For static GLB retopology, read the retopology guidance in references/planning.md,
+references/execution.md and references/results.md. The local shared runtime supports
+`mesh-retopology`; this does not prove a remote Connector/MCP tool is available.
+Never replace retopology with material transfer or format conversion.
+
+## Model articulation
+
+For joints and motion on GLB model parts (for example, opening a lid with a fixed
+base), use `articulation-animation`. Read the articulation sections in
+references/planning.md, references/execution.md and references/results.md.
+This is distinct from character auto-rigging and animation retargeting.
