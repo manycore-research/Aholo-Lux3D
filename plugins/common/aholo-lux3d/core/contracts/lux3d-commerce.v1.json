@@ -566,6 +566,7 @@
     "feedbackReceipt": [
       "feedbackId",
       "submissionStatus"
-    ]
+    ],
+    "reportSuccessMeaning": "Business success with non-empty reportId, receiptStatus=ACCEPTED and checkResult=OK means remote evaluation passed for the submitted report; it does not replace user acceptance or authorize spending."
   }
 }

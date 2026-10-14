@@ -21,6 +21,47 @@ If balance or required entitlements are insufficient, help the user address the 
 Use the returned `accountRef`, `region`, `source`, `uniqueId`, and `uniqueIdExpiresAt` to associate account facts with a quote. If a balance refresh changes `uniqueId` or the account, the earlier quote no longer applies: quote the intended work again. Do not invent membership requirements from `memberType` or trial names; enforce only requirements documented for the selected capability or returned by the service.
 
 
+## Account task concurrency
+
+The account's shared generation task limit is **5 for free users** and **20 for
+paid users**. Use the current successful account response: boolean `member=true`
+selects the paid/pro limit; `member=false` selects the free limit. Do not infer
+paid status from a positive credit balance, a top-up, trial access or the host.
+If membership is unknown, refresh the account before using the paid limit and
+use at most the free limit while the other account/quote requirements remain met.
+
+These limits count unfinished asynchronous tasks, not simultaneous HTTP requests
+or calls per second. States 0, 1 and 2 occupy slots. Count the account's existing
+active tasks across operations, API keys, hosts and Skill/MCP sessions; changing
+source, quoteId or connection does not create a fresh quota. All nine generation
+operations, including retopology, articulation, auto-rig and animation retargeting,
+share this pool. One retarget create with several action IDs occupies one slot.
+Multi-format export remains outside this shared generation pool; do not invent
+an export quota from the generation limit.
+
+Use one account coordinator to reserve available slots before dispatching ready,
+authorized and quoted steps. Available slots are the limit minus observed active
+tasks and local reservations not already represented by those tasks. Dependencies
+must be ready before submission. Release a reservation on an explicit rejection
+that created no task, or after observing a terminal provider state. Creation HTTP
+completion, query timeout, local download failure and an uncertain submission do
+not release a task slot. Reconcile uncertainty before creating again. If task-list
+coverage or durable coordination is unavailable, serialize work conservatively
+instead of assuming all slots are free. Limits are ceilings, not a target count.
+
+**Part splitting has a separate per-account limit of 5 for every user**, including
+paid users. Do not apply the paid generation limit of 20 to part splitting. This
+policy does not add a part-split tool: the current plugin has no part-split route;
+only invoke such an operation after its actual interface has been integrated and
+discovered. The server may also enforce global capacity or account-specific limits.
+
+On `GENERATION_CONCURRENCY_LIMIT_EXCEEDED`, pause new creates, keep/query existing
+task IDs and wait for capacity. Never retry an uncertain create, switch accounts
+or endpoints to evade the cap, or regenerate to recover a delivery failure. A
+successful account/quote does not reserve server slots or authorize new spending.
+The host coordinates this workflow through instructions; the server remains the
+authority across processes and devices. No new server-side semaphore is installed.
+
 ### Recover from timestamp precision errors
 
 Account and quote timestamps may have nanosecond precision, for example `2026-09-30T14:43:00.832650958+08:00`. Use the bundled `workflow_contracts.parse_datetime` helper: it parses a copy as `2026-09-30T14:43:00.832650+08:00`, preserves the offset and converts the result to UTC. It accepts 1-9 fractional digits, padding shorter fractions to six digits and truncating longer ones without rounding. Keep the server's original response unchanged.

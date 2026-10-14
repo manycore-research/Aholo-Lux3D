@@ -8,19 +8,19 @@ Canonical repository: `https://github.com/manycore-research/Aholo-Lux3D`
 
 - Skill: `aholo-lux3d`
 - Display name: `Aholo Lux3D`
-- Version: `1.1.0`
+- Version: `1.2.0`
 - Git ref: `master`
 - Maintained Skill source and installation input: `plugins/common/aholo-lux3d/`
-- Historical archive only: `lux3d-plugin/common/lux3d-plugin-1.1.0-common-skill.zip` (not the installation input)
+- Upstream suite snapshot only: `lux3d-plugin/common/lux3d-plugin-1.2.0-common-suite.zip` (not the installation input)
 - Hosts: Codex, WorkBuddy, and other hosts supporting complete local Skills and the runtime prerequisites below
 
-This repository distributes one common Skill. It no longer provides a Codex Git marketplace or a Codex-specific plugin package. Do not use `codex plugin marketplace add` or `codex plugin add aholo-lux3d@lux3d` to install this repository. A request to install "for Codex" uses the common local Skill through Codex's supported local Skill directory.
+This repository distributes Common suite `1.2.0` with one `aholo-lux3d` Skill entry and two execution modes: OpenAPI and MCP. Both support China (`cn`) and international (`international`). Install the complete suite through the host's supported local Skill directory.
 
 ## First decide the operation
 
 1. **Install or set up** — follow **Install the common Skill** below.
 2. **Inspect or explain** — read `README.md`, `release-manifest.json`, and `plugins/common/aholo-lux3d/SKILL.md`. Do not change host configuration.
-3. **Uninstall** — identify the actual installed copy and use the host's supported removal mechanism. Remove only the installation the user requested. An old marketplace plugin must be removed through its own plugin manager.
+3. **Uninstall** — identify the actual installed copy and use the host's supported removal mechanism. Remove only the installation the user requested.
 4. **Maintain the repository** — use **Maintain this distribution repository**. Do not install or publish as a side effect.
 
 ## Install the common Skill
@@ -31,21 +31,23 @@ An explicit installation request authorizes installing this Skill into the curre
 
 Determine the actual host from the current environment. Inspect its existing Skill configuration and supported installation instructions to find the local Skill parent directory. Use a verified absolute path; do not infer a directory merely from a product name. If the path cannot be established from available evidence, ask the user for that missing path before writing there.
 
-Require a supported mechanism for loading a complete local Skill directory, Python 3.10 or newer with permission to run processes, file access, HTTPS access, and secure credential injection for later generation. If a host has no supported local Skill mechanism, explain that limitation rather than claiming that copying files installed the Skill. No API key is needed during installation.
+Require a supported mechanism for loading a complete local Skill directory. The repository's installation helper requires Python 3.10 or newer and permission to run processes and access files. If a host has no supported local Skill mechanism, explain that limitation rather than claiming that copying files installed the Skill. No API key is needed during installation.
+
+Execution requirements depend on the mode selected for a later task. OpenAPI needs local Python processes, files, HTTPS and secure credential injection. MCP needs a remote MCP client, live tool discovery and secure credentials for the selected region. The bundled MCP connection descriptor is host-neutral: Skill installation does not register or authenticate MCP. MCP-only execution does not require initializing the OpenAPI Python runtime. Do not configure a connection or ask for execution-mode choices merely to copy the complete suite.
 
 ### 2. Inspect existing installations
 
-Inspect the host's local Skills and plugin inventory for any existing Aholo Lux3D installation, including common `aholo-lux3d` Skills and older plugins exposing `lux3d`. In Codex, when available, `codex plugin list --json` can identify older plugin installations; also inspect the actual configured local Skill locations.
+Inspect the host's configured local Skill locations and plugin inventory for any existing Aholo Lux3D installation or overlapping instructions.
 
 - **No Aholo Lux3D installation exists** — continue.
 - **The same common Skill is already installed with identical contents** — continue through the installer below. It leaves the Skill unchanged and can save an explicit invite code from this installation request.
 - **Another version, source, or Aholo Lux3D plugin exists** — report its source and version. Ask whether to retain it or replace it unless the user's current request already decides that. For an authorized migration, remove the identified old installation through its host-supported mechanism before installing the common Skill.
 
-Keep one Aholo Lux3D installation in each host. Do not add the common Skill alongside an existing Aholo Lux3D plugin. Do not remove unrelated Skills, plugins, marketplaces, MCP servers, or credentials.
+Keep one complete Aholo Lux3D suite in each host. Use the host's supported controls for an authorized replacement, preserving working MCP connections, user assets, task history and credentials. Do not remove unrelated Skills, plugins or MCP servers.
 
 ### 3. Obtain and verify the source
 
-Use an existing trusted checkout or download the canonical repository at `master` into a suitable working directory. Inspect the repository's installation script before execution. Install from the complete maintained `plugins/common/aholo-lux3d/` source directory; the historical ZIP and its sidecars are not installation prerequisites.
+Use an existing trusted checkout or download the canonical repository at `master` into a suitable working directory. Inspect the repository's installation script before execution. Install from the complete maintained `plugins/common/aholo-lux3d/` source directory. The upstream suite ZIP and its sidecars are reference artifacts; the maintained source retains repository-specific invite-code integration and may differ from the original suite snapshot.
 
 From the repository root, run:
 
@@ -53,7 +55,7 @@ From the repository root, run:
 python -B scripts/sync_release.py --check
 ```
 
-Continue only when source verification succeeds. The source digest identifies the checked-in Skill contents, not publisher authenticity; use the canonical repository as the source. Do not install a partial `SKILL.md` or a Codex-only package from another channel.
+Continue only when source verification succeeds. The source digest identifies the checked-in Skill contents, not publisher authenticity; use the canonical repository as the source. Install the complete suite rather than a partial `SKILL.md`.
 
 ### 4. Install the complete directory
 
@@ -63,7 +65,7 @@ Use the host's verified absolute local Skill parent directory:
 python -B scripts/install_skill.py --skills-dir "<absolute-host-local-skills-directory>"
 ```
 
-The result is `<absolute-host-local-skills-directory>/aholo-lux3d/`, containing the complete Skill, runtime, contracts, and viewer assets. The installer validates the maintained source, installs into a new directory, and treats identical contents as already installed. It rejects an existing directory with different contents instead of overwriting it. Resolve that conflict through the authorized migration procedure above.
+The result is `<absolute-host-local-skills-directory>/aholo-lux3d/`, containing the single Skill entry, OpenAPI runtime, contracts, viewer assets and embedded `references/mcp/` instructions. The installer validates the maintained source, installs into a new directory, and treats identical contents as already installed. It rejects an existing directory with different contents instead of overwriting it. Resolve that conflict through the authorized migration procedure above. The installer does not register MCP servers or modify MCP authentication.
 
 If the user's installation request includes an actual code after `Invite Code:` or `邀请码：` (either colon style), pass that value to the installer as one literal argument:
 
@@ -75,7 +77,7 @@ Use the actual supplied value, not the label or an example placeholder. Quote it
 
 After a successful new installation or an identical existing installation, an explicit code is saved atomically as `{"inviteCode":"<trimmed-code>"}` in `<absolute-host-local-skills-directory>/.aholo-lux3d-installation.json`. This file is outside `aholo-lux3d/`, so the verified Skill files remain unchanged. A new explicit code replaces the previous code; omitting the flag preserves existing configuration. Release verification failures and conflicts leave the configuration unchanged.
 
-The common runtime adds this code as `context.inviteCode` to later quote/review/report/feedback collection. Installation itself sends no request and needs no API key. This is collection metadata, not an invitation relationship, eligibility check, or reward claim.
+The OpenAPI runtime adds this code as `context.inviteCode` to later quote/review/report/feedback collection. Installation itself sends no request and needs no API key. This is collection metadata, not an invitation relationship, eligibility check, or reward claim. For MCP, the host follows the selected workflow to read the file beside the installed Skill and forward the code in the live tool schema's supported context; copying the suite does not configure an MCP server to read the file or automatically inject it. Explicit context takes precedence over saved task attribution, then installation configuration; frozen retries retain their original request. This MCP step does not require Python.
 
 The common runtime automatically identifies the actual host: Codex `1`, Claude Code `2`, DeepSeek `3`, WorkBuddy `4`, other hosts `100`. Do not modify packaged files or choose a `source` value to simulate another host during installation.
 
@@ -84,28 +86,40 @@ The common runtime automatically identifies the actual host: Codex `1`, Claude C
 Verify the installed directory against the verified source. Report:
 
 - whether the Skill was newly installed or already present;
-- the exact host, local installation path, Skill name `aholo-lux3d`, and version `1.1.0`;
+- the exact host, local installation path, Skill name `aholo-lux3d`, and version `1.2.0`;
 - which source and installation checks actually passed;
 - whether an explicit invite code was saved, reporting only the configuration path and never the code;
-- the host's reload step and whether actual Skill discovery has been observed.
+- the host's reload step and whether actual Skill discovery has been observed;
+- that the complete suite is installed and MCP connection setup is separate from Skill installation.
 
 For Codex, start a new task to load the Skill and invoke `$aholo-lux3d`. For WorkBuddy and other hosts, use the host's native Skill entrypoint after its required reload. If a new task or user action is still needed, say so; copying files does not establish successful discovery in every host.
 
-Paid generation later needs `LUX3D_CN_API_KEY` (China) or `LUX3D_GLOBAL_API_KEY` (international), configured through the Skill's credential instructions. Do not collect keys during installation. Do not claim generation works until a generation task has actually succeeded.
+OpenAPI generation later needs `LUX3D_CN_API_KEY` (China) or `LUX3D_GLOBAL_API_KEY` (international), configured through the Skill's credential instructions. MCP uses the selected region's connection and the host's secure credential configuration. Do not collect keys during installation. Do not claim generation works until a generation task has actually succeeded.
+
+## Execute through the selected route
+
+Read the installed `SKILL.md` before execution. Reuse the user's established OpenAPI/MCP and cn/international choices; if either is unknown, ask before account, quote or create calls. Do not infer these choices from language, location, available tools or a failed request.
+
+For OpenAPI, follow `references/openapi-workflow.md` and the existing production workflow. For MCP, follow `references/mcp/workflow.md` and `references/mcp/README.md`, and enable only the selected region's server. Follow only the selected route's execution instructions.
+
+Record mode, region, connection/account, plan version, quotes, authorizations and actual task IDs together. A mode, region or account change starts a new context with fresh account and pricing checks. Resume existing tasks and reports on their original route. Reconcile uncertain create results before any further create; never automatically replay a create through another mode or region.
+
+Both routes retain complete-plan review, pricing, authorization, REPORT and delivery requirements. Preserve the complete versioned plan, task-related original inputs and attachment references, actual calls and result evidence for REPORT. REPORT remains automatic; optional FEEDBACK has separate consent. A valid successful REPORT receipt means remote evaluation passed, not user acceptance or authority for additional spending.
 
 ## Maintain this distribution repository
 
-<!-- Author: yinjie. Maintained source and historical ZIP have independent roles. -->
-`plugins/common/aholo-lux3d/` is the maintained Skill and the only installation input.
-Keep version `1.1.0` for the current changes. Edit this GitHub source without modifying
-the separate GitLab repository, and preserve current REPORT and invite-code behavior.
+<!-- Author: yinjie. The maintained 1.2.0 suite is the installation source. -->
+`plugins/common/aholo-lux3d/` is the maintained Common suite and the installation input.
+Keep one Skill entry, OpenAPI and MCP workflows, automatic host identity and both service
+regions. Preserve REPORT and invite-code behavior. Maintain this GitHub source without
+modifying the separate GitLab repository.
 
-`lux3d-plugin/common/` contains a historical ZIP with its original `.sha256` and
-`.release.json`. Keep all three files unchanged during source maintenance. The ZIP is a
-record only: do not rebuild it, compare it to current source as an installation gate, or
-extract it over `plugins/`. Its checksum identifies only that historical artifact.
+`lux3d-plugin/common/` contains the original `1.2.0` common-suite ZIP, `.sha256` and
+`.release.json` as upstream reference artifacts. Preserve these original bytes. Source
+validation and installation use the maintained directory and its integrity record;
+the reference ZIP does not replace current source.
 
-`release-manifest.json` records the maintained source separately from historical archive
+`release-manifest.json` records the maintained source separately from archive
 metadata. Use Python 3.10 or newer from the repository root:
 
 ```text
@@ -115,20 +129,15 @@ python -B -m unittest discover -s tests -v
 ```
 
 The default command refreshes the source integrity record; `--check` validates without
-writing. Neither command imports or rebuilds the historical ZIP. Do not use the obsolete
-`--common-archive` import workflow. Source changes must have an updated integrity record
-before installation. The installer copies the complete source and verifies the staged copy;
+writing. Source changes must have an updated integrity record before installation. The installer copies the complete source and verifies the staged copy;
 it still rejects a different existing installation without overwriting it.
 
 The scripts use only the Python standard library. Runtime tests also need the dependencies
 in `plugins/common/aholo-lux3d/core/runtime/requirements.txt`. Run the affected checks after
-source edits and report actual results. Historical package checks are not acceptance of
-new source just because both retain version `1.1.0`; actual host discovery and live paid
-generation remain separate validation steps.
+source edits and report actual results. Actual host discovery, MCP authentication and
+live paid generation are separate validation steps.
 
-There is no `plugins/codex/`, Codex release archive or `.agents/plugins/marketplace.json`
-in this distribution. Do not recreate those channels. The public `AGENTS.md` URL remains
-the installation entrypoint; Codex invokes the installed local Skill as `$aholo-lux3d`.
+The public `AGENTS.md` URL is the installation entrypoint; Codex invokes the installed local Skill as `$aholo-lux3d`.
 Remote installations receive changes only after they are published. Repository maintenance
 does not itself authorize a Git push, publication or changes to the user's installed Skill.
 

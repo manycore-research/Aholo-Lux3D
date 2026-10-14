@@ -5,7 +5,8 @@
   "status": "supported",
   "modes": [
     "skill",
-    "connector"
+    "connector",
+    "suite"
   ],
   "identity": {
     "kind": "automatic-host",
@@ -13,7 +14,8 @@
   },
   "adapters": {
     "skill": "universal-skill-v1",
-    "connector": "universal-connector-v1"
+    "connector": "universal-connector-v1",
+    "suite": "universal-suite-v1"
   },
   "compatibility": {
     "commonInterfaceMajor": 1,
@@ -33,13 +35,18 @@
       "skillName": "aholo-lux3d-mcp",
       "serverKey": "lux3d-mcp"
     },
-    "coexistence": "separate-slots-or-explicit-replacement"
+    "coexistence": "suite-replaces-standalone-instructions",
+    "suite": {
+      "slot": "aholo-lux3d",
+      "skillName": "aholo-lux3d"
+    }
   },
   "packaging": {
     "archive": "zip",
     "topLevel": {
       "skill": "aholo-lux3d",
-      "connector": "aholo-lux3d-mcp"
+      "connector": "aholo-lux3d-mcp",
+      "suite": "aholo-lux3d"
     },
     "pathPolicy": "portable-relative-no-symlinks",
     "casePolicy": "reject-case-and-unicode-collisions",
@@ -64,7 +71,8 @@
   "display": {
     "names": {
       "skill": "Aholo Lux3D",
-      "connector": "Aholo Lux3D MCP"
+      "connector": "Aholo Lux3D MCP",
+      "suite": "Aholo Lux3D"
     },
     "frontmatterRequired": [
       "name",
@@ -85,7 +93,12 @@
       "international"
     ],
     "connector": [
-      "cn"
+      "cn",
+      "international"
+    ],
+    "suite": [
+      "cn",
+      "international"
     ]
   },
   "capabilities": {
@@ -120,6 +133,40 @@
         "bundled-offline-preview"
       ],
       "checkMethod": "runtime-preflight-or-host-acceptance"
+    },
+    "suite": {
+      "required": [
+        "skill-discovery"
+      ],
+      "optional": [
+        "local-process",
+        "python",
+        "filesystem",
+        "https",
+        "credential-injection",
+        "mcp-remote",
+        "tool-discovery",
+        "upload",
+        "download",
+        "blender"
+      ],
+      "unsupported": [],
+      "checkMethod": "selected-mode-runtime-preflight-or-host-acceptance",
+      "selectedModeRequirements": {
+        "openapi": [
+          "skill-discovery",
+          "local-process",
+          "python",
+          "filesystem",
+          "https",
+          "credential-injection"
+        ],
+        "mcp": [
+          "mcp-remote",
+          "tool-discovery",
+          "credential-injection"
+        ]
+      }
     }
   },
   "runtime": {
@@ -139,13 +186,28 @@
       "quoteValidation": "instruction",
       "authorization": "instruction",
       "concurrentSubmission": "instruction"
+    },
+    "suite": {
+      "openapi": {
+        "identity": "runtime",
+        "quoteValidation": "runtime-in-memory-quote-only",
+        "authorization": "instruction",
+        "concurrentSubmission": "instruction"
+      },
+      "mcp": {
+        "identity": "instruction",
+        "quoteValidation": "instruction",
+        "authorization": "instruction",
+        "concurrentSubmission": "instruction"
+      }
     }
   },
   "qualification": {
     "skill": "portable-contract-only",
     "connector": "portable-contract-only",
     "paidConnectorReady": false,
-    "hostAcceptanceRequired": true
+    "hostAcceptanceRequired": true,
+    "suite": "portable-contract-only"
   },
   "extensions": {
     "com.aholo:installation": {

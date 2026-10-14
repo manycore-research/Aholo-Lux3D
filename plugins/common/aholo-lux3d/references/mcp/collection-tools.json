@@ -1,0 +1,481 @@
+{
+  "schema": "lux3d.mcp-collection-reference/v1",
+  "schemaAuthority": "live-discovery",
+  "source": {
+    "name": "lux3d-mcp",
+    "namespace": "prod",
+    "version": "1.1.3",
+    "generationVersion": "1.0.4",
+    "verification": "published-config-readback",
+    "authenticatedPublicMcpValidated": false,
+    "reportReceiptSemantics": "maintainer-confirmed: successful REPORT receipt means remote evaluation passed; wire fields remain from the published configuration"
+  },
+  "operations": {
+    "account": {
+      "tool": "getlux3daccountbalance",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "integer",
+            "description": "只允许出现一次的客户端生态编号。",
+            "argsPosition": "query",
+            "default": ""
+          },
+          "agentName": {
+            "type": "string",
+            "description": "source=100 时必填且只允许出现一次，填实际 Agent 名称；\n去除首尾空白后须为非空文本，最多 128 个 Unicode 字符，不允许控制字符。\nsource=1-4 时可省略。\n",
+            "argsPosition": "query",
+            "default": ""
+          }
+        },
+        "required": [
+          "source"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "c": {
+            "type": "string"
+          },
+          "m": {
+            "type": "string"
+          },
+          "d": {
+            "type": "object",
+            "properties": {
+              "availableCredits": {
+                "type": "integer",
+                "description": "当前可用积分，查询失败不会伪造为零。"
+              },
+              "trialCountMap": {
+                "type": "object",
+                "description": "按试用类型分组的剩余次数。"
+              },
+              "member": {
+                "type": "boolean"
+              },
+              "memberType": {
+                "type": "integer"
+              },
+              "snapshotAt": {
+                "type": "string"
+              },
+              "uniqueId": {
+                "type": "string",
+                "description": "服务端签发的询价上下文标识；由认证用户、区域和 source 绑定。"
+              },
+              "uniqueIdExpiresAt": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "snapshotAt",
+              "uniqueId",
+              "uniqueIdExpiresAt"
+            ]
+          }
+        },
+        "required": [
+          "c",
+          "m",
+          "d"
+        ]
+      }
+    },
+    "quote": {
+      "tool": "post_quotelux3dopenapirequests",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "object",
+            "description": "请求体数据",
+            "argsPosition": "body",
+            "properties": {
+              "pluginTaskId": {
+                "type": "string",
+                "description": "插件生成并持久保存的创作任务 ID；同一任务计划调整、重试和恢复复用，新独立任务生成新值。不是 uniqueId 或生成服务 providerTaskId。"
+              },
+              "planVersion": {
+                "type": "integer"
+              },
+              "plan": {
+                "type": "string",
+                "description": "完整文本计划，不是摘要。"
+              },
+              "userInputs": {
+                "type": "string",
+                "description": "序列化 JSON 对象或数组字符串；服务端解析后按结构采集。原始用户需求 JSON，允许扩展结构。"
+              },
+              "attachments": {
+                "type": "string",
+                "description": "序列化 JSON 对象或数组字符串；服务端解析后按结构采集。素材引用 JSON，不上传二进制。"
+              },
+              "context": {
+                "type": "string",
+                "description": "序列化 JSON 对象字符串，不接受数组或空白字符串；可含 harness、model、clientRegion、installationTrackingId。索引列优先顶层字段，其次 context。"
+              },
+              "source": {
+                "type": "integer"
+              },
+              "agentName": {
+                "type": "string",
+                "description": "source=100 必填，且须与余额查询的 agentName 一致；其他来源可省略。"
+              },
+              "uniqueId": {
+                "type": "string"
+              },
+              "items": {
+                "type": "object",
+                "description": "键为正整数序号；任一项无法报价时整个请求失败。"
+              }
+            },
+            "required": [
+              "source",
+              "uniqueId",
+              "items"
+            ]
+          }
+        },
+        "required": [
+          "body"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "c": {
+            "type": "string"
+          },
+          "m": {
+            "type": "string"
+          },
+          "d": {
+            "type": "object",
+            "properties": {
+              "review": {
+                "type": "object",
+                "properties": {
+                  "reviewId": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "description": "当前为采集回执，不进行实质质量审核。"
+                  }
+                },
+                "required": [
+                  "reviewId",
+                  "status",
+                  "reason"
+                ]
+              },
+              "uniqueId": {
+                "type": "string"
+              },
+              "quoteId": {
+                "type": "string"
+              },
+              "source": {
+                "type": "integer"
+              },
+              "pricingScope": {
+                "type": "string"
+              },
+              "quotedAt": {
+                "type": "string"
+              },
+              "expiresAt": {
+                "type": "string"
+              },
+              "estimatedCreditsTotal": {
+                "type": "integer",
+                "description": "各 details 数值之和；账号优惠前估算。"
+              },
+              "details": {
+                "type": "object",
+                "description": "按请求 items 序号返回每项估算积分。"
+              }
+            },
+            "required": [
+              "review",
+              "uniqueId",
+              "quoteId",
+              "source",
+              "pricingScope",
+              "quotedAt",
+              "expiresAt",
+              "estimatedCreditsTotal",
+              "details"
+            ]
+          }
+        },
+        "required": [
+          "c",
+          "m",
+          "d"
+        ]
+      }
+    },
+    "report": {
+      "tool": "post_reportlux3dtask",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "object",
+            "description": "请求体数据",
+            "argsPosition": "body",
+            "properties": {
+              "requestId": {
+                "type": "string",
+                "description": "首次发送前冻结，原请求重试复用；修改内容使用新 requestId。"
+              },
+              "context": {
+                "type": "string",
+                "description": "序列化 JSON 对象字符串，不接受数组或空白字符串；可含 harness、model、clientRegion、installationTrackingId。索引列优先顶层字段，其次 context。"
+              },
+              "pluginTaskId": {
+                "type": "string",
+                "description": "插件生成并持久保存的创作任务 ID；同一任务计划调整、重试和恢复复用，新独立任务生成新值。不是 uniqueId 或生成服务 providerTaskId。"
+              },
+              "reviewId": {
+                "type": "string"
+              },
+              "quoteIds": {
+                "type": "string",
+                "description": "序列化 JSON 对象或数组字符串；服务端解析后按结构采集。"
+              },
+              "planVersion": {
+                "type": "integer"
+              },
+              "supersedesReportId": {
+                "type": "string",
+                "description": "可选，引用同一认证用户、同一 pluginTaskId 的已存报告；原记录保留，不保证修订链无分支。"
+              },
+              "authorizations": {
+                "type": "string",
+                "description": "序列化 JSON 对象或数组字符串；服务端解析后按结构采集。"
+              },
+              "toolCalls": {
+                "type": "string",
+                "description": "序列化 JSON 对象或数组字符串；服务端解析后按结构采集。保存真实调用、providerTaskId、重试与 authorizationId；不根据工具名推断成功。"
+              },
+              "coverage": {
+                "type": "string",
+                "description": "序列化 JSON 对象或数组字符串；服务端解析后按结构采集。"
+              },
+              "result": {
+                "type": "string",
+                "description": "序列化 JSON 对象或数组字符串；服务端解析后按结构采集。"
+              },
+              "uniqueId": {
+                "type": "string",
+                "description": "Optional quote-context identifier used to group related collection events."
+              },
+              "source": {
+                "type": "integer"
+              },
+              "pluginVersion": {
+                "type": "string"
+              },
+              "agentName": {
+                "type": "string"
+              },
+              "harnessName": {
+                "type": "string"
+              },
+              "modelName": {
+                "type": "string"
+              },
+              "clientRegion": {
+                "type": "string"
+              },
+              "startedAt": {
+                "type": "string",
+                "description": "任务开始时间，建议带时区的 ISO 8601 字符串；不是服务端 received_at。"
+              },
+              "installationTrackingId": {
+                "type": "string"
+              },
+              "execution": {
+                "type": "string",
+                "description": "执行过程详情；序列化 JSON 对象或数组字符串。"
+              },
+              "userInputs": {
+                "type": "string",
+                "description": "原始用户输入；序列化 JSON 对象或数组字符串。"
+              },
+              "attachments": {
+                "type": "string",
+                "description": "附件引用，不上传二进制；序列化 JSON 对象或数组字符串。"
+              },
+              "plan": {
+                "type": "string",
+                "description": "本次执行对应的完整计划文本。"
+              }
+            },
+            "required": [
+              "requestId",
+              "pluginTaskId"
+            ]
+          }
+        },
+        "required": [
+          "body"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "c": {
+            "type": "string"
+          },
+          "m": {
+            "type": "string"
+          },
+          "d": {
+            "type": "object",
+            "properties": {
+              "reportId": {
+                "type": "string"
+              },
+              "receiptStatus": {
+                "type": "string"
+              },
+              "checkResult": {
+                "type": "string",
+                "description": "业务成功且 reportId 非空、receiptStatus=ACCEPTED、checkResult=OK 时，表示远端对本次 REPORT 的计划与执行证据评估通过；不等于用户最终验收或新增费用授权。"
+              }
+            },
+            "required": [
+              "reportId",
+              "receiptStatus",
+              "checkResult"
+            ]
+          }
+        },
+        "required": [
+          "c",
+          "m",
+          "d"
+        ]
+      }
+    },
+    "feedback": {
+      "tool": "post_submitlux3dexperiencefeedback",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "object",
+            "description": "请求体数据",
+            "argsPosition": "body",
+            "properties": {
+              "requestId": {
+                "type": "string",
+                "description": "首次发送前冻结，原请求重试复用；修改内容使用新 requestId。"
+              },
+              "context": {
+                "type": "string",
+                "description": "序列化 JSON 对象字符串，不接受数组或空白字符串；可含 harness、model、clientRegion、installationTrackingId。索引列优先顶层字段，其次 context。"
+              },
+              "pluginTaskId": {
+                "type": "string",
+                "description": "插件生成并持久保存的创作任务 ID；同一任务计划调整、重试和恢复复用，新独立任务生成新值。不是 uniqueId 或生成服务 providerTaskId。"
+              },
+              "uniqueId": {
+                "type": "string"
+              },
+              "source": {
+                "type": "integer"
+              },
+              "pluginVersion": {
+                "type": "string"
+              },
+              "agentName": {
+                "type": "string"
+              },
+              "harnessName": {
+                "type": "string"
+              },
+              "modelName": {
+                "type": "string"
+              },
+              "clientRegion": {
+                "type": "string"
+              },
+              "startedAt": {
+                "type": "string",
+                "description": "任务开始时间，建议带时区的 ISO 8601 字符串；不是服务端 received_at。"
+              },
+              "installationTrackingId": {
+                "type": "string"
+              },
+              "consent": {
+                "type": "string",
+                "description": "序列化 JSON 对象字符串，granted 必须为布尔 true，feedbackVersion 为非空字符串；可含 userInput（同意原话）和 grantedAt（ISO 时间）。"
+              },
+              "agentFeedback": {
+                "type": "string",
+                "description": "Agent feedback text, separate from user statements; not parsed as JSON."
+              },
+              "summary": {
+                "type": "string",
+                "description": "User-visible short summary shown before consent."
+              },
+              "userFeedback": {
+                "type": "string",
+                "description": "Optional user feedback text; not parsed as JSON."
+              }
+            },
+            "required": [
+              "requestId",
+              "pluginTaskId",
+              "consent"
+            ]
+          }
+        },
+        "required": [
+          "body"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "c": {
+            "type": "string"
+          },
+          "m": {
+            "type": "string"
+          },
+          "d": {
+            "type": "object",
+            "properties": {
+              "feedbackId": {
+                "type": "string"
+              },
+              "submissionStatus": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "feedbackId",
+              "submissionStatus"
+            ]
+          }
+        },
+        "required": [
+          "c",
+          "m",
+          "d"
+        ]
+      }
+    }
+  }
+}

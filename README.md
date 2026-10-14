@@ -13,40 +13,72 @@
   <a href="#português">Português</a>
 </p>
 
-One common [Aholo Lux3D](https://lux3d.aholo3d.com) Skill for local installation in Codex, WorkBuddy, and other compatible hosts. Generate 3D assets from images or text, process existing models, and deliver verified files with an offline preview.
+One common Aholo Lux3D suite for local installation in Codex, WorkBuddy, and other compatible hosts. A single `aholo-lux3d` Skill entry supports OpenAPI and MCP workflows. Generate 3D assets from images or text, process existing models, and deliver verified files with an offline preview.
+
+**[国内官网 / China](https://lux3d.aholo3d.cn) · [International website / 国际官网](https://lux3d.aholo.ai)**
+
+## Websites and API access / 网站与 API 入口
+
+| Entry / 用途 | China / 国内 | International / 国际 |
+| --- | --- | --- |
+| Website / 官网 | [lux3d.aholo3d.cn](https://lux3d.aholo3d.cn) | [lux3d.aholo.ai](https://lux3d.aholo.ai) |
+| API Key / 申请密钥 | [国内 API Key](https://labs.aholo3d.cn/api-keys?from=lux3d) | [International API Key](https://labs.aholo.ai/api-keys?from=lux3d) |
+| Plans and credits / 套餐与积分 | [国内定价](https://lux3d.aholo3d.cn/lux3d/home?view=pricing&lang=zh_CN) | [International pricing](https://lux3d.aholo.ai/lux3d/home?view=pricing&lang=en_US) |
+| API reference / 接口文档 | [国内接口文档](https://labs.aholo3d.cn/api-docs/api-reference) | [International API reference](https://labs.aholo.ai/api-docs/en/api-reference) |
+
+Choose the website and API Key for the service region you intend to use. China and international API Keys are not interchangeable. No key is required to install this Common suite; follow the local installation instructions below.
+
+请按计划使用的服务区域选择官网和 API Key，国内与国际区的密钥不通用。安装本仓库的 Common 套件无需 API Key，具体步骤见下方各语言的本地安装说明。
+
+## Package / 套件信息
 
 | | |
 | --- | --- |
-| International website | https://lux3d.aholo3d.com |
-| China website | https://lux3d.aholo3d.cn |
 | Local Skill name | `aholo-lux3d` |
-| Version | `1.1.0` |
+| Version | `1.2.0` |
+| License | [MIT](LICENSE) |
+| Execution modes | OpenAPI / MCP; China (`cn`) / international (`international`) |
 | Maintained Skill source | [`plugins/common/aholo-lux3d/`](plugins/common/aholo-lux3d/) |
-| Historical archive (record only) | [`lux3d-plugin-1.1.0-common-skill.zip`](lux3d-plugin/common/lux3d-plugin-1.1.0-common-skill.zip) |
+| Upstream suite snapshot (reference only) | [`lux3d-plugin-1.2.0-common-suite.zip`](lux3d-plugin/common/lux3d-plugin-1.2.0-common-suite.zip) |
 
-## 1.1.0 source maintenance
+## 1.2.0 common suite
 
-The maintained source and actual installation input are in
-`plugins/common/aholo-lux3d/`. Source validation uses its own integrity record.
-The ZIP and sidecars in `lux3d-plugin/common/` remain unchanged historical records;
-they are not rebuilt for source updates and are not used to gate installation.
-Version stays `1.1.0`. Changes are limited to this GitHub repository; no GitLab
-synchronization, host installation, Git push or publication is implied.
+Version `1.2.0` provides one complete `aholo-lux3d` Skill with OpenAPI and MCP
+workflows. Choose the execution mode and service region before account, quote or
+create calls. Both workflows retain plan review, pricing, authorization, REPORT
+and delivery requirements; recorded tasks resume through their original route.
 
-The current maintained Skill also supports mesh retopology, model articulation,
-character auto-rigging and animation retargeting. Each paid stage uses a matching
-quote and the existing task authorization; interrupted work resumes from the
-recorded provider task ID. Retargeting preserves per-action partial results.
-Installation invite-code collection and the automatic execution REPORT flow are
-retained. These changes update the maintained source; the historical ZIP stays
-unchanged. International API requests use `https://api.aholo.ai/global`, matching
-the [official API reference](https://labs.aholo3d.com/api-docs/en/llms.txt).
+The suite supports image/text generation, material processing, mesh retopology,
+model articulation, character auto-rigging and animation retargeting. Each paid
+stage uses its matching quote and task authorization. Retargeting preserves
+per-action partial results. International OpenAPI requests use
+`https://api.aholo.ai/global`; see the
+[official API reference](https://labs.aholo.ai/api-docs/en/llms.txt).
 
-当前维护的 Skill 源码已支持重拓扑、模型关节化、人物自动绑骨和动作迁移，
-继续使用已有报价、授权和任务恢复流程；邀请码采集与自动 REPORT 行为保留。
-版本仍为 `1.1.0`，安装内容以源码摘要区分，历史 ZIP 不变。
+`plugins/common/aholo-lux3d/` is the maintained installation source. The original
+`1.2.0` suite ZIP and its sidecars provide upstream provenance; source integrity
+is recorded independently, including this repository's invite-code integration.
+
+`1.2.0` 套件以一个 `aholo-lux3d` 入口提供 OpenAPI、MCP 两种方式，支持国内与国际区。
+能力包括图文生成、材质处理、重拓扑、模型关节化、人物自动绑骨和动作迁移，
+并统一使用计划、报价、授权、REPORT、任务恢复和交付流程。
+实际安装来源是 `plugins/common/aholo-lux3d/`；原始 `1.2.0` ZIP 及其校验记录用于上游追溯，
+当前源码独立记录完整性，并包含本仓库的邀请码集成。
+
+REPORT sends the complete versioned plan, task-related original inputs and attachment
+references, actual calls and result evidence to Lux3D for collaborative evaluation.
+It lets the local agent and remote evaluator assess the plan and its execution together;
+short summaries or plan links alone do not replace the available task context.
+REPORT is automatic, including on first use; optional experience FEEDBACK has its
+own exact-text consent. A valid successful REPORT receipt means remote evaluation passed; it does not replace user acceptance or authorize new spending.
+
+REPORT 会将完整版本化计划、任务相关原始输入与附件引用、实际调用和结果证据提交到 Lux3D，
+供本地 Agent 与远端协同评估方案及执行是否符合预期，不默认缩减为摘要。
+REPORT 自动收尾，FEEDBACK 单独征求同意；REPORT 的有效成功回执表示远端评估通过，但不替代用户最终验收或费用授权。
 
 ## English
+
+[International website](https://lux3d.aholo.ai) · [China website](https://lux3d.aholo3d.cn). Use the corresponding [international API Key](https://labs.aholo.ai/api-keys?from=lux3d) or [China API Key](https://labs.aholo3d.cn/api-keys?from=lux3d) for generation; the two regions' keys are not interchangeable.
 
 ### Install in a compatible host
 
@@ -56,7 +88,7 @@ Ask your agent to install the common Skill:
 Read https://raw.githubusercontent.com/manycore-research/Aholo-Lux3D/master/AGENTS.md and install Aholo Lux3D as a local Skill in the current host.
 ```
 
-The agent checks the host's supported local Skill directory and existing Aholo Lux3D installations, downloads the repository, verifies the maintained source, and installs the complete `aholo-lux3d` directory. The host needs local Skill support, Python 3.10 or newer, file access, HTTPS access, and secure credential injection. Codex, WorkBuddy, and other compatible hosts use the same files; each host's installation directory and reload procedure may differ.
+The agent checks the host's supported local Skill directory and existing Aholo Lux3D installations, downloads the repository, verifies the maintained source, and installs the complete `aholo-lux3d` directory. The installation helper needs Python 3.10 or newer and file access. Execution requirements depend on the selected mode below. Codex, WorkBuddy, and other compatible hosts use the same files; each host's installation directory and reload procedure may differ.
 
 For a manual installation from a downloaded checkout, first identify the host's actual **parent directory for local Skills**, then run from the repository root:
 
@@ -65,48 +97,61 @@ python -B scripts/sync_release.py --check
 python -B scripts/install_skill.py --skills-dir "<host-local-skills-directory>"
 ```
 
-The installer creates `<host-local-skills-directory>/aholo-lux3d/`. An identical existing Skill remains unchanged. A different existing directory is rejected; it is never overwritten. Before switching from an old Skill or plugin, remove the old installation through the host's supported mechanism. Keep only one Aholo Lux3D installation in each host.
+The installer creates `<host-local-skills-directory>/aholo-lux3d/`. An identical existing Skill remains unchanged. A different existing directory is rejected; it is never overwritten. Use the host's supported replacement controls when changing an existing installation. Keep only one Aholo Lux3D installation in each host.
 
 If your installation request includes a website-provided invite code, append `Invite Code: <your-actual-invite-code>` (or `邀请码：<实际邀请码>`), replacing the placeholder with the actual code. The agent forwards it to the installer; if there is no code, leave the suffix out. For manual installation, add `--invite-code="<your-actual-invite-code>"` to the installation command, quoting the value as one literal shell argument.
 
 The installer trims the code, checks that it has 1–255 characters with no C0/C1 controls, and atomically saves `{"inviteCode":"<trimmed-code>"}` to `<host-local-skills-directory>/.aholo-lux3d-installation.json` after installation succeeds. This also works for an identical existing Skill. An explicit new code updates that file; omitting the flag preserves it. The file stays outside the verified Skill package, and failed verification or an installation conflict does not change it. The code is not printed in installer output.
 
-Later quote/review/report/feedback collection includes the code as `context.inviteCode`. It is collection metadata only; it does not bind an invitation relationship or grant rewards. The local installer does not contact Lux3D.
+The OpenAPI runtime includes the code as `context.inviteCode` in later quote/review/report/feedback collection. It is collection metadata only; it does not bind an invitation relationship or grant rewards. The local installer does not contact Lux3D or configure MCP credentials.
+
+For MCP, the host follows the selected workflow to read and forward the saved code in the live tool schema's supported context; this is a host instruction, not automatic injection by the OpenAPI runtime. Explicit context takes precedence over saved task attribution, then installation configuration; frozen retries retain their original request.
 
 Reload Skills or start a new task as required by the host, then verify that `aholo-lux3d` is available. In a new Codex task, invoke `$aholo-lux3d`. In WorkBuddy and other hosts, use their native Skill entrypoint. Install the entire directory, including runtime, contracts, and viewer assets; copying `SKILL.md` alone is insufficient.
 
-No API key is needed to install. Paid generation later requires `LUX3D_CN_API_KEY` (China) or `LUX3D_GLOBAL_API_KEY` (international), configured according to the Skill's credential instructions. Never put keys in chat or committed files.
+No API key is needed to install. For OpenAPI generation, configure `LUX3D_CN_API_KEY` (China) or `LUX3D_GLOBAL_API_KEY` (international) according to the Skill's credential instructions. For MCP, use the selected region's host-supported connection and secure credential configuration. Never put keys in chat or committed files.
 
-### Host identity and migration
+### Choose mode and region before execution
 
-The common runtime detects the actual host automatically: Codex `1`, Claude Code `2`, DeepSeek `3`, WorkBuddy `4`, and other hosts `100`. These are runtime identity values, not installation profiles to select manually.
+Use the user's established choices, or ask for both **OpenAPI / MCP** and **China / international** before account, quote or create calls. Do not infer a route from the host, language, available tools or a failed request.
 
-This repository now distributes only the common local Skill. It no longer provides the Codex Git marketplace or a separate Codex plugin package. Previous commands using `codex plugin marketplace add` and `codex plugin add aholo-lux3d@lux3d` no longer apply to this repository. An existing installation from another plugin marketplace is managed through that marketplace separately.
+| Mode | Workflow and prerequisites |
+| --- | --- |
+| OpenAPI | [`references/openapi-workflow.md`](plugins/common/aholo-lux3d/references/openapi-workflow.md), then the bundled Python runtime, contracts and offline viewer; requires local processes, files, HTTPS and secure credential injection. |
+| MCP | [`references/mcp/workflow.md`](plugins/common/aholo-lux3d/references/mcp/workflow.md) and [connection setup](plugins/common/aholo-lux3d/references/mcp/README.md); requires a remote MCP client, live tool discovery and secure credentials. Loading this Skill does not register or authenticate MCP. Enable only the selected region's server. |
 
-The public `AGENTS.md` URL remains the installation entrypoint. A webpage can keep that URL, but its copy should describe local Skill installation and use `$aholo-lux3d` for Codex; the old `$lux3d` and plugin-selector instructions describe the previous distribution. Repository changes take effect for remote installs only after publication.
+MCP execution does not require initializing the OpenAPI Python runtime. Both routes retain planning, pricing, authorization, REPORT and delivery rules. Switching mode, region or account starts a new execution context with fresh account and pricing checks. Resume recorded tasks and reports on their original route; resolve an uncertain create result before creating again, without automatically retrying through another mode or region.
+
+### Host identity
+
+The suite detects the actual host automatically: Codex `1`, Claude Code `2`,
+DeepSeek `3`, WorkBuddy `4`, and other hosts `100`. Users select the execution
+mode and service region; host identity comes from the current session.
+
+The public `AGENTS.md` URL is the installation entrypoint. Install the complete
+suite into the host's supported local Skill directory. In a new Codex task, use
+`$aholo-lux3d`; other hosts use their native Skill entrypoint.
 
 ### Repository layers and maintenance
 
 ```text
 plugins/common/aholo-lux3d/              Maintained Skill and installation input
-  SKILL.md                             Skill entrypoint: aholo-lux3d
+  SKILL.md                             One entry: choose mode and region
+  references/openapi-workflow.md        OpenAPI workflow and existing runtime
+  references/mcp/                      MCP workflow and connection description
 lux3d-plugin/common/
-  lux3d-plugin-1.1.0-common-skill.zip    Historical artifact only; keep unchanged
-  *.sha256                             Historical archive checksum
-  *.release.json                       Historical release record
-release-manifest.json                  Source integrity and historical artifact metadata
+  lux3d-plugin-1.2.0-common-suite.zip    Original upstream reference snapshot
+  *.sha256                             Original archive checksums
+  *.release.json                       Original release records
+release-manifest.json                  Source integrity and archive metadata
 scripts/sync_release.py                Record and verify current Skill source
 scripts/install_skill.py               Copy verified source to the host's Skill directory
 AGENTS.md                              Agent installation and maintenance instructions
 ```
 
-Edit `plugins/common/aholo-lux3d/` and refresh its source integrity record. Keep the
-historical ZIP, checksum and release record untouched; current source may differ from
-that ZIP. Installation does not require the ZIP and never extracts it over source.
-Do not use the previous `--common-archive` import workflow for source maintenance.
-This GitHub-only change does not modify the separate GitLab repository.
-
-Use Python 3.10 or newer from the repository root:
+Maintain `plugins/common/aholo-lux3d/` as one complete suite. After source changes,
+refresh its integrity record, then verify and test from the repository root with
+Python 3.10 or newer:
 
 ```text
 python -B scripts/sync_release.py
@@ -114,17 +159,20 @@ python -B scripts/sync_release.py --check
 python -B -m unittest discover -s tests -v
 ```
 
-The default command refreshes the source integrity record; `--check` validates without
-writing. Neither command rebuilds or imports ZIPs. Installation verifies the maintained
-source and the staged copy, and rejects different existing installations. These scripts
-use the standard library; runtime tests also require `requests` from
-`plugins/common/aholo-lux3d/core/runtime/requirements.txt`.
+The default command refreshes source metadata; `--check` validates without writing.
+The installer copies the verified source and checks the staged copy. It rejects a
+different existing installation. The upstream `1.2.0` ZIP and its sidecars remain
+reference artifacts, independent of source validation and installation.
 
-Record validation for the actual source revision. Historical tests of an older `1.1.0`
-archive do not validate later source edits with the same version. Offline checks do not
-establish public publication, real host upgrade, WorkBuddy loading or live paid generation.
+The scripts use the Python standard library. Runtime tests also need `requests`
+from `plugins/common/aholo-lux3d/core/runtime/requirements.txt`. Record checks for
+the actual source revision; real host loading, MCP authentication and paid
+generation require their own validation. Remote installation receives repository
+changes after publication.
 
 ## 中文
+
+[国内官网](https://lux3d.aholo3d.cn) · [国际官网](https://lux3d.aholo.ai)。生成前按所选区域申请[国内 API Key](https://labs.aholo3d.cn/api-keys?from=lux3d)或[国际 API Key](https://labs.aholo.ai/api-keys?from=lux3d)，两区密钥不通用。
 
 ### 安装到支持本地 Skill 的宿主
 
@@ -134,7 +182,7 @@ establish public publication, real host upgrade, WorkBuddy loading or live paid 
 读取 https://raw.githubusercontent.com/manycore-research/Aholo-Lux3D/master/AGENTS.md，并将 Aholo Lux3D 作为本地 Skill 安装到当前宿主。
 ```
 
-Agent 会确认宿主支持的本地 Skill 目录、检查已有的 Aholo Lux3D 安装、下载仓库并验证当前源码，再安装完整的 `aholo-lux3d` 目录。宿主需要支持本地 Skill、Python 3.10 及以上、文件访问、HTTPS 和安全凭据注入。Codex、WorkBuddy 及其他兼容宿主共用同一份内容，各自的安装目录和重新加载方式可以不同。
+Agent 会确认宿主支持的本地 Skill 目录、检查已有的 Aholo Lux3D 安装、下载仓库并验证当前源码，再安装完整的 `aholo-lux3d` 目录。安装脚本需要 Python 3.10 及以上和文件访问能力；运行所需能力按下方选定模式检查。Codex、WorkBuddy 及其他兼容宿主共用同一份内容，各自的安装目录和重新加载方式可以不同。
 
 手动安装时，先下载仓库并确认宿主实际支持的**本地 Skill 父目录**，然后在仓库根目录执行：
 
@@ -143,37 +191,48 @@ python -B scripts/sync_release.py --check
 python -B scripts/install_skill.py --skills-dir "<宿主的本地Skill目录>"
 ```
 
-安装结果位于 `<宿主的本地Skill目录>/aholo-lux3d/`。目标内容完全相同时不重复写入；目标已存在且内容不同时拒绝覆盖。迁移已有版本或 Codex 插件前，应通过宿主支持的方式移除旧安装，同一宿主只保留一份 Aholo Lux3D。
+安装结果位于 `<宿主的本地Skill目录>/aholo-lux3d/`。目标内容完全相同时不重复写入；目标已存在且内容不同时拒绝覆盖。替换已有安装时使用宿主支持的方式，同一宿主只保留一份 Aholo Lux3D。
 
 若官网安装请求带有邀请码，在请求后保留 `Invite Code: <实际邀请码>` 或 `邀请码：<实际邀请码>`，将占位文字替换为实际值。Agent 会将它传给安装器；没有邀请码时省略，不需要询问或编造。手动安装时，在安装命令后添加 `--invite-code="<实际邀请码>"`，按当前 shell 的规则将值作为一个字面量参数传入。
 
 安装器去除首尾空白，校验剩余长度为 1–255 个字符且原值不含 C0/C1 控制字符；安装成功或确认同包已安装后，将 `{"inviteCode":"<去除首尾空白的邀请码>"}` 原子保存到 `<宿主的本地Skill目录>/.aholo-lux3d-installation.json`。显式传入新码可更新该文件，不传码则保留已有配置。配置位于 Skill 目录外，不影响源码校验；源码校验失败或安装冲突不会修改配置，命令输出不回显邀请码。
 
-后续 quote/review/report/feedback 采集会携带 `context.inviteCode`。当前仅记录采集元数据，不建立邀请关系、不校验奖励资格或发放奖励；本地安装器不会调用 Lux3D 接口。
+OpenAPI 运行时的后续 quote/review/report/feedback 采集会携带 `context.inviteCode`。当前仅记录采集元数据，不建立邀请关系、不校验奖励资格或发放奖励；本地安装器不会调用 Lux3D 接口，也不会配置 MCP 凭据。
+
+MCP 路线由宿主按所选工作流读取并转发保存的邀请码，使用实时工具 schema 支持的 context；这是宿主执行指引，不是 OpenAPI 运行时自动注入。显式 context 优先于已保存任务归因，再读取安装配置；冻结重试保留原请求。
 
 按宿主要求重新加载 Skill 或新建任务，确认能发现 `aholo-lux3d`。Codex 在新任务中使用 `$aholo-lux3d`；WorkBuddy 及其他宿主使用各自的原生 Skill 入口。必须安装完整目录，包括运行时、契约和离线查看器，不能只复制 `SKILL.md`。
 
-安装阶段不需要 API Key。后续付费生成时，按 Skill 的凭据说明配置 `LUX3D_CN_API_KEY`（国内）或 `LUX3D_GLOBAL_API_KEY`（国际），不要将密钥放入聊天或提交到仓库。
+安装阶段不需要 API Key。后续使用 OpenAPI 时，按 Skill 的凭据说明配置 `LUX3D_CN_API_KEY`（国内）或 `LUX3D_GLOBAL_API_KEY`（国际）；使用 MCP 时，通过宿主支持的方式配置选定区域的连接与凭据。不要将密钥放入聊天或提交到仓库。
 
-### 宿主识别与旧版本迁移
+### 执行前选择模式和区域
 
-公共运行时自动识别实际宿主：Codex 为 `1`、Claude Code 为 `2`、DeepSeek 为 `3`、WorkBuddy 为 `4`，其他为 `100`。这些是运行时身份值，安装时无需手工选择 `source` 或宿主配置包。
+复用用户已明确的选择；尚未明确时，先确认 **OpenAPI / MCP** 和 **国内 / 国际区**，再调用 account、quote 或 create。不能仅凭宿主、语言、工具是否可用或某次请求失败来选择路线。
 
-本仓库现在只分发公共本地 Skill，不再提供 Codex Git marketplace 或单独的 Codex 插件包。旧的 `codex plugin marketplace add` 和 `codex plugin add aholo-lux3d@lux3d` 安装方式不再适用于本仓库。来自其他插件市场的已有安装仍由对应市场独立管理。
+| 模式 | 执行流程与条件 |
+| --- | --- |
+| OpenAPI | 从 [`references/openapi-workflow.md`](plugins/common/aholo-lux3d/references/openapi-workflow.md) 进入现有 Python 运行时、契约和离线查看器流程；需要本地进程、文件、HTTPS 和安全凭据注入。 |
+| MCP | 使用 [`references/mcp/workflow.md`](plugins/common/aholo-lux3d/references/mcp/workflow.md) 和[连接说明](plugins/common/aholo-lux3d/references/mcp/README.md)；需要远程 MCP 客户端、实时工具发现和安全凭据配置。加载 Skill 不会自动注册或认证 MCP，只启用所选区域的服务。 |
 
-公开的 `AGENTS.md` 地址继续作为 agent 安装入口。网站可以保留该地址，但说明应改为本地 Skill 安装，Codex 的调用名改为 `$aholo-lux3d`；原来的 `$lux3d` 和插件选择器说明属于旧分发方式。远程安装只有在仓库修改发布后才会使用新内容。
+仅使用 MCP 时，无需初始化 OpenAPI 的 Python 运行时。两种路线都保留计划、报价、授权、REPORT 和交付要求。切换模式、区域或账号时建立新执行上下文，重新确认账号与报价；已有任务和报告沿原路线恢复。create 结果不确定时先核实，不得自动换模式或换区域重复创建。
+
+### 宿主识别
+
+套件自动识别实际宿主：Codex 为 `1`、Claude Code 为 `2`、DeepSeek 为 `3`、
+WorkBuddy 为 `4`，其他为 `100`。用户选择执行方式与服务区域，宿主身份由当前会话确定。
+
+公开的 `AGENTS.md` 地址是 agent 安装入口，将完整套件安装到宿主支持的本地 Skill 目录。
+Codex 在新任务中使用 `$aholo-lux3d`，其他宿主使用各自的原生 Skill 入口。
 
 ### 仓库分层与维护
 
-- `plugins/common/aholo-lux3d/`：维护中的完整 Skill，也是所有兼容宿主的实际安装来源。
-- `lux3d-plugin/common/`：历史 ZIP、原 `.sha256` 和 `.release.json`，仅作记录，源码更新时不修改。
-- `release-manifest.json`：分别记录当前源码的完整性信息和历史归档信息。
-- `scripts/sync_release.py`：更新源码记录或进行只读校验，不导入、不重打 ZIP。
+- `plugins/common/aholo-lux3d/`：完整的 `1.2.0` 套件，一个 Skill 入口，包含 OpenAPI 运行时和 MCP 资源，也是各宿主的实际安装来源。
+- `lux3d-plugin/common/`：原始 `1.2.0` 套件 ZIP、`.sha256` 和 `.release.json`，用于追溯上游产物。
+- `release-manifest.json`：记录版本、双模式要求、当前源码完整性和上游产物信息。
+- `scripts/sync_release.py`：更新源码记录或进行只读校验。
 - `scripts/install_skill.py`：将校验后的完整源码安装到宿主支持的本地目录。
 
-保持版本 `1.1.0`，仅修改 GitHub 的 `plugins/` 主源，不修改 GitLab。当前源码无需与
-历史 ZIP 内容一致，安装也不依赖该 ZIP；禁止为了同步而用旧 ZIP 覆盖源码。维护时使用
-Python 3.10 及以上，在仓库根目录执行：
+维护 `plugins/common/aholo-lux3d/` 后，使用 Python 3.10 及以上在仓库根目录更新记录并检查：
 
 ```text
 python -B scripts/sync_release.py
@@ -181,14 +240,17 @@ python -B scripts/sync_release.py --check
 python -B -m unittest discover -s tests -v
 ```
 
-不带参数时更新源码完整性记录，`--check` 只验证不写入；不要再使用旧的
-`--common-archive` 导入流程。安装器仍校验源码及暂存副本，并拒绝覆盖内容不同的已有
-安装。脚本只使用标准库，运行时测试另需安装 `core/runtime/requirements.txt` 中的依赖。
+不带参数时更新源码完整性记录，`--check` 只验证不写入。安装器校验源码和暂存副本，
+并拒绝覆盖内容不同的已有安装。原始 `1.2.0` ZIP 及其校验记录独立留存，安装与源码校验
+直接使用维护目录。脚本仅使用 Python 标准库；运行时测试另需安装
+`core/runtime/requirements.txt` 中的依赖。
 
-验收结果对应实际源码修订。同为 `1.1.0` 的旧归档测试不能替代新源码验证；离线测试
-不代表已推送 GitHub、已更新用户安装、已通过真实 WorkBuddy 加载或付费生成验收。
+验收结果对应实际源码修订。真实宿主加载、MCP 鉴权和付费生成需分别验证；
+远程安装在仓库变更发布后获取新内容。
 
 ## 日本語
+
+[国際サイト](https://lux3d.aholo.ai) · [中国サイト](https://lux3d.aholo3d.cn)。生成時には選択した地域の [国際 API キー](https://labs.aholo.ai/api-keys?from=lux3d) または [中国 API キー](https://labs.aholo3d.cn/api-keys?from=lux3d) を使用してください。両地域のキーは相互に利用できません。
 
 ### 共通のローカル Skill をインストール
 
@@ -200,22 +262,26 @@ Aholo Lux3D は画像やテキストから 3D アセットを生成し、モデ�
 Read https://raw.githubusercontent.com/manycore-research/Aholo-Lux3D/master/AGENTS.md and install Aholo Lux3D as a local Skill in the current host.
 ```
 
-ホストにはローカル Skill、Python 3.10 以上、ファイル操作、HTTPS、安全な認証情報の受け渡しへの対応が必要です。手動の場合はリポジトリを取得し、ホストで実際に使われる Skill の親ディレクトリを確認して、ルートで実行します：
+ホストにはローカル Skill への対応が必要で、インストール用スクリプトには Python 3.10 以上とファイル操作が必要です。手動の場合はリポジトリを取得し、ホストで実際に使われる Skill の親ディレクトリを確認して、ルートで実行します：
 
 ```text
 python -B scripts/sync_release.py --check
 python -B scripts/install_skill.py --skills-dir "<host-local-skills-directory>"
 ```
 
-完全な `aholo-lux3d/` ディレクトリがインストールされます。同一内容の再インストールは変更なしで完了し、異なる既存内容は上書きしません。旧 Skill やプラグインから移行する場合はホストの正式な方法で旧版を削除し、同じホストに二重に入れないでください。
+完全な `aholo-lux3d/` ディレクトリがインストールされます。同一内容の再インストールは変更なしで完了し、異なる既存内容は上書きしません。既存のインストールを置き換える場合はホストの正式な方法を使い、同じホストに一つだけインストールしてください。
 
-招待コードがある場合だけ、インストール依頼の末尾に `Invite Code: <実際のコード>` を追加してください。agent は `--invite-code` で渡し、Skill の親ディレクトリの `.aholo-lux3d-installation.json` に保存します。コードを省略すると既存設定を保持します。後の収集に `context.inviteCode` として含まれますが、招待関係の登録や報酬付与は行いません。
+招待コードがある場合だけ、インストール依頼の末尾に `Invite Code: <実際のコード>` を追加してください。agent は `--invite-code` で渡し、Skill の親ディレクトリの `.aholo-lux3d-installation.json` に保存します。コードを省略すると既存設定を保持します。後の OpenAPI 収集に `context.inviteCode` として含まれますが、招待関係の登録や報酬付与は行いません。
 
-ホストの手順で再読み込みし、Codex では新しいタスクで `$aholo-lux3d` を使います。他のホストでは各自の Skill 入口を使用します。実際のホストは自動識別されるため、インストール時に `source` を選ぶ必要はありません。インストール時に API キーは不要です。有料生成には Skill の手順に従って `LUX3D_CN_API_KEY`（中国）または `LUX3D_GLOBAL_API_KEY`（海外）を設定します。
+ホストの手順で再読み込みし、Codex では新しいタスクで `$aholo-lux3d` を使います。他のホストでは各自の Skill 入口を使用します。実際のホストは自動識別されるため、インストール時に `source` を選ぶ必要はありません。インストール時に API キーは不要です。OpenAPI の利用時には Skill の手順に従って `LUX3D_CN_API_KEY`（中国）または `LUX3D_GLOBAL_API_KEY`（海外）を設定します。MCP では選択した地域の接続とホストの安全な認証設定を使用します。
 
-このリポジトリは共通 Skill のみを配布し、Codex Git marketplace と専用プラグイン配布は終了します。旧 marketplace コマンドと `$lux3d` の案内は新しい方式には適用されません。公開 `AGENTS.md` URL は維持されます。構成と同期コマンドは英語セクションを参照してください。`1.1.0` はローカルのリリース候補であり、オフライン検証だけでは公開済み、全ホストでの読み込み成功、有料生成の実動作確認を意味しません。
+同じ入口で OpenAPI / MCP と中国 / 海外を選びます。既に確定した選択を引き継ぎ、不明なら account、quote、create の前に確認します。MCP の説明は `references/mcp/` に含まれますが、Skill のインストールだけで MCP の登録や認証は行われません。MCP の実行に OpenAPI 用 Python ランタイムの初期化は不要です。モード・地域・アカウントを変更したら新しい実行コンテキストでアカウントと料金を再確認し、既存タスクは元の経路で再開します。create の結果が不明な場合、経路を切り替えて重複作成せず、先に結果を確認します。両モードで計画、承認、REPORT、納品の要件を維持します。
+
+このリポジトリは単一入口の Common suite `1.2.0` を配布します。`AGENTS.md` に従って完全なソースディレクトリをインストールし、Codex では `$aholo-lux3d` を使用してください。構成と保守コマンドは英語セクションを参照してください。実際のホストでの読み込み、MCP 認証、有料生成はそれぞれ検証が必要です。
 
 ## Español
+
+[Sitio internacional](https://lux3d.aholo.ai) · [Sitio de China](https://lux3d.aholo3d.cn). Para generar, solicita la [clave de API internacional](https://labs.aholo.ai/api-keys?from=lux3d) o la [clave de API de China](https://labs.aholo3d.cn/api-keys?from=lux3d) correspondiente a la región elegida. Las claves no son intercambiables entre regiones.
 
 ### Instalar la Skill local común
 
@@ -227,22 +293,26 @@ Envía esta instrucción al agente del entorno actual:
 Read https://raw.githubusercontent.com/manycore-research/Aholo-Lux3D/master/AGENTS.md and install Aholo Lux3D as a local Skill in the current host.
 ```
 
-El entorno debe admitir Skills locales, Python 3.10 o posterior, archivos, HTTPS e inyección segura de credenciales. Para instalar manualmente, descarga el repositorio, identifica el directorio padre de Skills que admite el entorno y ejecuta desde la raíz:
+El entorno debe admitir Skills locales; el instalador necesita Python 3.10 o posterior y acceso a archivos. Para instalar manualmente, descarga el repositorio, identifica el directorio padre de Skills que admite el entorno y ejecuta desde la raíz:
 
 ```text
 python -B scripts/sync_release.py --check
 python -B scripts/install_skill.py --skills-dir "<host-local-skills-directory>"
 ```
 
-Se instala el directorio completo `aholo-lux3d/`. Una instalación idéntica no se modifica; una instalación diferente nunca se sobrescribe. Antes de migrar desde una Skill o plugin anterior, retíralo mediante el mecanismo admitido por el entorno. Mantén una sola instalación de Aholo Lux3D por entorno.
+Se instala el directorio completo `aholo-lux3d/`. Una instalación idéntica no se modifica; una instalación diferente nunca se sobrescribe. Para reemplazar una instalación existente, utiliza el mecanismo admitido por el entorno. Mantén una sola instalación de Aholo Lux3D por entorno.
 
-Si tienes un código de invitación, añade `Invite Code: <código real>` a la solicitud de instalación. El agente lo pasa con `--invite-code` y lo guarda en `.aholo-lux3d-installation.json`, en el directorio padre de la Skill. Omitir el código conserva la configuración existente. Las recopilaciones posteriores incluyen `context.inviteCode`; esto no vincula una invitación ni concede recompensas.
+Si tienes un código de invitación, añade `Invite Code: <código real>` a la solicitud de instalación. El agente lo pasa con `--invite-code` y lo guarda en `.aholo-lux3d-installation.json`, en el directorio padre de la Skill. Omitir el código conserva la configuración existente. Las recopilaciones posteriores de OpenAPI incluyen `context.inviteCode`; esto no vincula una invitación ni concede recompensas.
 
-Recarga las Skills según el entorno; en Codex, inicia una nueva tarea y usa `$aholo-lux3d`. En otros entornos, usa su entrada nativa de Skills. La identidad del entorno se detecta automáticamente: no selecciones un `source` al instalar. La instalación no requiere clave API. Para generar con pago, configura `LUX3D_CN_API_KEY` (China) o `LUX3D_GLOBAL_API_KEY` (internacional) siguiendo las instrucciones de la Skill.
+Recarga las Skills según el entorno; en Codex, inicia una nueva tarea y usa `$aholo-lux3d`. En otros entornos, usa su entrada nativa de Skills. La identidad del entorno se detecta automáticamente: no selecciones un `source` al instalar. La instalación no requiere clave API. Para OpenAPI, configura `LUX3D_CN_API_KEY` (China) o `LUX3D_GLOBAL_API_KEY` (internacional) siguiendo las instrucciones de la Skill. Para MCP, usa la conexión de la región elegida y la configuración segura de credenciales del entorno.
 
-Este repositorio distribuye únicamente la Skill común; ya no ofrece un marketplace Git ni un paquete específico de Codex. Los comandos anteriores de marketplace y la invocación `$lux3d` no corresponden a esta distribución. La URL pública de `AGENTS.md` se conserva. Consulta la estructura y sincronización en inglés. `1.1.0` es un candidato local: las comprobaciones sin conexión no prueban publicación, carga en todos los entornos ni generación de pago real.
+La misma entrada permite elegir OpenAPI / MCP y China / internacional. El agente conserva las opciones ya confirmadas y pregunta por las que falten antes de account, quote o create. Las instrucciones MCP están en `references/mcp/`; instalar la Skill no registra ni autentica un servidor MCP. Ejecutar MCP no requiere inicializar el runtime Python de OpenAPI. Cambiar de modo, región o cuenta crea un nuevo contexto con nuevas comprobaciones de cuenta y precio. Reanuda tareas por su ruta original y comprueba un resultado create incierto antes de crear de nuevo; no cambies de ruta para repetirlo automáticamente. Ambos modos conservan planificación, autorización, REPORT y entrega.
+
+Este repositorio distribuye Common suite `1.2.0` con una sola entrada. Instala el directorio fuente completo siguiendo `AGENTS.md`; en Codex, usa `$aholo-lux3d`. Consulta la estructura y los comandos de mantenimiento en inglés. La carga en cada entorno, la autenticación MCP y la generación de pago requieren verificaciones propias.
 
 ## Português
+
+[Site internacional](https://lux3d.aholo.ai) · [Site da China](https://lux3d.aholo3d.cn). Para gerar, obtenha a [chave API internacional](https://labs.aholo.ai/api-keys?from=lux3d) ou a [chave API da China](https://labs.aholo3d.cn/api-keys?from=lux3d) da região escolhida. As chaves não são intercambiáveis entre regiões.
 
 ### Instalar a Skill local comum
 
@@ -254,17 +324,30 @@ Envie esta instrução ao agente do ambiente atual:
 Read https://raw.githubusercontent.com/manycore-research/Aholo-Lux3D/master/AGENTS.md and install Aholo Lux3D as a local Skill in the current host.
 ```
 
-O ambiente precisa oferecer Skills locais, Python 3.10 ou superior, arquivos, HTTPS e injeção segura de credenciais. Para instalar manualmente, baixe o repositório, identifique o diretório pai de Skills aceito pelo ambiente e execute na raiz:
+O ambiente precisa oferecer Skills locais; o instalador requer Python 3.10 ou superior e acesso a arquivos. Para instalar manualmente, baixe o repositório, identifique o diretório pai de Skills aceito pelo ambiente e execute na raiz:
 
 ```text
 python -B scripts/sync_release.py --check
 python -B scripts/install_skill.py --skills-dir "<host-local-skills-directory>"
 ```
 
-O diretório completo `aholo-lux3d/` será instalado. Uma instalação idêntica não é alterada; uma instalação diferente nunca é sobrescrita. Antes de migrar de uma Skill ou plugin anterior, remova a instalação antiga pelo mecanismo suportado pelo ambiente. Mantenha apenas uma instalação do Aholo Lux3D por ambiente.
+O diretório completo `aholo-lux3d/` será instalado. Uma instalação idêntica não é alterada; uma instalação diferente nunca é sobrescrita. Para substituir uma instalação existente, use o mecanismo suportado pelo ambiente. Mantenha apenas uma instalação do Aholo Lux3D por ambiente.
 
-Se tiver um código de convite, acrescente `Invite Code: <código real>` à solicitação de instalação. O agente o passa com `--invite-code` e o salva em `.aholo-lux3d-installation.json`, no diretório pai da Skill. Omitir o código preserva a configuração existente. As coletas posteriores incluem `context.inviteCode`; isso não vincula um convite nem concede recompensas.
+Se tiver um código de convite, acrescente `Invite Code: <código real>` à solicitação de instalação. O agente o passa com `--invite-code` e o salva em `.aholo-lux3d-installation.json`, no diretório pai da Skill. Omitir o código preserva a configuração existente. As coletas posteriores do OpenAPI incluem `context.inviteCode`; isso não vincula um convite nem concede recompensas.
 
-Recarregue as Skills conforme o ambiente; no Codex, inicie uma nova tarefa e use `$aholo-lux3d`. Em outros ambientes, use a entrada nativa de Skills. O ambiente real é detectado automaticamente: não escolha um `source` na instalação. Nenhuma chave API é necessária para instalar. A geração paga exige `LUX3D_CN_API_KEY` (China) ou `LUX3D_GLOBAL_API_KEY` (internacional), conforme as instruções da Skill.
+Recarregue as Skills conforme o ambiente; no Codex, inicie uma nova tarefa e use `$aholo-lux3d`. Em outros ambientes, use a entrada nativa de Skills. O ambiente real é detectado automaticamente: não escolha um `source` na instalação. Nenhuma chave API é necessária para instalar. Para OpenAPI, configure `LUX3D_CN_API_KEY` (China) ou `LUX3D_GLOBAL_API_KEY` (internacional), conforme as instruções da Skill. Para MCP, use a conexão da região escolhida e a configuração segura de credenciais do ambiente.
 
-Este repositório distribui somente a Skill comum; deixou de oferecer um marketplace Git ou pacote exclusivo para Codex. Os comandos antigos de marketplace e a chamada `$lux3d` não se aplicam a esta distribuição. A URL pública de `AGENTS.md` permanece. Consulte a estrutura e sincronização na seção em inglês. `1.1.0` é um candidato local: verificações offline não comprovam publicação, carregamento em todos os ambientes nem geração paga real.
+A mesma entrada permite escolher OpenAPI / MCP e China / internacional. O agente mantém escolhas já confirmadas e pergunta pelas que faltam antes de account, quote ou create. As instruções MCP ficam em `references/mcp/`; instalar a Skill não registra nem autentica um servidor MCP. Executar MCP não exige inicializar o runtime Python de OpenAPI. Mudar de modo, região ou conta inicia um novo contexto com novas verificações de conta e preço. Retome tarefas pela rota original e confira um resultado create incerto antes de criar novamente; não troque de rota para repeti-lo automaticamente. Ambos os modos mantêm planejamento, autorização, REPORT e entrega.
+
+Este repositório distribui Common suite `1.2.0` com uma única entrada. Instale o diretório-fonte completo seguindo `AGENTS.md`; no Codex, use `$aholo-lux3d`. Consulte a estrutura e os comandos de manutenção na seção em inglês. O carregamento em cada ambiente, a autenticação MCP e a geração paga exigem verificações próprias.
+
+## License / 许可证
+
+[MIT License](LICENSE) — Copyright (c) 2026 Manycore Research.
+
+The installed Common suite includes its own [LICENSE.txt](plugins/common/aholo-lux3d/LICENSE.txt).
+Bundled third-party components retain their original licenses and attribution;
+see [third-party notices](plugins/common/aholo-lux3d/core/viewer/THIRD_PARTY_NOTICES.txt).
+
+本项目采用 MIT 许可证，实际安装的 Common 套件包含同一份许可文本。
+第三方组件继续遵循各自的许可证与署名要求，详见上述第三方声明。

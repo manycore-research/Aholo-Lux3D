@@ -8,17 +8,14 @@
   "skill": {
     "name": "aholo-lux3d",
     "displayName": "Aholo Lux3D",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "path": "plugins/common/aholo-lux3d",
-    "identityMode": "automatic-host"
-  },
-  "archive": {
-    "path": "lux3d-plugin/common/lux3d-plugin-1.1.0-common-skill.zip",
-    "sha256": "8849f06fa4bf9596eb16fc52064878fd48658a5318f6008e2c613cfbd118bf8f",
-    "checksumPath": "lux3d-plugin/common/lux3d-plugin-1.1.0-common-skill.zip.sha256",
-    "releaseRecordPath": "lux3d-plugin/common/lux3d-plugin-1.1.0-common-skill.release.json",
-    "fileCount": 46,
-    "role": "historical-record"
+    "identityMode": "automatic-host",
+    "packageMode": "suite",
+    "executionModes": [
+      "openapi",
+      "mcp"
+    ]
   },
   "installation": {
     "mode": "local-skill",
@@ -26,20 +23,34 @@
     "helper": "scripts/install_skill.py",
     "hostIdentityRegistry": "host-identity.json",
     "requires": [
-      "local-skills",
+      "local-skills"
+    ],
+    "helperRequires": [
       "python>=3.10",
-      "filesystem",
-      "https",
-      "credential-injection"
-    ]
+      "filesystem"
+    ],
+    "executionRequirements": {
+      "openapi": [
+        "local-process",
+        "python>=3.10",
+        "filesystem",
+        "https",
+        "credential-injection"
+      ],
+      "mcp": [
+        "mcp-remote",
+        "tool-discovery",
+        "credential-injection"
+      ]
+    }
   },
   "sites": {
     "china": "https://lux3d.aholo3d.cn",
-    "international": "https://lux3d.aholo3d.com"
+    "international": "https://lux3d.aholo.ai"
   },
   "sharedCore": {
     "version": "0.2.0",
-    "digest": "0a7f834095f11bfe659370eafc237d74119cd5ede73a539e12783979c405cab7",
+    "digest": "58a711937a6a837a119f0456b5d46ca0b89a5216c55b9d06d2253dc1267974a7",
     "digestSource": "github-skill-source-core-body-references"
   },
   "validation": {
@@ -49,8 +60,21 @@
   },
   "source": {
     "path": "plugins/common/aholo-lux3d",
-    "sha256": "639caba1f61342c843e3ab808014051fae6b689f2a3ef3a8ede34bb0a869acf9",
+    "sha256": "bee74b5d273dabbb7c4b34e600240532a92f0a9b3a0d1c8538eda462d72013d6",
     "digestProtocol": "lux3d.entries/v1",
-    "fileCount": 48
-  }
+    "fileCount": 66
+  },
+  "upstreamArtifact": {
+    "path": "lux3d-plugin/common/lux3d-plugin-1.2.0-common-suite.zip",
+    "sha256": "134e2d2aaf997db2bdc2a795317e21c213d869a5923038551ca0d7b8c79f3800",
+    "checksumPath": "lux3d-plugin/common/lux3d-plugin-1.2.0-common-suite.zip.sha256",
+    "releaseRecordPath": "lux3d-plugin/common/lux3d-plugin-1.2.0-common-suite.release.json",
+    "version": "1.2.0",
+    "mode": "suite",
+    "fileCount": 65,
+    "role": "upstream-reference",
+    "note": "Maintained source retains repository-specific REPORT and invitation behavior; install from source, not this archive."
+  },
+  "license": "MIT",
+  "licensePath": "LICENSE"
 }

@@ -92,10 +92,10 @@ class SkillInstallationTests(unittest.TestCase):
                 install_skill.install(self.skills_dir, invite_code="not-recorded")
         self.assertFalse(self.skills_dir.exists())
 
-    def test_install_uses_latest_source_without_reading_historical_zip(self):
+    def test_install_uses_maintained_source_without_reading_suite_archive(self):
         checkout = self.source_checkout()
         release = json.loads((checkout / "release-manifest.json").read_text())
-        historical = checkout / release["archive"]["path"]
+        reference = checkout / release["upstreamArtifact"]["path"]
         source = checkout / install_skill.sync_release.SKILL_PATH
         names = ("SKILL.md", "body.md", "references/review.md", "references/results.md")
         expected = {}
@@ -108,15 +108,15 @@ class SkillInstallationTests(unittest.TestCase):
             for state in ("missing", "corrupt"):
                 with self.subTest(archive=state):
                     if state == "corrupt":
-                        historical.parent.mkdir(parents=True)
-                        historical.write_bytes(b"not a ZIP; only a historical record")
+                        reference.parent.mkdir(parents=True)
+                        reference.write_bytes(b"not a ZIP; only an upstream reference")
                     target = self.root / state / "skills"
                     result = install_skill.install(target)
                     installed = Path(result["path"])
                     self.assertEqual(install_skill.snapshot(source), install_skill.snapshot(installed))
                     for name in names:
                         self.assertEqual(expected[name], (installed / name).read_bytes())
-            self.assertEqual(b"not a ZIP; only a historical record", historical.read_bytes())
+            self.assertEqual(b"not a ZIP; only an upstream reference", reference.read_bytes())
 
     def test_repository_and_source_destinations_rejected(self):
         for parent in (ROOT, ROOT / "plugins/common", ROOT / "scripts",

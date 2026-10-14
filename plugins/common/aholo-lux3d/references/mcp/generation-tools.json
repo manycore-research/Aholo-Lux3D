@@ -1,0 +1,808 @@
+{
+  "schema": "lux3d.mcp-generation-reference/v1",
+  "schemaAuthority": "live-discovery",
+  "source": {
+    "name": "lux3d-mcp",
+    "namespace": "prod",
+    "version": "1.1.3",
+    "generationVersion": "1.0.4",
+    "verification": "published-config-readback",
+    "authenticatedPublicMcpValidated": false
+  },
+  "operations": {
+    "multimodal-image": {
+      "tool": "post_createmultimodaltoimagetask",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "object",
+            "description": "多模态单图生成请求体，img 和 prompt 至少提供一个。",
+            "argsPosition": "body",
+            "properties": {
+              "img": {
+                "type": "string",
+                "description": "单张参考图片 URL，可单独使用或与 prompt 组合。img 和 prompt 至少提供一个，传入的值不能为空白。如需上传本地文件，请先调用 [Asset 文件上传接口](https://labs.aholo3d.cn/api-docs/api-reference#tag/asset)，再将返回的 URL 填入此字段。"
+              },
+              "prompt": {
+                "type": "string",
+                "description": "图片生成提示词，可单独使用或与 img 组合。img 和 prompt 至少提供一个，传入的值不能为空白。"
+              },
+              "contentId": {
+                "type": "string",
+                "description": "Optional business content ID for task tracing. Pass the quoteId of the matching authorized quote."
+              }
+            }
+          }
+        },
+        "required": [
+          "body"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "f": {
+            "type": "object",
+            "description": "失败信息；成功时为 null。"
+          },
+          "d": {
+            "type": "integer",
+            "description": "返回 taskid"
+          },
+          "m": {
+            "type": "string",
+            "description": "提示信息；成功时为空字符串 \"\"。"
+          },
+          "c": {
+            "type": "string",
+            "description": "状态码；成功时为 \"0\"，普通参数错误时为 \"-1\"，部分业务错误使用专用错误码。"
+          }
+        }
+      }
+    },
+    "four-view": {
+      "tool": "post_createimagetofourviewtask",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "object",
+            "description": "多模态四视图任务请求体。",
+            "argsPosition": "body",
+            "properties": {
+              "img": {
+                "type": "string",
+                "description": "单张图片 URL。img 和 prompt 至少提供一个，传入的值不能为空白。如需上传本地文件，请先调用 [Asset 文件上传接口](https://labs.aholo3d.cn/api-docs/api-reference#tag/asset)，再将返回的 URL 填入此字段。"
+              },
+              "prompt": {
+                "type": "string",
+                "description": "文字提示词，可单独用于纯文字生成四视图，也可与 img 组合使用。img 和 prompt 至少提供一个，传入的值不能为空白。"
+              },
+              "contentId": {
+                "type": "string",
+                "description": "Optional business content ID for task tracing. Pass the quoteId of the matching authorized quote."
+              }
+            }
+          }
+        },
+        "required": [
+          "body"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "f": {
+            "type": "object",
+            "description": "失败信息；成功时为 null。"
+          },
+          "d": {
+            "type": "integer",
+            "description": "返回 taskid"
+          },
+          "m": {
+            "type": "string",
+            "description": "提示信息；成功时为空字符串 \"\"。"
+          },
+          "c": {
+            "type": "string",
+            "description": "状态码；成功时为 \"0\"，普通参数错误时为 \"-1\"，部分业务错误使用专用错误码。"
+          }
+        }
+      }
+    },
+    "image-to-3d": {
+      "tool": "post_createimgto3dtask",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "object",
+            "description": "图生 3D 任务请求体。",
+            "argsPosition": "body",
+            "properties": {
+              "img": {
+                "type": "string",
+                "description": "单张图片 URL，G1 和 G1-Turbo 均支持。img 与 imgs 必须且只能提供一个，图片 URL 不能为空白。如需上传本地文件，请先调用 [Asset 文件上传接口](https://labs.aholo3d.cn/api-docs/api-reference#tag/asset)，再将返回的 URL 填入此字段。"
+              },
+              "imgs": {
+                "type": "array",
+                "description": "G1 / G1-Turbo 的 1-32 张图片 URL。保留输入顺序，第一张图作为主要参考；与 img 互斥。使用 imgs 时必须显式传入 version=G1 或 version=G1-Turbo。如需上传本地文件，请先调用 [Asset 文件上传接口](https://labs.aholo3d.cn/api-docs/api-reference#tag/asset)，再将返回的 URL 填入此字段。",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "version": {
+                "type": "string",
+                "description": "生成版本，支持 G1 和 G1-Turbo。省略时使用默认版本；建议显式传入。"
+              },
+              "faceCount": {
+                "type": "integer",
+                "description": "目标 Mesh 面数，取值范围为 10000-300000，默认 300000；PLY 输出不受此参数影响。"
+              },
+              "outputFormat": {
+                "type": "array",
+                "description": "请求的输出格式。G1 固定返回 ZIP 和 GLB，请求包含 ply 时额外返回 PLY；G1-Turbo 返回指定格式，省略或传空数组时返回 ZIP。",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "enablePbr": {
+                "type": "boolean",
+                "description": "仅对 G1-Turbo 包含 Mesh 的请求生效：true 或省略时生成 PBR Mesh，false 生成白模；不决定输出格式。G1 及仅请求 PLY 时忽略。",
+                "default": true
+              },
+              "aiPredictSize": {
+                "type": "boolean",
+                "description": "省略或 true 会启用 AI 尺寸预测与缩放，false 关闭。"
+              },
+              "contentId": {
+                "type": "string",
+                "description": "Optional business content ID for task tracing. Pass the quoteId of the matching authorized quote."
+              }
+            }
+          }
+        },
+        "required": [
+          "body"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "f": {
+            "type": "object",
+            "description": "失败信息；成功时为 null。"
+          },
+          "d": {
+            "type": "integer",
+            "description": "返回 taskid"
+          },
+          "m": {
+            "type": "string",
+            "description": "提示信息；成功时为空字符串 \"\"。"
+          },
+          "c": {
+            "type": "string",
+            "description": "状态码；成功时为 \"0\"，普通参数错误时为 \"-1\"，部分业务错误使用专用错误码。"
+          }
+        }
+      }
+    },
+    "text-to-3d": {
+      "tool": "post_createtextto3dtask",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "object",
+            "description": "文生 3D 任务请求体。",
+            "argsPosition": "body",
+            "properties": {
+              "prompt": {
+                "type": "string",
+                "description": "文本提示词"
+              },
+              "style": {
+                "type": "string",
+                "description": "生成风格，默认 photorealistic。",
+                "default": "photorealistic"
+              },
+              "img": {
+                "type": "string",
+                "description": "可选的参考图片 URL。如需上传本地文件，请先调用 [Asset 文件上传接口](https://labs.aholo3d.cn/api-docs/api-reference#tag/asset)，再将返回的 URL 填入此字段。"
+              },
+              "version": {
+                "type": "string",
+                "description": "生成版本，支持 G1 和 G1-Turbo。省略时使用默认版本；建议显式传入。"
+              },
+              "faceCount": {
+                "type": "integer",
+                "description": "目标 Mesh 面数，取值范围为 10000-300000，默认 300000；PLY 输出不受此参数影响。"
+              },
+              "outputFormat": {
+                "type": "array",
+                "description": "请求的输出格式。G1 固定返回 ZIP 和 GLB，请求包含 ply 时额外返回 PLY；G1-Turbo 返回指定格式，省略或传空数组时返回 ZIP。",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "enablePbr": {
+                "type": "boolean",
+                "description": "仅对 G1-Turbo 包含 Mesh 的请求生效：true 或省略时生成 PBR Mesh，false 生成白模；不决定输出格式。G1 及仅请求 PLY 时忽略。",
+                "default": true
+              },
+              "aiPredictSize": {
+                "type": "boolean",
+                "description": "省略或 true 会启用 AI 尺寸预测与缩放，false 关闭。"
+              },
+              "contentId": {
+                "type": "string",
+                "description": "Optional business content ID for task tracing. Pass the quoteId of the matching authorized quote."
+              }
+            },
+            "required": [
+              "prompt"
+            ]
+          }
+        },
+        "required": [
+          "body"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "f": {
+            "type": "object",
+            "description": "失败信息；成功时为 null。"
+          },
+          "d": {
+            "type": "integer",
+            "description": "返回 taskid"
+          },
+          "m": {
+            "type": "string",
+            "description": "提示信息；成功时为空字符串 \"\"。"
+          },
+          "c": {
+            "type": "string",
+            "description": "状态码；成功时为 \"0\"，普通参数错误时为 \"-1\"，部分业务错误使用专用错误码。"
+          }
+        }
+      }
+    },
+    "material-transfer": {
+      "tool": "post_creatematerialtransfertask",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "object",
+            "description": "模型材质重绘任务请求体。",
+            "argsPosition": "body",
+            "properties": {
+              "img": {
+                "type": "string",
+                "description": "材质参考图片 URL。如需上传本地文件，请先调用 [Asset 文件上传接口](https://labs.aholo3d.cn/api-docs/api-reference#tag/asset)，再将返回的 URL 填入此字段。"
+              },
+              "meshUrl": {
+                "type": "string",
+                "description": "模型 GLB 文件 URL。如需上传本地文件，请先调用 [Asset 文件上传接口](https://labs.aholo3d.cn/api-docs/api-reference#tag/asset)，再将返回的 URL 填入此字段。"
+              },
+              "version": {
+                "type": "string",
+                "description": "必填，当前固定传 v3.0-standard。"
+              },
+              "outputFormat": {
+                "type": "array",
+                "description": "请求的输出格式：zip、glb、usdz、obj_zip 或 fbx_zip。",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "aiPredictSize": {
+                "type": "boolean",
+                "description": "是否预测模型尺寸；为 true 时忽略 customSize。"
+              },
+              "customSize": {
+                "type": "number",
+                "description": "aiPredictSize 为 false 或未传时使用的目标高度（mm）；省略时保持原始尺寸。"
+              },
+              "contentId": {
+                "type": "string",
+                "description": "Optional business content ID for task tracing. Pass the quoteId of the matching authorized quote."
+              }
+            },
+            "required": [
+              "img",
+              "meshUrl",
+              "version"
+            ]
+          }
+        },
+        "required": [
+          "body"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "f": {
+            "type": "object",
+            "description": "失败信息；成功时为 null。"
+          },
+          "d": {
+            "type": "integer",
+            "description": "返回 taskid"
+          },
+          "m": {
+            "type": "string",
+            "description": "提示信息；成功时为空字符串 \"\"。"
+          },
+          "c": {
+            "type": "string",
+            "description": "状态码；成功时为 \"0\"，普通参数错误时为 \"-1\"，部分业务错误使用专用错误码。"
+          }
+        }
+      }
+    },
+    "multi-format-export": {
+      "tool": "post_createmultiformatexporttask",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "object",
+            "description": "多格式导出任务请求体。",
+            "argsPosition": "body",
+            "properties": {
+              "modelUrl": {
+                "type": "string",
+                "description": "模型公网 URL，支持 .zip 或 .glb。ZIP 输入必须来自 Lux3D 生成任务；GLB 输入时 outputFormat 不能为空。如需上传本地文件，请先调用 [Asset 文件上传接口](https://labs.aholo3d.cn/api-docs/api-reference#tag/asset)，再将返回的 URL 填入此字段；其中 ZIP 仍必须是 Lux3D 生成任务产物。"
+              },
+              "outputFormat": {
+                "type": "array",
+                "description": "可选导出格式，支持单项或组合：usdz、obj_zip、fbx_zip、stl、3mf。outputFormat 不接受 glb。\n- usdz：Apple 生态常用的 AR 模型格式，适用于 iOS、iPadOS 和 Quick Look 等 AR 预览场景。\n- obj_zip：包含 OBJ、MTL 和贴图文件的压缩包，兼容常见 3D 软件和 DCC 工具。\n- fbx_zip：包含 FBX 模型及贴图资源的压缩包，适用于 Maya、3ds Max、Blender 等主流 DCC 工作流。\n- stl：面向 3D 打印和几何交换的网格格式，不包含材质和贴图信息。\n- 3mf：面向 3D 打印的 3D Manufacturing Format，适合需要制造/打印格式交付的场景。\nZIP 输入时可以省略或传空数组；GLB 输入时至少需要一个值。\n",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "contentId": {
+                "type": "string",
+                "description": "Optional business content ID for task tracing. Pass the quoteId of the matching authorized quote."
+              }
+            },
+            "required": [
+              "modelUrl"
+            ]
+          }
+        },
+        "required": [
+          "body"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "f": {
+            "type": "object",
+            "description": "失败信息；成功时为 null。"
+          },
+          "d": {
+            "type": "integer",
+            "description": "返回 taskid"
+          },
+          "m": {
+            "type": "string",
+            "description": "提示信息；成功时为空字符串 \"\"。"
+          },
+          "c": {
+            "type": "string",
+            "description": "状态码；成功时为 \"0\"，普通参数错误时为 \"-1\"，部分业务错误使用专用错误码。"
+          }
+        }
+      }
+    },
+    "mesh-retopology": {
+      "tool": "post_createmeshretopologytask",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "required": [
+              "modelUrl",
+              "faceLimit"
+            ],
+            "type": "object",
+            "properties": {
+              "contentId": {
+                "type": "string",
+                "description": "可选的调用方业务内容 ID，用于任务数据溯源。"
+              },
+              "modelUrl": {
+                "type": "string",
+                "format": "uri",
+                "minLength": 1,
+                "description": "待重拓扑模型的公网 HTTP(S) URL，必须可由服务端访问。\n仅支持静态、非 Draco 压缩的 GLB。\n如需上传本地文件，请先调用 [Asset 文件上传接口](https://labs.aholo3d.cn/api-docs/api-reference#tag/asset)，再将返回的 URL 填入此字段。\n",
+                "example": "https://qhstaticssl.kujiale.com/application/octetstream/1784776896628/model.glb"
+              },
+              "quad": {
+                "type": "boolean",
+                "default": true,
+                "description": "是否交付以四边面为主的 OBJ。false 表示交付三角面 OBJ；GLB 始终为三角网格。"
+              },
+              "faceLimit": {
+                "type": "integer",
+                "format": "int32",
+                "minimum": 1000,
+                "maximum": 1000000,
+                "description": "目标面数/算法预算，不保证实际输出精确匹配。\nquad=true 时范围为 1000～500000；quad=false 时范围为 2000～1000000。\n",
+                "example": 5000
+              },
+              "bakeTextures": {
+                "type": "boolean",
+                "default": false,
+                "description": "是否从原模型烘焙 Base Color、Metallic、Roughness。"
+              },
+              "textureSize": {
+                "type": "integer",
+                "format": "int32",
+                "enum": [
+                  512,
+                  1024,
+                  2048,
+                  4096
+                ],
+                "default": 2048,
+                "description": "烘焙贴图时生效的贴图尺寸。"
+              }
+            },
+            "description": "模型重拓扑请求体，仅公开稳定业务参数，处理策略由服务端管理。",
+            "argsPosition": "body"
+          }
+        },
+        "required": [
+          "body"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "f": {
+            "type": "object",
+            "description": "失败信息；成功时为 null。",
+            "nullable": true,
+            "additionalProperties": true
+          },
+          "d": {
+            "type": "integer",
+            "description": "返回 taskid",
+            "format": "int64",
+            "example": 1256173,
+            "nullable": true
+          },
+          "m": {
+            "type": "string",
+            "description": "提示信息；成功时为空字符串 \"\"。",
+            "nullable": true
+          },
+          "c": {
+            "type": "string",
+            "description": "状态码；成功时为 \"0\"，普通参数错误时为 \"-1\"，部分业务错误使用专用错误码。",
+            "nullable": true
+          }
+        },
+        "description": "任务创建响应体。"
+      }
+    },
+    "articulation-animation": {
+      "tool": "post_createarticulationanimationtask",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "object",
+            "required": [
+              "glbUrl",
+              "prompt"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "glbUrl": {
+                "type": "string",
+                "format": "uri",
+                "minLength": 1,
+                "description": "输入 GLB 模型的公网 HTTP(S) URL，必须可由服务端访问。如需上传本地文件，请先调用 [Asset 文件上传接口](https://labs.aholo3d.cn/api-docs/api-reference#tag/asset)，再将返回的 URL 填入此字段。",
+                "example": "https://assets.aholo3d.cn/examples/cubely/joint-motion/target-model.glb"
+              },
+              "prompt": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": ".*\\S.*",
+                "description": "描述需要运动的部件及期望的关节运动方式，不能仅包含空白字符。",
+                "example": "保持底座固定，为盖子添加旋转关节，让盖子缓慢打开和闭合。"
+              }
+            },
+            "description": "模型关节化请求。glbUrl 和 prompt 均必填，不接受其他字段。",
+            "argsPosition": "body"
+          }
+        },
+        "required": [
+          "body"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "f": {
+            "type": "object",
+            "description": "失败信息；成功时为 null。",
+            "nullable": true,
+            "additionalProperties": true
+          },
+          "d": {
+            "type": "integer",
+            "description": "返回 taskid",
+            "format": "int64",
+            "example": 1256173,
+            "nullable": true
+          },
+          "m": {
+            "type": "string",
+            "description": "提示信息；成功时为空字符串 \"\"。",
+            "nullable": true
+          },
+          "c": {
+            "type": "string",
+            "description": "状态码；成功时为 \"0\"，普通参数错误时为 \"-1\"，部分业务错误使用专用错误码。",
+            "nullable": true
+          }
+        },
+        "description": "任务创建响应体。"
+      }
+    },
+    "auto-rig": {
+      "tool": "post_createhumanoidautorigtask",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "object",
+            "required": [
+              "modelUrl"
+            ],
+            "properties": {
+              "contentId": {
+                "type": "string",
+                "description": "可选的调用方业务内容 ID，用于任务溯源。Lux3D 插件填写本次创建所依据的 quoteId。",
+                "example": "quote_0123456789abcdef0123456789abcdef"
+              },
+              "modelUrl": {
+                "type": "string",
+                "format": "uri",
+                "description": "GLB 模型的公网 HTTPS URL。如需上传本地文件，请先调用 [Asset 文件上传接口](https://labs.aholo3d.cn/api-docs/api-reference#tag/asset)，再将返回的 URL 填入此字段。"
+              }
+            },
+            "argsPosition": "body"
+          }
+        },
+        "required": [
+          "body"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "f": {
+            "type": "object",
+            "description": "失败信息；成功时为 null。",
+            "nullable": true,
+            "additionalProperties": true
+          },
+          "d": {
+            "type": "integer",
+            "description": "返回 taskid",
+            "format": "int64",
+            "example": 1256173,
+            "nullable": true
+          },
+          "m": {
+            "type": "string",
+            "description": "提示信息；成功时为空字符串 \"\"。",
+            "nullable": true
+          },
+          "c": {
+            "type": "string",
+            "description": "状态码；成功时为 \"0\"，普通参数错误时为 \"-1\"，部分业务错误使用专用错误码。",
+            "nullable": true
+          }
+        },
+        "description": "任务创建响应体。"
+      }
+    },
+    "animation-retarget": {
+      "tool": "post_createhumanoidanimationretargettask",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "object",
+            "required": [
+              "rigModelUrl",
+              "animationIds"
+            ],
+            "properties": {
+              "contentId": {
+                "type": "string",
+                "description": "可选的调用方业务内容 ID，用于任务溯源。Lux3D 插件填写本次创建所依据的 quoteId。",
+                "example": "quote_0123456789abcdef0123456789abcdef"
+              },
+              "rigModelUrl": {
+                "type": "string",
+                "format": "uri",
+                "description": "已绑骨 GLB 模型的公网 HTTPS URL。如需上传本地文件，请先调用 [Asset 文件上传接口](https://labs.aholo3d.cn/api-docs/api-reference#tag/asset)，再将返回的 URL 填入此字段。",
+                "example": "https://qhstaticssl.kujiale.com/application/octetstream/1790240555913/rigModel.glb"
+              },
+              "animationIds": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 10,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "enum": [
+                    "A_TPose",
+                    "Dance_Loop",
+                    "Idle_Rail_Call",
+                    "Idle_TalkingPhone_Loop",
+                    "Idle_Talking_Loop",
+                    "Yes",
+                    "Crouch_Idle_Loop",
+                    "Idle_FoldArms_Loop",
+                    "Idle_Lantern_Loop",
+                    "Idle_Loop",
+                    "Idle_No_Loop",
+                    "Idle_Rail_Loop",
+                    "Idle_Torch_Loop",
+                    "ClimbUp_1m",
+                    "Crouch_Fwd_Loop",
+                    "Jog_Fwd_Loop",
+                    "Sprint_Loop",
+                    "Swim_Fwd_Loop",
+                    "Swim_Idle_Loop",
+                    "Walk_Formal_Loop",
+                    "Walk_Loop",
+                    "Jump_Land",
+                    "Jump_Loop",
+                    "Jump_Start",
+                    "NinjaJump_Idle_Loop",
+                    "NinjaJump_Land",
+                    "NinjaJump_Start",
+                    "Roll",
+                    "Slide_Exit",
+                    "Slide_Loop",
+                    "Slide_Start",
+                    "Sword_Attack",
+                    "Sword_Block",
+                    "Sword_Dash",
+                    "Sword_Heavy_Combo",
+                    "Sword_Idle",
+                    "Sword_Regular_A",
+                    "Sword_Regular_A_Rec",
+                    "Sword_Regular_B",
+                    "Sword_Regular_B_Rec",
+                    "Sword_Regular_C",
+                    "Sword_Regular_Combo",
+                    "Idle_Shield_Break",
+                    "Idle_Shield_Loop",
+                    "Shield_Dash",
+                    "Shield_OneShot",
+                    "Melee_Hook",
+                    "Melee_Hook_Rec",
+                    "Punch_Cross",
+                    "Punch_Jab",
+                    "Pistol_Aim_Down",
+                    "Pistol_Aim_Neutral",
+                    "Pistol_Aim_Up",
+                    "Pistol_Idle_Loop",
+                    "Pistol_Reload",
+                    "Pistol_Shoot",
+                    "Spell_Simple_Enter",
+                    "Spell_Simple_Exit",
+                    "Spell_Simple_Idle_Loop",
+                    "Spell_Simple_Shoot",
+                    "Chest_Open",
+                    "Consume",
+                    "Driving_Loop",
+                    "Farm_Harvest",
+                    "Farm_PlantSeed",
+                    "Farm_Watering",
+                    "Fixing_Kneeling",
+                    "Interact",
+                    "OverhandThrow",
+                    "PickUp_Table",
+                    "Push_Loop",
+                    "TreeChopping_Loop",
+                    "Walk_Carry_Loop",
+                    "LayToIdle",
+                    "Sitting_Enter",
+                    "Sitting_Exit",
+                    "Sitting_Idle_Loop",
+                    "Sitting_Talking_Loop",
+                    "Death01",
+                    "Hit_Chest",
+                    "Hit_Head",
+                    "Hit_Knockback",
+                    "Zombie_Idle_Loop",
+                    "Zombie_Scratch",
+                    "Zombie_Walk_Fwd_Loop"
+                  ]
+                },
+                "description": "动作 ID 列表，从以下 85 个可选值中选择 1–10 个，不可重复，区分大小写。"
+              },
+              "animationOutputMode": {
+                "type": "string",
+                "enum": [
+                  "separate",
+                  "combined"
+                ],
+                "default": "separate",
+                "description": "separate 为每个动作生成一个完整文件；combined 将所选动作合并到一个文件，每个动作保留为独立动画片段。"
+              },
+              "outFormat": {
+                "type": "string",
+                "enum": [
+                  "glb",
+                  "fbx"
+                ],
+                "default": "glb",
+                "description": "输出文件格式。"
+              },
+              "animateInPlace": {
+                "type": "boolean",
+                "default": false,
+                "description": "是否生成原地动画。"
+              }
+            },
+            "argsPosition": "body"
+          }
+        },
+        "required": [
+          "body"
+        ]
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "f": {
+            "type": "object",
+            "description": "失败信息；成功时为 null。",
+            "nullable": true,
+            "additionalProperties": true
+          },
+          "d": {
+            "type": "integer",
+            "description": "返回 taskid",
+            "format": "int64",
+            "example": 1256173,
+            "nullable": true
+          },
+          "m": {
+            "type": "string",
+            "description": "提示信息；成功时为空字符串 \"\"。",
+            "nullable": true
+          },
+          "c": {
+            "type": "string",
+            "description": "状态码；成功时为 \"0\"，普通参数错误时为 \"-1\"，部分业务错误使用专用错误码。",
+            "nullable": true
+          }
+        },
+        "description": "任务创建响应体。"
+      }
+    }
+  }
+}

@@ -87,7 +87,7 @@ class ApiBusinessRejection(RuntimeError):
         # Provider messages can echo credentials or request data. Keep them only
         # in the diagnostic payload; user-visible errors use trusted local text.
         description = (
-            "Another generation task is already in progress"
+            "The account task concurrency limit has been reached"
             if code == "GENERATION_CONCURRENCY_LIMIT_EXCEEDED"
             else "The API rejected this request"
         )

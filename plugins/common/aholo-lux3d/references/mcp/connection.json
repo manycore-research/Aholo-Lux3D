@@ -1,0 +1,106 @@
+{
+  "schema": "lux3d.connection/v1",
+  "connectionId": "lux3d-mcp",
+  "descriptorIsHostNative": false,
+  "transport": "streamable-http",
+  "authentication": {
+    "type": "api-key",
+    "header": "Authorization",
+    "prefix": "",
+    "scope": "per-user-connection",
+    "redirectPolicy": "same-origin-only"
+  },
+  "identity": {
+    "mode": "automatic-host",
+    "registry": "host-identity.json",
+    "resolver": "scripts/host_identity.py",
+    "context": "host-session",
+    "sourceOverrideAllowed": false,
+    "agentNameRequiredOn": {
+      "knownHosts": [
+        "quote"
+      ],
+      "fallback": [
+        "account",
+        "quote"
+      ]
+    },
+    "injection": "verified-tool-schema-or-host-integration",
+    "enforcement": "instruction"
+  },
+  "toolMap": {
+    "schema": "lux3d.tool-map/v1",
+    "path": "tool-map.json"
+  },
+  "policy": {
+    "timeoutSeconds": 60,
+    "readMaxAttempts": 3,
+    "createMaxAttempts": 1,
+    "automaticCreateRetry": false,
+    "crossRegionFallback": false,
+    "maxResponseBytes": 16777216,
+    "pollIntervalSeconds": 10,
+    "pollTimeoutSeconds": 1800,
+    "taskConcurrency": {
+      "scope": "per-account-shared",
+      "membershipField": "member",
+      "limits": {
+        "free": 5,
+        "pro": 20
+      },
+      "unknownMembership": "free",
+      "activeStatuses": [
+        0,
+        1,
+        2
+      ],
+      "sharedCreateOperations": [
+        "image-to-3d",
+        "text-to-3d",
+        "material-transfer",
+        "multimodal-image",
+        "four-view",
+        "mesh-retopology",
+        "articulation-animation",
+        "auto-rig",
+        "animation-retarget"
+      ],
+      "excludedCreateOperations": [
+        "multi-format-export"
+      ],
+      "separateOperationLimits": {
+        "part-split": {
+          "free": 5,
+          "pro": 5
+        }
+      },
+      "enforcement": "instruction"
+    }
+  },
+  "qualification": {
+    "commonIdentityValidated": false,
+    "toolSchemasValidated": false,
+    "authenticationValidated": false,
+    "paidCreation": "blocked-until-host-and-endpoint-acceptance"
+  },
+  "extensions": {},
+  "regionSelection": "explicit-per-task",
+  "regions": {
+    "cn": {
+      "serverKey": "lux3d-mcp",
+      "endpoint": "https://api.aholo3d.cn/lux3d-mcp/mcp",
+      "secretRef": "lux3d.cn.apiKey",
+      "environmentVariable": "LUX3D_CN_API_KEY",
+      "apiKeyPage": "https://labs.aholo3d.cn/api-keys?from=lux3d",
+      "assetBaseUrl": "https://api.aholo3d.cn"
+    },
+    "international": {
+      "serverKey": "lux3d-mcp-international",
+      "endpoint": "https://api.aholo.ai/lux3d-mcp/mcp",
+      "secretRef": "lux3d.international.apiKey",
+      "environmentVariable": "LUX3D_GLOBAL_API_KEY",
+      "apiKeyPage": "https://labs.aholo.ai/api-keys?from=lux3d",
+      "assetBaseUrl": "https://api.aholo.ai/global"
+    }
+  }
+}

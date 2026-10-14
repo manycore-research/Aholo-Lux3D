@@ -1,4 +1,4 @@
-"""Maintained source integrity and historical archive independence checks.
+"""Common suite source integrity and reference archive independence checks.
 
 Author: yinjie.
 """
@@ -33,6 +33,9 @@ class ReleaseSyncTests(unittest.TestCase):
         patch = mock.patch.object(sync_release, "ROOT", self.root)
         patch.start()
         self.addCleanup(patch.stop)
+        # Fixtures represent a refreshed checkout even while the live source is
+        # being synchronized; tests never rewrite the repository's metadata.
+        self.initial_release = sync_release.sync()
 
     def snapshot(self):
         return {p.relative_to(self.root): (p.read_bytes(), p.stat().st_mtime_ns)
@@ -72,7 +75,7 @@ class ReleaseSyncTests(unittest.TestCase):
 
     def test_sync_is_repeatable_and_check_is_read_only(self):
         result = sync_release.sync()
-        self.assertEqual(RELEASE["source"]["fileCount"], result["commonFiles"])
+        self.assertEqual(self.initial_release["commonFiles"], result["commonFiles"])
         self.assertEqual("plugins/common/aholo-lux3d", result["skillPath"])
         before = self.snapshot()
         sync_release.sync(check=True)
@@ -106,12 +109,12 @@ class ReleaseSyncTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "automatic-host"):
             sync_release.sync()
 
-    def test_source_refresh_preserves_historical_archive_and_sidecars(self):
-        paths = [self.root / RELEASE["archive"][key]
+    def test_source_refresh_preserves_suite_reference_archive_and_sidecars(self):
+        paths = [self.root / RELEASE["upstreamArtifact"][key]
                  for key in ("path", "checksumPath", "releaseRecordPath")]
         for index, path in enumerate(paths):
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_bytes(f"historical fixture {index}".encode())
+            path.write_bytes(f"suite reference fixture {index}".encode())
         before = {path: (path.read_bytes(), path.stat().st_mtime_ns) for path in paths}
         body = self.root / sync_release.SKILL_PATH / "body.md"
         body.write_bytes(body.read_bytes() + b"\nMaintained source change.\n")
@@ -119,26 +122,133 @@ class ReleaseSyncTests(unittest.TestCase):
         sync_release.sync(check=True)
         self.assertEqual(before, {path: (path.read_bytes(), path.stat().st_mtime_ns) for path in paths})
         manifest = json.loads((self.root / "release-manifest.json").read_text())
-        self.assertEqual(RELEASE["archive"], manifest["archive"])
+        self.assertEqual(RELEASE["upstreamArtifact"], manifest["upstreamArtifact"])
         self.assertIn(b"Maintained source change", body.read_bytes())
         self.assertNotEqual(RELEASE["source"]["sha256"], manifest["source"]["sha256"])
 
     def test_source_checks_need_neither_archive_nor_sidecars(self):
-        self.assertFalse((self.root / RELEASE["archive"]["path"]).exists())
+        self.assertFalse((self.root / RELEASE["upstreamArtifact"]["path"]).exists())
         sync_release.sync()
         sync_release.sync(check=True)
         self.assertFalse((self.root / "lux3d-plugin").exists())
 
-    def test_archive_import_is_explicitly_rejected_without_changes(self):
+    def test_suite_records_routes_and_refreshes_connector_integrity(self):
+        result = sync_release.sync()
+        skill = self.root / sync_release.SKILL_PATH
+        build = json.loads((skill / "build-info.json").read_text())
+        manifest = json.loads((self.root / "release-manifest.json").read_text())
+        self.assertEqual("suite", build["mode"])
+        self.assertEqual("suite", manifest["skill"]["packageMode"])
+        self.assertEqual(["openapi", "mcp"], manifest["skill"]["executionModes"])
+        installation = manifest["installation"]
+        self.assertEqual(["local-skills"], installation["requires"])
+        self.assertIn("python>=3.10", installation["helperRequires"])
+        self.assertIn("python>=3.10", installation["executionRequirements"]["openapi"])
+        self.assertEqual(["mcp-remote", "tool-discovery", "credential-injection"],
+                         installation["executionRequirements"]["mcp"])
+        self.assertEqual("github-skill-source-mcp-references", build["connectorDigestSource"])
+        original = build["connectorDigest"]
+        workflow = skill / "references/mcp/workflow.md"
+        workflow.write_bytes(workflow.read_bytes() + b"\nMaintained connector guidance.\n")
         before = self.snapshot()
-        with self.assertRaisesRegex(ValueError, "Archive import is no longer supported"):
-            sync_release.sync(self.root / "historical.zip")
+        with self.assertRaisesRegex(ValueError, "Source integrity drift"):
+            sync_release.sync(check=True)
+        self.assertEqual(before, self.snapshot())
+        refreshed = sync_release.sync()
+        self.assertNotEqual(result["sourceSha256"], refreshed["sourceSha256"])
+        build = json.loads((skill / "build-info.json").read_text())
+        self.assertNotEqual(original, build["connectorDigest"])
+        files = sync_release.tree_files(skill)
+        self.assertEqual(sync_release.entries_digest({n: value for n, value in files.items()
+                                                      if n.startswith("references/mcp/")}),
+                         build["connectorDigest"])
+        sync_release.sync(check=True)
+
+    def test_suite_requires_both_complete_workflows_before_refresh(self):
+        skill = self.root / sync_release.SKILL_PATH
+        for name in sync_release.SUITE_RESOURCES:
+            path = skill / name
+            payload = path.read_bytes()
+            path.unlink()
+            before = self.snapshot()
+            with self.subTest(resource=name), self.assertRaisesRegex(ValueError, "Missing Common suite resource"):
+                sync_release.sync()
+            self.assertEqual(before, self.snapshot())
+            path.write_bytes(payload)
+
+    def test_suite_rejects_wrong_slot_and_cross_route_requirements(self):
+        path = self.root / sync_release.SKILL_PATH / "release-contract.json"
+        original = path.read_bytes()
+        for issue in ("slot", "region", "mcp-python"):
+            contract = json.loads(original)
+            if issue == "slot":
+                contract["discovery"]["suite"]["slot"] = "aholo-lux3d-mcp"
+            elif issue == "region":
+                contract["regions"]["suite"] = ["cn"]
+            else:
+                contract["capabilities"]["suite"]["selectedModeRequirements"]["mcp"].append("python")
+            path.write_bytes(sync_release.json_bytes(contract))
+            before = self.snapshot()
+            with self.subTest(issue=issue), self.assertRaisesRegex(ValueError, "Invalid Common suite"):
+                sync_release.sync()
+            self.assertEqual(before, self.snapshot())
+        path.write_bytes(original)
+
+    def test_suite_rejects_wrong_region_credentials_or_automatic_fallback(self):
+        path = self.root / sync_release.SKILL_PATH / "references/mcp/connection.json"
+        original = path.read_bytes()
+        for issue in ("region", "credentials", "fallback", "create-retry", "source-override", "native-descriptor"):
+            connection = json.loads(original)
+            if issue == "region":
+                connection["regions"]["international"]["endpoint"] = connection["regions"]["cn"]["endpoint"]
+            elif issue == "credentials":
+                connection["regions"]["international"]["environmentVariable"] = "LUX3D_CN_API_KEY"
+            elif issue == "fallback":
+                connection["policy"]["crossRegionFallback"] = True
+            elif issue == "create-retry":
+                connection["policy"]["automaticCreateRetry"] = True
+            elif issue == "source-override":
+                connection["identity"]["sourceOverrideAllowed"] = True
+            else:
+                connection["descriptorIsHostNative"] = True
+            path.write_bytes(sync_release.json_bytes(connection))
+            before = self.snapshot()
+            with self.subTest(issue=issue), self.assertRaisesRegex(ValueError, "Invalid Common suite MCP"):
+                sync_release.sync()
+            self.assertEqual(before, self.snapshot())
+        path.write_bytes(original)
+
+    def test_suite_rejects_different_host_registry_and_unverified_schema_authority(self):
+        skill = self.root / sync_release.SKILL_PATH
+        path = skill / "references/mcp/host-identity.json"
+        original = path.read_bytes()
+        registry = json.loads(original)
+        registry["knownHosts"]["workbuddy"]["source"] = 100
+        path.write_bytes(sync_release.json_bytes(registry))
+        with self.assertRaisesRegex(ValueError, "share the automatic host registry"):
+            sync_release.sync()
+        path.write_bytes(original)
+        path = skill / "references/mcp/tool-map.json"
+        tool_map = json.loads(path.read_text())
+        tool_map["inputSchemaAuthority"] = "bundled-reference-only"
+        path.write_bytes(sync_release.json_bytes(tool_map))
+        with self.assertRaisesRegex(ValueError, "Invalid Common suite MCP tool reference"):
+            sync_release.sync()
+
+    def test_suite_mode_is_required_before_any_metadata_write(self):
+        path = self.root / sync_release.SKILL_PATH / "build-info.json"
+        build = json.loads(path.read_text())
+        build["mode"] = "skill"
+        path.write_bytes(sync_release.json_bytes(build))
+        before = self.snapshot()
+        with self.assertRaisesRegex(ValueError, "automatic-host Common suite"):
+            sync_release.sync()
         self.assertEqual(before, self.snapshot())
 
-    def test_check_rejects_obsolete_codex_distribution(self):
+    def test_check_rejects_host_specific_distribution(self):
         obsolete = self.root / "plugins/codex"
         obsolete.mkdir()
-        with self.assertRaisesRegex(ValueError, "Obsolete Codex distribution"):
+        with self.assertRaisesRegex(ValueError, "Host-specific distribution"):
             sync_release.sync(check=True)
         self.assertTrue(obsolete.is_dir(), "Read-only checks must preserve obsolete paths")
 

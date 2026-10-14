@@ -169,16 +169,32 @@
       "multimodal-image",
       "four-view",
       "mesh-retopology",
-      "articulation-animation"
+      "articulation-animation",
+      "auto-rig",
+      "animation-retarget"
     ],
     "excludedCreateOperations": [
       "multi-format-export"
     ],
     "limits": {
-      "free": 2,
-      "pro": 5
+      "free": 5,
+      "pro": 20
     },
-    "limitErrorCode": "GENERATION_CONCURRENCY_LIMIT_EXCEEDED"
+    "limitErrorCode": "GENERATION_CONCURRENCY_LIMIT_EXCEEDED",
+    "membershipField": "member",
+    "unknownMembership": "free",
+    "activeStatuses": [
+      0,
+      1,
+      2
+    ],
+    "separateOperationLimits": {
+      "part-split": {
+        "free": 5,
+        "pro": 5
+      }
+    },
+    "enforcement": "server-with-host-instruction-coordination"
   },
   "sharedFields": {
     "faceCount": {

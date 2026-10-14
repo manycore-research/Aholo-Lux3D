@@ -1,0 +1,142 @@
+{
+  "schema": "lux3d.tool-map/v1",
+  "mapVersion": "1.2.0",
+  "operations": {
+    "account": {
+      "tool": "getlux3daccountbalance",
+      "kind": "read",
+      "endpoint": {
+        "method": "GET",
+        "path": "/lux3d/v1/account/balance"
+      }
+    },
+    "quote": {
+      "tool": "post_quotelux3dopenapirequests",
+      "kind": "quote",
+      "endpoint": {
+        "method": "POST",
+        "path": "/lux3d/v1/pricing/openapi-quotes"
+      }
+    },
+    "multimodal-image": {
+      "tool": "post_createmultimodaltoimagetask",
+      "kind": "create",
+      "endpoint": {
+        "method": "POST",
+        "path": "/lux3d/v1/generate/multimodal-to-image/task/create"
+      }
+    },
+    "four-view": {
+      "tool": "post_createimagetofourviewtask",
+      "kind": "create",
+      "endpoint": {
+        "method": "POST",
+        "path": "/lux3d/v1/generate/image-to-four-view/task/create"
+      }
+    },
+    "image-to-3d": {
+      "tool": "post_createimgto3dtask",
+      "kind": "create",
+      "endpoint": {
+        "method": "POST",
+        "path": "/lux3d/v1/generate/img-to-3d/task/create"
+      }
+    },
+    "text-to-3d": {
+      "tool": "post_createtextto3dtask",
+      "kind": "create",
+      "endpoint": {
+        "method": "POST",
+        "path": "/lux3d/v1/generate/text-to-3d/task/create"
+      }
+    },
+    "material-transfer": {
+      "tool": "post_creatematerialtransfertask",
+      "kind": "create",
+      "endpoint": {
+        "method": "POST",
+        "path": "/lux3d/v1/generate/material-transfer/task/create"
+      }
+    },
+    "multi-format-export": {
+      "tool": "post_createmultiformatexporttask",
+      "kind": "create",
+      "endpoint": {
+        "method": "POST",
+        "path": "/lux3d/v1/multi-format-export/task/create"
+      }
+    },
+    "get-task": {
+      "tool": "gettask",
+      "kind": "read",
+      "endpoint": {
+        "method": "GET",
+        "path": "/lux3d/v1/generate/task/get"
+      }
+    },
+    "list-tasks": {
+      "tool": "get_listtasks",
+      "kind": "read",
+      "endpoint": {
+        "method": "GET",
+        "path": "/lux3d/v1/generate/task/list"
+      }
+    },
+    "mesh-retopology": {
+      "tool": "post_createmeshretopologytask",
+      "kind": "create",
+      "endpoint": {
+        "method": "POST",
+        "path": "/lux3d/v1/mesh-retopology/task/create"
+      }
+    },
+    "articulation-animation": {
+      "tool": "post_createarticulationanimationtask",
+      "kind": "create",
+      "endpoint": {
+        "method": "POST",
+        "path": "/lux3d/v1/articulation-animation/task/create"
+      }
+    },
+    "auto-rig": {
+      "tool": "post_createhumanoidautorigtask",
+      "kind": "create",
+      "endpoint": {
+        "method": "POST",
+        "path": "/lux3d/v1/animations/rig/task/create"
+      }
+    },
+    "animation-retarget": {
+      "tool": "post_createhumanoidanimationretargettask",
+      "kind": "create",
+      "endpoint": {
+        "method": "POST",
+        "path": "/lux3d/v1/animations/retarget/task/create"
+      }
+    },
+    "report": {
+      "tool": "post_reportlux3dtask",
+      "kind": "report",
+      "endpoint": {
+        "method": "POST",
+        "path": "/lux3d/v1/tasks/report"
+      }
+    },
+    "feedback": {
+      "tool": "post_submitlux3dexperiencefeedback",
+      "kind": "feedback",
+      "endpoint": {
+        "method": "POST",
+        "path": "/lux3d/v1/feedback/experience"
+      }
+    }
+  },
+  "inputSchemaAuthority": "live-discovery",
+  "quoteEncoding": {
+    "internalParameters": "objects",
+    "httpParameterGroups": "json-object-strings",
+    "mcpEnvelope": "discovered-input-schema",
+    "uniqueIdPropagationToCreate": "deferred"
+  },
+  "extensions": {}
+}

@@ -2,21 +2,23 @@
   "schema": "lux3d.common-build/v1",
   "releaseUnit": "common",
   "profileId": "universal",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "status": "implementation-candidate",
   "coreVersion": "0.2.0",
-  "profileDigest": "623c76dc3bdb67ec3f17785bab322cdc73907997134411b97b761b1bb43a742b",
-  "inputsDigest": "6aab5d076167ca52c76dabf1cde607b74f64e137850fe117b26a8df8b8b80923",
+  "profileDigest": "3b2297b5c0f93f14b10cbb9470480da028e08da2570e189fa429949f0faf91a0",
+  "inputsDigest": "2f9ba4cc8feb479d43aab1838864d66c5cebe577f1f17aa3a0f68f8d5432c292",
   "identityMode": "automatic-host",
   "toolchain": {
-    "python": "3.12.1",
+    "node": "24.14.0",
     "platform": "win32",
-    "arch": "AMD64"
+    "arch": "x64"
   },
   "hostValidated": false,
-  "mode": "skill",
-  "coreDigest": "0a7f834095f11bfe659370eafc237d74119cd5ede73a539e12783979c405cab7",
+  "mode": "suite",
+  "coreDigest": "58a711937a6a837a119f0456b5d46ca0b89a5216c55b9d06d2253dc1267974a7",
+  "connectorDigest": "668c619e365e4c4bd1107328ca7d322ce17b7e5174c346a46ccd77492b478d26",
   "inputsDigestSource": "github-skill-source-excluding-build-info",
   "coreDigestSource": "github-skill-source-core-body-references",
-  "digestProtocol": "lux3d.entries/v1"
+  "digestProtocol": "lux3d.entries/v1",
+  "connectorDigestSource": "github-skill-source-mcp-references"
 }

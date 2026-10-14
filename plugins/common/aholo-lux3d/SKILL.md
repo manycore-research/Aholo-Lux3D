@@ -1,192 +1,56 @@
 ---
 name: aholo-lux3d
-description: Generate and process 3D assets with Lux3D OpenAPI, including retopology, model articulation, character rigging and animation retargeting, resume tasks, and deliver verified model files with an offline preview from any compatible host using the same complete local Skill.
+description: Generate and process Lux3D assets, rig characters, retarget animations and resume tasks. One entry supports OpenAPI and MCP; choose the execution mode and region, then follow that workflow.
 ---
 
 # Aholo Lux3D
 
-Read the packaged [production workflow](body.md), then its references for the
-current stage. This portable Skill uses its own [OpenAPI runtime](core/runtime/lux3d_client.py),
-contracts and viewer. Resolve paths from this installed Skill, independent of
-the current directory. The host must support local Python processes, file
-access, HTTPS and secure credential injection. Python, dependency downloads
-and Blender are not bundled. Communicate in the user's language.
+This suite has one Skill entry and two execution modes. Communicate in the
+user's language. Reuse the user's established mode and region; if either is
+unknown, ask before account, quote or create calls. Do not choose based only
+on available tools, language, location or a failed request.
 
-## Model processing and animation
-
-The maintained source supports mesh retopology, model articulation, character
-auto-rigging and animation retargeting in addition to image/text generation,
-materials and exports. Read [planning](references/planning.md) and
-[execution](references/execution.md) for retopology and articulation, and
-[digital humans](references/digital-human.md) for rigging and retargeting.
-All paid stages retain account, complete-plan review/quote and authorization
-checks. Record each real task ID immediately and resume the same task after
-interruption. Articulation sends only `glbUrl` and `prompt`; other supported
-create operations use the matching quoteId as `contentId`.
-
-## Install the complete shared Skill
-
-For GitHub installations, follow the repository's AGENTS.md entrypoint and install
-from its maintained `plugins/common/aholo-lux3d/` directory. The repository ZIP is a
-historical record, not the installation input; do not replace current source with it.
-The same complete Skill works across compatible hosts without a host-specific rebuild.
-Separately distributed portal packages use their own installation instructions.
-Hosts must support local Skills and process/file tools; copying this Skill cannot add
-those capabilities to a chat-only app. Marketplace installations remain separate channels.
-
-## Preserve an installation invite code
-
-When the installation request supplies `Invite Code: ...`, the distribution
-installer saves that exact code outside the package, in
-`<host-skills-directory>/.aholo-lux3d-installation.json` as `{"inviteCode":"..."}`.
-Do not edit the installed Skill to store it. With no supplied code, do not ask
-for one or invent one. Installation needs no API key or API call.
-
-The Common `init`, `quote`, `report` and `feedback` commands automatically read
-this optional file beside the installed Skill and send `context.inviteCode` in
-collection requests. Explicit request context takes precedence, then the task
-journal's saved code, then installation configuration. Resumed tasks retain
-their attribution; frozen retries keep their original request. `balance` does
-not send the code. This only records attribution in the existing collection
-payload; it does not validate invitations, bind relationships or grant rewards.
-
-## Resolve the current host automatically
-
-Before account or quote calls, resolve the real **host application**, independent
-of the model provider. `scripts/host_identity.py` uses native session metadata
-when available: nonempty `CODEX_THREAD_ID` identifies Codex, and `CLAUDECODE=1`
-identifies Claude Code (see the [official Claude environment reference](https://code.claude.com/docs/en/env-vars)).
-The host agent must otherwise automatically supply its actual application name
-from current host context via `--host-name NAME`; integrations can supply
-`LUX3D_HOST_NAME` to the child process instead. This is metadata supplied by the
-agent or integration, not a selection users need to make. Do not invent session
-variables for other hosts, use the selected model's name, infer identity from
-an installation path, or copy a host name from a user generation prompt.
-
-```text
-python <installed-skill>/scripts/host_identity.py detect
-python <installed-skill>/scripts/host_identity.py detect --host-name <actual-current-host-name>
-```
-
-The second form is executed by the current host agent when native metadata is
-unavailable. It reads the same packaged `host-identity.json` registry used by
-the Connector. Known aliases are matched after trimming and lowercasing;
-unregistered names retain their trimmed spelling. Detection needs only Python's
-standard library, no API key, region selection or network access.
-
-| Actual host | source | agentName |
+| Selected mode | Workflow | Required host capabilities |
 | --- | --- | --- |
-| Codex | `1` | `codex` |
-| Claude Code | `2` | `claude-code` |
-| DeepSeek | `3` | `deepseek` |
-| WorkBuddy | `4` | `workbuddy` |
-| Any other host, for example 豆包 | `100` | Actual host name, for example `豆包` |
+| OpenAPI | [OpenAPI workflow](references/openapi-workflow.md), then [production workflow](body.md) and its stage references | Local Python 3.10+, file access, HTTPS and secure credential injection; the complete runtime, contracts and offline viewer are bundled |
+| MCP | [MCP workflow](references/mcp/workflow.md) and [connection setup](references/mcp/README.md) | A remote MCP client, live tool discovery and secure credential configuration; input uploads additionally require the documented Asset/OUS flow |
 
-The installed `adapter.json` declares `identityMode: automatic-host`; it never
-pins a source or profile. `--source` and `--binding` are unsupported. Users do
-not create identity files. If native markers and supplied host metadata
-conflict, stop before the API call so the integration can correct the subprocess
-context. If no metadata is observable, the host agent must provide it from its
-own host context; the helper does not guess. Missing/invalid metadata yields
-structured errors. Identity is attribution, not an authentication boundary.
+Read only the selected workflow as the execution instructions. Resolve paths
+from this installed `aholo-lux3d/` directory, independent of the current working
+directory. MCP reference paths are relative to `references/mcp/`; OpenAPI scripts
+and core resources are at the Skill root. MCP-only tasks do not require Python
+setup merely because this suite also contains the OpenAPI runtime.
 
-For source 100, both account GET and quote POST carry the actual `agentName`.
-For known sources, account GET carries the registered source and quote POST
-also carries its canonical name. Keep host identity stable within an attempt;
-record it with region, account reference and `skill` mode. Refresh account
-facts and quotes after changing the host, credential or region.
+Both modes support China (`cn`) and international (`international`). Choose the
+region explicitly and use only its connection and credential. For MCP, enable
+only that region's server in the host. The bundled connection descriptor is
+host-neutral; loading this Skill does not register or authenticate MCP.
 
-## Prepare Python and credentials
+Resolve the actual host automatically using the bundled identity registry and
+the chosen workflow. Use the real host application, never the model provider.
+Record mode, region, connection/account, plan version, quotes, upload receipts,
+authorizations and actual task IDs together. Switching mode, region or account
+starts a new context and requires fresh account and pricing checks. Resume
+existing tasks and reports on their original route. Reconcile uncertain create
+results before any further create; never automatically replay a create through
+the other mode or region.
 
-Run the setup helper with an available Python 3.10 or newer interpreter:
+Both workflows preserve the same planning, pricing, approval, REPORT and delivery
+rules. REPORT includes the complete versioned plan and task-related original
+inputs, actual execution and results for remote expert evaluation within the
+authorized scope. A valid successful REPORT receipt means remote evaluation
+passed; it is separate from user acceptance and permission for additional cost.
+Follow the selected workflow's receipt checks and FEEDBACK consent rules.
 
-```text
-python <installed-skill>/scripts/setup_runtime.py --env-dir <writable-cache-root>
-```
+The maintained GitHub source is the installation input. Follow the repository's
+AGENTS.md and local installer; archived packages are provenance references. Keep
+an optional installation invite code in `.aholo-lux3d-installation.json` beside
+the installed Skill, never inside it. OpenAPI loads it through the bundled
+runtime; MCP forwards it through supported collection `context` fields as
+described in [installation attribution](references/mcp/references/collection.md#installation-invite-code).
+Do not ask for an absent code or change attribution on resumed tasks or retries.
 
-Use the returned absolute `python` path for all packaged Python commands.
-`--env-dir` selects a cache root, not an existing virtual environment. It can
-also be configured through `LUX3D_COMMON_ENV_DIR`; otherwise the helper uses
-`XDG_CACHE_HOME/aholo-lux3d-common` or `~/.cache/aholo-lux3d-common`. Respect the
-user's selected drive for caches and workspace files. Setup never writes into
-the installed Skill or changes the system interpreter. Cache keys include
-interpreter implementation/version/ABI, OS, architecture and dependency/runtime
-digests; readiness is published atomically after dependency and import checks.
-`--check` only reads existing readiness. Failed installations are never reused.
-Setup may need package-index network access, but never calls Lux3D or needs a key.
-
-For missing imports, rerun setup and use its returned interpreter. For a missing
-bundled runtime or invalid adapter, reinstall the package; a broken installed
-package cannot use another checkout as a fallback. For cache-lock contention,
-wait for the active setup process and retry. Do not classify these as API
-authentication errors.
-
-Read [Common credential setup](references/credentials.md) before the first API
-call. Choose `cn` or `international` explicitly; a failed request must never switch region. Pass the chosen region to
-every runtime API even when that API has its own default. Credentials are
-injected only into the selected operation's process.
-
-## Account, quote and execution
-
-```text
-python <installed-skill>/scripts/commerce.py balance --region cn
-python <installed-skill>/scripts/commerce.py quote --region cn --items <items.json> --review <review.json> --journal <output>/logs/collection.sqlite
-```
-
-When native session metadata is absent, the agent appends `--host-name` with
-its actual current host name to each command automatically.
-
-For the new plugin's collection workflow, the host also supplies its actual current model
-and explicitly known client region at `commerce.py init` through `--model-name` and
-`--client-region`. The journal reuses them for review, quote, report and feedback. Pass
-observed changes on a new event; existing frozen retries retain their original values.
-These optional flags also work on `quote`, `report` and `feedback`. Integrations may pass
-`LUX3D_MODEL_NAME` and `LUX3D_CLIENT_REGION` instead. Known facts must be included without
-asking the user to configure a profile; omit genuinely unknown values. Do not substitute
-Lux3D `G1` for the host model or infer client location from the API route, language or
-timezone. `balance` and `retry` do not accept these flags. Follow
-[collection metadata](references/results.md#collection-metadata) for field mapping.
-
-Initialize the journal and prepare the full review before quoting a new task,
-as described in [task collection](references/results.md#plugin-collection-and-feedback).
-`items.json` is the numbered call map from [planning](references/planning.md).
-Use the canonical `/lux3d/v1/...` paths and contract parameters; do not include
-credentials, a domain, `/global`, source or account context in the plan. Quote
-refreshes the account and returns `{account, quote}`. Errors are safe JSON on
-stderr with a nonzero exit code. Missing or failed pricing is never free pricing.
-For timestamp precision errors, follow [timestamp recovery](references/execution.md#recover-from-timestamp-precision-errors): normalize nanoseconds for parsing and continue validation; do not ask the user to reconfigure a key for this format issue.
-
-Apply [review and approval](references/review.md) and
-[execution and recovery](references/execution.md) before each charge. The host
-orchestrates approval, budget and durable attempt records; these scripts do not
-implement a persistent authorization gate, submission lock or exactly-once
-guarantee. The separate Connector is a different execution mode. Select one
-mode per operation; an uncertain submission must be reconciled before another
-create call or a mode switch. Save real task IDs as strings immediately and
-resume queries or delivery from the original task.
-
-<!-- Author: yinjie. REPORT is the task's remote plan-alignment evaluation input. -->
-REPORT supplies Lux3D with evidence to evaluate whether actual calls and results match the
-original plan. Submit it automatically as part of the requested Lux3D task, including on
-first use; do not ask for separate first-time or per-report business approval. There is no
-reporting switch, new configuration, consent record or runtime gate. See
-[report workflow](references/review.md#report-as-part-of-task-evaluation) and
-[report content](references/results.md#execution-report).
-
-Send plan/review/quote links, actual call and relevant business-parameter summaries, and
-observed result checks to the task's existing Lux3D account/region. Keep raw conversation,
-approval words, credentials, private paths and full tool arguments local. Honor an explicit
-user instruction not to report and actual host network/upload permissions; do not work
-around a host denial or promise to suppress system dialogs.
-
-Follow [task closeout order](references/results.md#task-closeout-order): reconcile facts,
-submit REPORT and validate its receipt (or retain it locally if blocked), then deliver
-available files. The current ACCEPTED/OK response confirms collection only, not completed
-remote evaluation. Optional FEEDBACK follows delivery and requires consent to its exact
-text/version. Its question and actions must identify experience feedback; pending or
-refused feedback does not delay REPORT or delivery.
-
-For source-file and offline-preview delivery, follow
-[results](references/results.md). For composed scenes or rendering, use
-[assembly](references/assembly.md) with an available Blender installation or
-host tool. Report unavailable capabilities and the actual available outputs.
+Install the complete suite into one `aholo-lux3d` Skill directory. Use the host's
+supported replacement controls for an existing installation, preserving user
+assets, task history, credentials and working MCP connections. Keep one Skill
+entry for both execution modes.
