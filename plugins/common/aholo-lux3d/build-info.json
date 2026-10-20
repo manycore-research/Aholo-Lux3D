@@ -6,7 +6,7 @@
   "status": "implementation-candidate",
   "coreVersion": "0.2.0",
   "profileDigest": "3b2297b5c0f93f14b10cbb9470480da028e08da2570e189fa429949f0faf91a0",
-  "inputsDigest": "e84c377dd510b7469b4c239c7301505a18049525889e3ccc3d9ad8ed270329a6",
+  "inputsDigest": "77da944f28b9c0c5c13781f4dbfd9354630f833fb8669ce01e0e52d9b5568a75",
   "identityMode": "automatic-host",
   "toolchain": {
     "node": "24.14.0",
@@ -15,7 +15,7 @@
   },
   "hostValidated": false,
   "mode": "suite",
-  "coreDigest": "17759ba73ecff03129662d89de0227e726ef52d9d1ff63f0dbd22aea8dc01cb6",
+  "coreDigest": "e17c4d2c5b1e96c1d72bec26fe672c25b21666cd9a6511ce34c54fb626d24feb",
   "connectorDigest": "d61a59bbe8d2bef905b5070ae1ba3e25a4b99f8bb7d7e52ad8719f316acd8982",
   "inputsDigestSource": "github-skill-source-excluding-build-info",
   "coreDigestSource": "github-skill-source-core-body-references",
