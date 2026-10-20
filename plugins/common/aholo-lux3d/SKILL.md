@@ -6,9 +6,13 @@ description: Generate and process Lux3D assets, rig characters, retarget animati
 # Aholo Lux3D
 
 This suite has one Skill entry and two execution modes. Communicate in the
-user's language. Reuse the user's established mode and region; if either is
-unknown, ask before account, quote or create calls. Do not choose based only
-on available tools, language, location or a failed request.
+user's language. Reuse explicit mode, region and account choices. Region must
+be established before account, quote or create calls; never infer it from
+language, location or a failed request. For a new task with no mode preference,
+inspect readiness first and use the unambiguous configured route for that region.
+Do not make users choose technical transports unnecessarily. Follow
+[connection onboarding](references/connection-onboarding.md) for route selection,
+minimal setup and recovery. This selection is not spending authorization.
 
 | Selected mode | Workflow | Required host capabilities |
 | --- | --- | --- |
@@ -22,8 +26,8 @@ and core resources are at the Skill root. MCP-only tasks do not require Python
 setup merely because this suite also contains the OpenAPI runtime.
 
 Both modes support China (`cn`) and international (`international`). Choose the
-region explicitly and use only its connection and credential. For MCP, enable
-only that region's server in the host. The bundled connection descriptor is
+region explicitly and use only its connection and credential. For MCP, bind
+the task to that region's verified server; other connections may remain configured. The bundled connection descriptor is
 host-neutral; loading this Skill does not register or authenticate MCP.
 
 Resolve the actual host automatically using the bundled identity registry and

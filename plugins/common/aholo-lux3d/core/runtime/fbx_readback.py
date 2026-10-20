@@ -1,3 +1,12 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+# Copyright (c) 2026 Manycore Research.
+#
+# This script uses Blender's Python API (bpy) and is therefore licensed under the
+# GNU General Public License v2.0 or later, unlike the rest of this project (MIT).
+# It runs only inside a separate Blender background process and exchanges data with
+# the MIT-licensed runtime solely through a JSON report file.
+# Full license text: ../../LICENSES/GPL-2.0-or-later.txt
+
 """Read an FBX with Blender's importer; invoked only in Blender background mode."""
 
 import json

@@ -4,30 +4,11 @@
   "status": "implementation-baseline",
   "apiDocumentationVersion": "OpenAPI 2.0",
   "authority": {
-    "policy": "The two lux3dWebDoc files form the interface baseline. Task response states and list filters were corrected against the current AGS implementation on 2026-09-30; other fields retain the baseline.",
-    "primarySources": [
-      {
-        "region": "cn",
-        "path": "lux3dWebDoc/cn.md",
-        "sha256": "AEDF72819CB3AC76DF23415915908E58BDFA75DFEA51B086FC93F51D6D182C18"
-      },
-      {
-        "region": "international",
-        "path": "lux3dWebDoc/intl.md",
-        "sha256": "8072B18F62A5E3915AEDC402E23FFD9D145DB753DF190EFBF0555A141BDFA45A"
-      }
-    ],
+    "policy": "Regional API contracts form the interface baseline. Task response states and list filters were reviewed on 2026-09-30; other fields retain the baseline.",
     "reviewedOn": "2026-09-08",
     "regionalSemanticParity": true,
     "taskStatusVerification": {
       "reviewedOn": "2026-09-30",
-      "service": "ai-generate-service",
-      "sources": [
-        "AiGenerateInstanceStatus.java",
-        "ConvertDtoUtil.toOpenDto/toOpenUserTaskDto",
-        "OpenGenerateController.VALID_TASK_STATUSES",
-        "lux3dOpen.md"
-      ],
       "responseStatuses": [
         0,
         1,
@@ -45,14 +26,7 @@
       ]
     },
     "digitalHumanVerification": {
-      "reviewedOn": "2026-10-08",
-      "service": "ai-generate-service",
-      "revision": "ca5df742f5eb34b67bc3252c4c0992ac519180c4",
-      "sources": [
-        "open.yaml",
-        "Lux3dDigitalHumanPreparation.java",
-        "Lux3dAnimationResults.java"
-      ]
+      "reviewedOn": "2026-10-08"
     }
   },
   "transport": {
@@ -816,8 +790,7 @@
       "connectorSupported": true,
       "cliExposed": true,
       "workflowRunnerExposed": true,
-      "reviewedOn": "2026-10-13",
-      "documentation": "https://lux3d-beta.aholo3d.cn/lux3d/doc?lang=zh_CN#api-reference"
+      "reviewedOn": "2026-10-13"
     }
   },
   "outOfScopePlaceholders": {

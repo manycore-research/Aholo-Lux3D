@@ -11,11 +11,13 @@ to their marketplaces. Users do not select a profile or edit source attribution.
 
 Each ecosystem distributes **one Connector package for both regions**, with the same
 workflow and tools. Choose the region explicitly, or reuse the user's established
-choice; never infer it from language, location or a failed request. Enable only
-the selected regional connection in the host and configure only its API Key.
-The other regional key is optional. If the host cannot enable connections
-independently, use its supported configuration to register only the selected
-server from the bundled configuration; never require the other region's key.
+choice; never infer it from language, location or a failed request. Bind this
+task's calls to the selected regional connection and use only its API Key.
+Do not disable another region globally just to select this task's route; its
+credentials and pending tasks may still be in use. If the host cannot distinguish
+server provenance, stop affected calls and resolve that ambiguity through supported
+connection controls. Never require the other region's key. Follow
+[connection onboarding](../connection-onboarding.md) before asking for manual setup.
 
 | Region | Connection / server key | MCP URL | API Key |
 | --- | --- | --- | --- |
@@ -42,7 +44,7 @@ is absent, preserve the task and explain the missing connection.
 Use the single [aholo-lux3d entry](../../SKILL.md) and choose MCP. Keep the complete
 suite installed; these documents are supporting references.
 
-Enable only the selected regional MCP connection through the host's supported settings, using connection.json as a host-neutral descriptor. Configure only that region's raw Authorization key through private host settings. Reuse an existing authenticated connection. Importing this suite does not automatically register MCP. Do not require Python for MCP-only work; uploads still require the Asset/OUS flow and secure access to the selected regional key.
+Use only the selected regional MCP connection for this task. Follow [connection onboarding](../connection-onboarding.md) to reuse or prepare the host connection and request only a missing private credential or required reload. The connection.json descriptor is host-neutral; importing this suite does not register MCP. Do not require Python for MCP-only work; uploads still require the Asset/OUS flow and secure access to the selected regional key.
 
 Discover live tools and input schemas, then verify account access and host identity.
 Loading instructions alone does not connect MCP. No paid create is needed as a

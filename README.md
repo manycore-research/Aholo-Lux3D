@@ -113,12 +113,12 @@ No API key is needed to install. For OpenAPI generation, configure `LUX3D_CN_API
 
 ### Choose mode and region before execution
 
-Use the user's established choices, or ask for both **OpenAPI / MCP** and **China / international** before account, quote or create calls. Do not infer a route from the host, language, available tools or a failed request.
+Reuse explicit mode, region and account choices. Establish **China / international** before account, quote or create calls. If mode is unspecified, inspect readiness and use the unambiguous configured route under [connection onboarding](plugins/common/aholo-lux3d/references/connection-onboarding.md); ask only about unresolved account or setup choices. Never infer region from language or failure.
 
 | Mode | Workflow and prerequisites |
 | --- | --- |
 | OpenAPI | [`references/openapi-workflow.md`](plugins/common/aholo-lux3d/references/openapi-workflow.md), then the bundled Python runtime, contracts and offline viewer; requires local processes, files, HTTPS and secure credential injection. |
-| MCP | [`references/mcp/workflow.md`](plugins/common/aholo-lux3d/references/mcp/workflow.md) and [connection setup](plugins/common/aholo-lux3d/references/mcp/README.md); requires a remote MCP client, live tool discovery and secure credentials. Loading this Skill does not register or authenticate MCP. Enable only the selected region's server. |
+| MCP | [`references/mcp/workflow.md`](plugins/common/aholo-lux3d/references/mcp/workflow.md) and [connection setup](plugins/common/aholo-lux3d/references/mcp/README.md); requires a remote MCP client, live tool discovery and secure credentials. Loading this Skill does not register or authenticate MCP. Bind this task to the selected region's verified server. |
 
 MCP execution does not require initializing the OpenAPI Python runtime. Both routes retain planning, pricing, authorization, REPORT and delivery rules. Switching mode, region or account starts a new execution context with fresh account and pricing checks. Resume recorded tasks and reports on their original route; resolve an uncertain create result before creating again, without automatically retrying through another mode or region.
 
@@ -207,19 +207,19 @@ MCP 路线由宿主按所选工作流读取并转发保存的邀请码，使用�
 
 ### 执行前选择模式和区域
 
-复用用户已明确的选择；尚未明确时，先确认 **OpenAPI / MCP** 和 **国内 / 国际区**，再调用 account、quote 或 create。不能仅凭宿主、语言、工具是否可用或某次请求失败来选择路线。
+复用已明确的模式、区域和账户。国内 / 国际区未明确时先询问；模式未指定时先检查连接，复用该区域无歧义的可用路线，不强制用户理解 OpenAPI / MCP。缺少连接时先准备可自动完成的配置，只请用户补充私密凭据或完成必要重载。不能凭语言或失败请求推断区域；详见[连接引导](plugins/common/aholo-lux3d/references/connection-onboarding.md)。
 
 | 模式 | 执行流程与条件 |
 | --- | --- |
 | OpenAPI | 从 [`references/openapi-workflow.md`](plugins/common/aholo-lux3d/references/openapi-workflow.md) 进入现有 Python 运行时、契约和离线查看器流程；需要本地进程、文件、HTTPS 和安全凭据注入。 |
-| MCP | 使用 [`references/mcp/workflow.md`](plugins/common/aholo-lux3d/references/mcp/workflow.md) 和[连接说明](plugins/common/aholo-lux3d/references/mcp/README.md)；需要远程 MCP 客户端、实时工具发现和安全凭据配置。加载 Skill 不会自动注册或认证 MCP，只启用所选区域的服务。 |
+| MCP | 使用 [`references/mcp/workflow.md`](plugins/common/aholo-lux3d/references/mcp/workflow.md) 和[连接说明](plugins/common/aholo-lux3d/references/mcp/README.md)；需要远程 MCP 客户端、实时工具发现和安全凭据配置。加载 Skill 不会自动注册或认证 MCP，本次任务只调用所选区域的已验证服务。 |
 
 仅使用 MCP 时，无需初始化 OpenAPI 的 Python 运行时。两种路线都保留计划、报价、授权、REPORT 和交付要求。切换模式、区域或账号时建立新执行上下文，重新确认账号与报价；已有任务和报告沿原路线恢复。create 结果不确定时先核实，不得自动换模式或换区域重复创建。
 
 ### 宿主识别
 
 套件自动识别实际宿主：Codex 为 `1`、Claude Code 为 `2`、DeepSeek 为 `3`、
-WorkBuddy 为 `4`，其他为 `100`。用户选择执行方式与服务区域，宿主身份由当前会话确定。
+WorkBuddy 为 `4`，其他为 `100`。用户明确服务区域，执行方式按连接引导解析，宿主身份由当前会话确定。
 
 公开的 `AGENTS.md` 地址是 agent 安装入口，将完整套件安装到宿主支持的本地 Skill 目录。
 Codex 在新任务中使用 `$aholo-lux3d`，其他宿主使用各自的原生 Skill 入口。
@@ -306,7 +306,7 @@ Si tienes un código de invitación, añade `Invite Code: <código real>` a la s
 
 Recarga las Skills según el entorno; en Codex, inicia una nueva tarea y usa `$aholo-lux3d`. En otros entornos, usa su entrada nativa de Skills. La identidad del entorno se detecta automáticamente: no selecciones un `source` al instalar. La instalación no requiere clave API. Para OpenAPI, configura `LUX3D_CN_API_KEY` (China) o `LUX3D_GLOBAL_API_KEY` (internacional) siguiendo las instrucciones de la Skill. Para MCP, usa la conexión de la región elegida y la configuración segura de credenciales del entorno.
 
-La misma entrada permite elegir OpenAPI / MCP y China / internacional. El agente conserva las opciones ya confirmadas y pregunta por las que falten antes de account, quote o create. Las instrucciones MCP están en `references/mcp/`; instalar la Skill no registra ni autentica un servidor MCP. Ejecutar MCP no requiere inicializar el runtime Python de OpenAPI. Cambiar de modo, región o cuenta crea un nuevo contexto con nuevas comprobaciones de cuenta y precio. Reanuda tareas por su ruta original y comprueba un resultado create incierto antes de crear de nuevo; no cambies de ruta para repetirlo automáticamente. Ambos modos conservan planificación, autorización, REPORT y entrega.
+La misma entrada permite elegir OpenAPI / MCP y China / internacional. El agente conserva las opciones confirmadas, pregunta por la región si falta y resuelve el transporte mediante la guía de conexión antes de account, quote o create. Las instrucciones MCP están en `references/mcp/`; instalar la Skill no registra ni autentica un servidor MCP. Ejecutar MCP no requiere inicializar el runtime Python de OpenAPI. Cambiar de modo, región o cuenta crea un nuevo contexto con nuevas comprobaciones de cuenta y precio. Reanuda tareas por su ruta original y comprueba un resultado create incierto antes de crear de nuevo; no cambies de ruta para repetirlo automáticamente. Ambos modos conservan planificación, autorización, REPORT y entrega.
 
 Este repositorio distribuye Common suite `1.2.0` con una sola entrada. Instala el directorio fuente completo siguiendo `AGENTS.md`; en Codex, usa `$aholo-lux3d`. Consulta la estructura y los comandos de mantenimiento en inglés. La carga en cada entorno, la autenticación MCP y la generación de pago requieren verificaciones propias.
 
@@ -337,7 +337,7 @@ Se tiver um código de convite, acrescente `Invite Code: <código real>` à soli
 
 Recarregue as Skills conforme o ambiente; no Codex, inicie uma nova tarefa e use `$aholo-lux3d`. Em outros ambientes, use a entrada nativa de Skills. O ambiente real é detectado automaticamente: não escolha um `source` na instalação. Nenhuma chave API é necessária para instalar. Para OpenAPI, configure `LUX3D_CN_API_KEY` (China) ou `LUX3D_GLOBAL_API_KEY` (internacional), conforme as instruções da Skill. Para MCP, use a conexão da região escolhida e a configuração segura de credenciais do ambiente.
 
-A mesma entrada permite escolher OpenAPI / MCP e China / internacional. O agente mantém escolhas já confirmadas e pergunta pelas que faltam antes de account, quote ou create. As instruções MCP ficam em `references/mcp/`; instalar a Skill não registra nem autentica um servidor MCP. Executar MCP não exige inicializar o runtime Python de OpenAPI. Mudar de modo, região ou conta inicia um novo contexto com novas verificações de conta e preço. Retome tarefas pela rota original e confira um resultado create incerto antes de criar novamente; não troque de rota para repeti-lo automaticamente. Ambos os modos mantêm planejamento, autorização, REPORT e entrega.
+A mesma entrada permite escolher OpenAPI / MCP e China / internacional. O agente mantém escolhas confirmadas, pergunta pela região se faltar e resolve o transporte pelo guia de conexão antes de account, quote ou create. As instruções MCP ficam em `references/mcp/`; instalar a Skill não registra nem autentica um servidor MCP. Executar MCP não exige inicializar o runtime Python de OpenAPI. Mudar de modo, região ou conta inicia um novo contexto com novas verificações de conta e preço. Retome tarefas pela rota original e confira um resultado create incerto antes de criar novamente; não troque de rota para repeti-lo automaticamente. Ambos os modos mantêm planejamento, autorização, REPORT e entrega.
 
 Este repositório distribui Common suite `1.2.0` com uma única entrada. Instale o diretório-fonte completo seguindo `AGENTS.md`; no Codex, use `$aholo-lux3d`. Consulte a estrutura e os comandos de manutenção na seção em inglês. O carregamento em cada ambiente, a autenticação MCP e a geração paga exigem verificações próprias.
 
@@ -349,5 +349,23 @@ The installed Common suite includes its own [LICENSE.txt](plugins/common/aholo-l
 Bundled third-party components retain their original licenses and attribution;
 see [third-party notices](plugins/common/aholo-lux3d/core/viewer/THIRD_PARTY_NOTICES.txt).
 
+Exception: [`fbx_readback.py`](plugins/common/aholo-lux3d/core/runtime/fbx_readback.py) uses Blender's
+Python API and is licensed under [GPL-2.0-or-later](plugins/common/aholo-lux3d/LICENSES/GPL-2.0-or-later.txt).
+It runs only in a separate Blender process and communicates with the rest of the suite through a JSON file;
+all other files remain under the MIT License. Blender itself is not bundled.
+
 本项目采用 MIT 许可证，实际安装的 Common 套件包含同一份许可文本。
 第三方组件继续遵循各自的许可证与署名要求，详见上述第三方声明。
+
+例外：`fbx_readback.py` 调用了 Blender Python API，按 [GPL-2.0-or-later](plugins/common/aholo-lux3d/LICENSES/GPL-2.0-or-later.txt) 授权；
+它只在独立的 Blender 进程中运行，与套件其余部分仅通过 JSON 文件交换数据，其余文件仍采用 MIT 许可证。本项目不捆绑 Blender。
+
+## Release and contribution guidance / 发布与贡献说明
+
+See [security reporting](SECURITY.md), [contribution checks](CONTRIBUTING.md), and the [changelog](CHANGELOG.md).
+
+The MIT license covers this repository's own code and documentation. It does not grant hosted-service access, third-party commercial software licenses, or rights to arbitrary user inputs and generated assets. Logos and other visual assets require applicable redistribution rights. References to Maya or other DCC tools describe format compatibility and do not include those tools or their licenses.
+
+Python runtime dependencies are declared in `plugins/common/aholo-lux3d/core/runtime/requirements.txt`; this version range is not a lockfile or a complete SBOM. Record the resolved dependency versions and their licenses for each release environment. Preserve the bundled viewer's third-party notices.
+
+发布前需分别审核完整 Git 历史、原始参考 ZIP、素材授权及实际解析的依赖版本。仅清理当前源码不能消除历史或压缩包中的信息；MIT 许可不授予在线服务访问权、第三方商业软件许可或任意输入与生成素材的使用权。

@@ -3,11 +3,11 @@
 
 This reference belongs to the single **aholo-lux3d** Skill in the **Common suite** package.
 Use [the main entry](../../SKILL.md) to choose OpenAPI or MCP. Follow only the
-selected mode; reuse the established choice or ask before account/quote/create calls.
+selected mode; resolve it through the main entry and connection onboarding before calls.
 Never silently switch modes or replay an uncertain create through OpenAPI.
 
 
-Only after the user selects MCP mode, execute the requested
+After MCP mode is resolved by explicit choice or the onboarding rules, execute the requested
 operation through **Aholo Lux3D MCP**. Aholo Lux3D supports **2D image operations as well as
 3D assets**. Do not silently replace it with a host's image editor, Seedream,
 another image model or another provider because a tool or file is missing.
@@ -32,12 +32,12 @@ A Skill label in the conversation is not proof that its tools are connected.
    only the relevant query tools. A missing unrelated operation does not disable
    a supported one. **Perform discovery even if a local JSON file is missing.**
    Missing documentation does not prove that the remote server is disconnected.
-3. If the needed tools are absent, the task has not started. Give the connection
-   settings below. Use the host's supported MCP registration facility if it is
-   available and the user's existing credential is securely configured;
-   otherwise guide the user to the host's MCP connection settings. Do not invent
-   a menu or claim that another ZIP import establishes a connection. If this
-   client cannot register remote MCP, state that specific limitation.
+3. If tools are absent, distinguish missing configuration, missing credential,
+   pending host reload, authentication failure and missing operation using
+   [connection onboarding](../connection-onboarding.md). Prepare supported non-secret
+   setup within the user's request before asking them to act. Preserve a pending
+   task's recorded IDs; absent tools do not mean an earlier task never started.
+   Never diagnose a bad key from a timeout or dump a full setup tutorial by default.
 4. After connection/reconnection, discover again. For new work, resolve host
    identity as below and call `getlux3daccountbalance` with the actual schema.
    Only a successful response verifies this session's authentication/account
@@ -51,11 +51,13 @@ depend on finding a parent directory:
 
 Each ecosystem distributes **one Connector package for both regions**, with the same
 workflow and tools. Choose the region explicitly, or reuse the user's established
-choice; never infer it from language, location or a failed request. Enable only
-the selected regional connection in the host and configure only its API Key.
-The other regional key is optional. If the host cannot enable connections
-independently, use its supported configuration to register only the selected
-server from the bundled configuration; never require the other region's key.
+choice; never infer it from language, location or a failed request. Bind this
+task's calls to the selected regional connection and use only its API Key.
+Do not disable another region globally just to select this task's route; its
+credentials and pending tasks may still be in use. If the host cannot distinguish
+server provenance, stop affected calls and resolve that ambiguity through supported
+connection controls. Never require the other region's key. Follow
+[connection onboarding](../connection-onboarding.md) before asking for manual setup.
 
 | Region | Connection / server key | MCP URL | API Key |
 | --- | --- | --- | --- |
@@ -88,10 +90,12 @@ chat or write it into this package. This URL is an MCP transport endpoint, not
 an image URL or a JSON REST endpoint for directly posting arbitrary tool names.
 Typing a tool name in a reply is not invoking it.
 
-If only this Skill was imported, a useful status is: “Aholo Lux3D 指引已加载，但本次会话
-尚未发现所需 MCP 工具。请在宿主的 MCP 连接设置中添加所选区域的地址和对应 API Key，
-连接后我会重新发现工具并检查账户；当前尚未调用 Aholo Lux3D，也未改用其他生成服务。”
-Use this only when discovery actually finds no required tools.
+Explain the observed state and the single remaining user action in plain language.
+For example, only after non-secret setup is actually prepared: “海外连接配置已准备好，
+还需要你在私密设置中填入海外 API Key。完成后我会检查账户并继续场景报价。”
+If setup cannot be applied, say precisely why and provide the smallest supported
+manual step. Do not claim configuration, authentication or generation has succeeded
+without evidence. Preserve the creative brief while setup is pending.
 
 ## Route the request to the correct Aholo Lux3D tool
 
@@ -200,7 +204,7 @@ Keep the complete suite installed. Resolve connection.json, tool-map.json, body.
 references/ and scripts/ relative to this workflow file. This reference directory
 is not another Skill or a standalone installation.
 
-Enable only the selected regional MCP connection through the host's supported settings, using connection.json as a host-neutral descriptor. Configure only that region's raw Authorization key through private host settings. Reuse an existing authenticated connection. Importing this suite does not automatically register MCP. Do not require Python for MCP-only work; uploads still require the Asset/OUS flow and secure access to the selected regional key.
+Use only the selected regional MCP connection for this task. Follow [connection onboarding](../connection-onboarding.md) to reuse or prepare the host connection and request only a missing private credential or required reload. The connection.json descriptor is host-neutral; importing this suite does not register MCP. Do not require Python for MCP-only work; uploads still require the Asset/OUS flow and secure access to the selected regional key.
 
 Read [connection setup](README.md) and [the MCP workflow](body.md). Actual tools and
 authentication require live verification. Communicate in the user's language.

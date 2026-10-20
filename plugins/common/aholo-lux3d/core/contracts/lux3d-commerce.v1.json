@@ -393,14 +393,11 @@
       "quoteIdFormat": "^quote_[0-9a-f]{32}$",
       "defaultValiditySeconds": 300,
       "resolution": {
-        "skuCompositionOwner": "ai-generate-service",
-        "provider": "Lux3dOpenSkuInterface",
-        "shadowEndpointSuffix": "/task/sku",
+        "skuCompositionOwner": "hosted-service",
         "requestBodyForwarding": "same-request-as-corresponding-create-endpoint",
         "websiteFreeSkuOverridesApplied": false,
         "steps": [
-          "canonical-create-endpoint-to-AGS-shadow-endpoint",
-          "AGS-resolves-parameter-dependent-SKU-composition",
+          "hosted-service-resolves-parameter-dependent-SKU-composition",
           "query-current-Aholo-original-SKU-amounts-once",
           "preserve-duplicate-SKU-items-and-sum-quantity-times-amount",
           "warn-and-skip-SKUs-absent-from-price-table",

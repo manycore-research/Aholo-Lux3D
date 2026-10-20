@@ -11,11 +11,13 @@ the explicitly selected connection; URL configuration alone does not prove live 
 
 Each ecosystem distributes **one Connector package for both regions**, with the same
 workflow and tools. Choose the region explicitly, or reuse the user's established
-choice; never infer it from language, location or a failed request. Enable only
-the selected regional connection in the host and configure only its API Key.
-The other regional key is optional. If the host cannot enable connections
-independently, use its supported configuration to register only the selected
-server from the bundled configuration; never require the other region's key.
+choice; never infer it from language, location or a failed request. Bind this
+task's calls to the selected regional connection and use only its API Key.
+Do not disable another region globally just to select this task's route; its
+credentials and pending tasks may still be in use. If the host cannot distinguish
+server provenance, stop affected calls and resolve that ambiguity through supported
+connection controls. Never require the other region's key. Follow
+[connection onboarding](../connection-onboarding.md) before asking for manual setup.
 
 | Region | Connection / server key | MCP URL | API Key |
 | --- | --- | --- | --- |

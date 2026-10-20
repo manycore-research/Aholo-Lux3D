@@ -1,11 +1,11 @@
 {
   "buildInfo": {
-    "connectorDigest": "711f9ce9042a63bf135f2b97f831c0941556be495090f1ea0a8d803d941188cb",
-    "coreDigest": "10d3cdf4fc1156a2db78b5a727aeb57fff9508bf6a092e479da69e0a7290955b",
+    "connectorDigest": "d61a59bbe8d2bef905b5070ae1ba3e25a4b99f8bb7d7e52ad8719f316acd8982",
+    "coreDigest": "17759ba73ecff03129662d89de0227e726ef52d9d1ff63f0dbd22aea8dc01cb6",
     "coreVersion": "0.2.0",
     "hostValidated": false,
     "identityMode": "automatic-host",
-    "inputsDigest": "d257726b179777421b65b5f4fa1b5a3907a0c755f609e8dacf9339d976ac5bc6",
+    "inputsDigest": "e84c377dd510b7469b4c239c7301505a18049525889e3ccc3d9ad8ed270329a6",
     "mode": "suite",
     "profileDigest": "3b2297b5c0f93f14b10cbb9470480da028e08da2570e189fa429949f0faf91a0",
     "profileId": "universal",
@@ -20,11 +20,11 @@
     "version": "1.2.0"
   },
   "filename": "lux3d-plugin-1.2.0-common-suite.zip",
-  "inputsDigest": "d257726b179777421b65b5f4fa1b5a3907a0c755f609e8dacf9339d976ac5bc6",
+  "inputsDigest": "e84c377dd510b7469b4c239c7301505a18049525889e3ccc3d9ad8ed270329a6",
   "mode": "suite",
   "profileId": "universal",
   "releaseUnit": "common",
   "schema": "lux3d.release-artifact/v1",
-  "sha256": "134e2d2aaf997db2bdc2a795317e21c213d869a5923038551ca0d7b8c79f3800",
+  "sha256": "b5cd6534a72d2e3363936701f151be7c9ba5dcc18706f0f12c14aa782bf49503",
   "version": "1.2.0"
 }

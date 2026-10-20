@@ -50,7 +50,7 @@
   },
   "sharedCore": {
     "version": "0.2.0",
-    "digest": "58a711937a6a837a119f0456b5d46ca0b89a5216c55b9d06d2253dc1267974a7",
+    "digest": "17759ba73ecff03129662d89de0227e726ef52d9d1ff63f0dbd22aea8dc01cb6",
     "digestSource": "github-skill-source-core-body-references"
   },
   "validation": {
@@ -60,13 +60,13 @@
   },
   "source": {
     "path": "plugins/common/aholo-lux3d",
-    "sha256": "bee74b5d273dabbb7c4b34e600240532a92f0a9b3a0d1c8538eda462d72013d6",
+    "sha256": "61ded5cad1b075bc1915f8de0df1ce2c90c25dc06b937c8ca80d0001fb108ea2",
     "digestProtocol": "lux3d.entries/v1",
-    "fileCount": 66
+    "fileCount": 73
   },
   "upstreamArtifact": {
     "path": "lux3d-plugin/common/lux3d-plugin-1.2.0-common-suite.zip",
-    "sha256": "134e2d2aaf997db2bdc2a795317e21c213d869a5923038551ca0d7b8c79f3800",
+    "sha256": "ad932ced0dcaf7da097f1504deceacacc0fe25525a4ca45b9790596fc5f7c41e",
     "checksumPath": "lux3d-plugin/common/lux3d-plugin-1.2.0-common-suite.zip.sha256",
     "releaseRecordPath": "lux3d-plugin/common/lux3d-plugin-1.2.0-common-suite.release.json",
     "version": "1.2.0",

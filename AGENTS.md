@@ -98,9 +98,9 @@ OpenAPI generation later needs `LUX3D_CN_API_KEY` (China) or `LUX3D_GLOBAL_API_K
 
 ## Execute through the selected route
 
-Read the installed `SKILL.md` before execution. Reuse the user's established OpenAPI/MCP and cn/international choices; if either is unknown, ask before account, quote or create calls. Do not infer these choices from language, location, available tools or a failed request.
+Read the installed `SKILL.md` before execution. Reuse explicit mode, region and account choices. Establish cn/international before account, quote or create calls; never infer region from language, location or failure. When mode is unspecified for new work, inspect readiness and follow `references/connection-onboarding.md` to use an unambiguous configured route without an unnecessary transport-choice question. Ask only for unresolved choices that affect the account or setup.
 
-For OpenAPI, follow `references/openapi-workflow.md` and the existing production workflow. For MCP, follow `references/mcp/workflow.md` and `references/mcp/README.md`, and enable only the selected region's server. Follow only the selected route's execution instructions.
+For OpenAPI, follow `references/openapi-workflow.md` and the existing production workflow. For MCP, follow `references/mcp/workflow.md` and `references/mcp/README.md`, and bind calls to the selected region's verified server without disabling unrelated connections. Follow only the selected route's execution instructions.
 
 Record mode, region, connection/account, plan version, quotes, authorizations and actual task IDs together. A mode, region or account change starts a new context with fresh account and pricing checks. Resume existing tasks and reports on their original route. Reconcile uncertain create results before any further create; never automatically replay a create through another mode or region.
 

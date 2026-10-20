@@ -426,7 +426,7 @@
                 "format": "uri",
                 "minLength": 1,
                 "description": "待重拓扑模型的公网 HTTP(S) URL，必须可由服务端访问。\n仅支持静态、非 Draco 压缩的 GLB。\n如需上传本地文件，请先调用 [Asset 文件上传接口](https://labs.aholo3d.cn/api-docs/api-reference#tag/asset)，再将返回的 URL 填入此字段。\n",
-                "example": "https://qhstaticssl.kujiale.com/application/octetstream/1784776896628/model.glb"
+                "example": "https://example.com/assets/model.glb"
               },
               "quad": {
                 "type": "boolean",
@@ -643,7 +643,7 @@
                 "type": "string",
                 "format": "uri",
                 "description": "已绑骨 GLB 模型的公网 HTTPS URL。如需上传本地文件，请先调用 [Asset 文件上传接口](https://labs.aholo3d.cn/api-docs/api-reference#tag/asset)，再将返回的 URL 填入此字段。",
-                "example": "https://qhstaticssl.kujiale.com/application/octetstream/1790240555913/rigModel.glb"
+                "example": "https://example.com/assets/rig-model.glb"
               },
               "animationIds": {
                 "type": "array",
