@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/aholo-lux3d-logo.png" alt="Aholo Lux3D" width="420" />
+  <img src="assets/aholo-lux3d-logo.png" alt="Aholo3D" width="420" />
 </p>
 
 # Aholo Lux3D
